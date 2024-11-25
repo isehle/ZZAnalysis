@@ -15,10 +15,19 @@ if not validateCheckout() :
 #SampleToRun = "MCsync_2018Rereco" # for mini vs nano sync
 #SampleToRun = "MCsync_2017UL" # for mini vs nano sync
 #SampleToRun = "Data2022"
-SampleToRun = "MC2022"
-#SampleToRun = "MELA_Test"
-#SampleToRun = "ggh125_2018UL"
-#SampleToRun = "forNanoDoc" # To prepare variable lists with inspectNanoFile.py
+#SampleToRun = "MC2022"
+
+#SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
+#SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
+#SampleToRun = "ZLZLTo4L_2022EE"
+#SampleToRun = "ZLZTTo4L_2022EE"
+SampleToRun = "ZTZTTo4L_2022EE"
+
+#SampleToRun = "ggZLZLTo4L_2022EE" # Privately produced gg-->ZZ (box diagram) MadGraph
+#SampleToRun = "ggZLZTTo4L_2022EE"
+#SampleToRun = "ggZTZTTo4L_2022EE"
+
+#SampleToRun = "ggZZ_2022EE"
 
 
 ### Customize processing variables.
@@ -116,42 +125,170 @@ elif SampleToRun == "MC2022" :
         ])
 #    json = {"1": [[1245, 1245],[1306, 1306],[1410, 1410],[1692, 1692],[1903, 1903],[1910, 1910],[1915, 1915],[1927, 1927],[1939, 1939],[1940, 1940],[1944, 1944],[1945, 1945],[1956, 1956],[1960, 1960],[1965, 1965],[1967, 1967],[1968, 1968],[1969, 1969],[2104, 2104]]}
 
-
-################################################################################
-elif SampleToRun == "forNanoDoc" :
-    # Create a file with a complete set of variables to feed to inspectNanoFile to generate variable documentation
-    setConf("SAMPLENAME", "ggH125")
-    setConf("DATA_TAG", "post_EE")
-    setConf("XSEC", 52.23*0.0002745)
-    setConf("LEPTON_SETUP", 2022)
-    setConf("IsMC", True)
-    setConf("store","root://cms-xrd-global.cern.ch/")
-    setConf("runMELA", True)
-    setConf("APPLYMUCORR", True)
-    setConf("APPLYELECORR", True)
-    setConf("APPLYJETCORR", True)
-    # setConf("APPLY_K_NNLOQCD_ZZGG", 1) # requires mcHistoryTools before weightFiller when AllEvents=true, which is not needed in practical cases
-    # setConf("APPLY_K_NNLOQCD_ZZQQB", True) # ditto
+elif SampleToRun == "ZZTo4L_2022EE":
+    setConf("SAMPLENAME", "ZZTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLY_QCD_GGF_UNCERT", True)
-    setConf("PROCESS_CR", True)
-    setConf("PROCESS_ZL", True)
-    setConf("ADD_ALLEVENTS", True)
-    setConf("fileNames",["/store/mc/Run3Summer22EENanoAODv12/GluGluHtoZZto4L_M-125_TuneCP5_13p6TeV_powheg2-JHUGenV752-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/2540000/25c8f5ff-9de0-4a0c-9e2f-757332ad392f.root"])
-
-
-###################################################################################
-elif SampleToRun == "MELA_Test" : 
-    setConf("SAMPLENAME", "ggH125")
-    setConf("LEPTON_SETUP", 2022)  
-    setConf("XSEC", 290.58626*0.0002745)
+    setConf("XSEC", 1.39)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("DATA_TAG", "post_EE")
+    setConf("NANOVERSION", 12)
     setConf("IsMC", True)
-    setConf("ADD_ALLEVENTS", True)
-    setConf("NANOVERSION", 15)
-    setConf("store", "")
-    setConf("fileNames", ["/eos/user/n/nipinto/old_CMSSW_13_3_3/src/ggH_test.root"]) # private reprocessing to add LHE mothers/daughters as in v15
-    
+    setConf("runMELA", False)
+    setConf("bestCandByMELA", False)
+    setConf("store", "root://cms-xrd-global.cern.ch/")
+    setConf("fileNames", [
+        "/store/mc/Run3Summer22EENanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/50000/dea56a0a-462c-4690-953c-c7db96dd3ab5.root",
+    ])
 
+# elif SampleToRun == "ZLZLTo4L_2022EE":
+#     setConf("SAMPLENAME", "ZLZLTo4L")
+#     setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+#     setConf("APPLY_K_NNLOEW_ZZQQB", True)
+#     setConf("XSEC", 0.007021)
+#     setConf("LEPTON_SETUP", 2022)
+#     setConf("NANOVERSION", 12)
+#     setConf("IsMC", True)
+#     setConf("store", "root://eos.grif.fr/")
+#     setConf("fileNames", [
+#         "/eos/grif/cms/llr/store/user/iehle/MyZLZLTo4l/crab_zlzl-4l-tarBallTest_v7/240429_141036/0000/ZLZL_hadd.root"
+#     ])
+
+# elif SampleToRun == "ZLZTTo4L_2022EE":
+#     setConf("SAMPLENAME", "ZLZTTo4L")
+#     setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+#     setConf("APPLY_K_NNLOEW_ZZQQB", True)
+#     setConf("XSEC", 0.0281)
+#     setConf("LEPTON_SETUP", 2022)
+#     setConf("NANOVERSION", 12)
+#     setConf("IsMC", True)
+#     setConf("store", "root://eos.grif.fr/")
+#     setConf("fileNames", [
+#         "/eos/grif/cms/llr/store/user/iehle/MyZLZTTo4l/crab_zlzt-4l-tarBallTest_v1/240430_100126/0000/ZLZT_hadd.root"
+#     ])
+
+# elif SampleToRun == "ZTZTTo4L_2022EE":
+#     setConf("SAMPLENAME", "ZTZTTo4L")
+#     setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+#     setConf("APPLY_K_NNLOEW_ZZQQB", True)
+#     setConf("XSEC", 0.08679)
+#     setConf("LEPTON_SETUP", 2022)
+#     setConf("NANOVERSION", 12)
+#     setConf("IsMC", True)
+#     setConf("store", "root://eos.grif.fr/")
+#     setConf("fileNames", [
+#         "/eos/grif/cms/llr/store/user/iehle/MyZTZTTo4l/crab_ztzt-4l-tarBallTest_v1/240430_154317/0000/ZTZT_hadd.root"
+#     ])
+
+elif SampleToRun == "ZLZLTo4L_2022EE":
+    setConf("SAMPLENAME", "ZLZLTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    #setConf("XSEC", 0.007021)
+    setConf("XSEC", 0.003963)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://eos.grif.fr/")
+    setConf("fileNames", [
+        #"/eos/grif/cms/llr/store/user/iehle/MyZLZLTo4l/crab_zlzl-4l-tarBallTest_v7/240429_141036/0000/ZLZL_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZL_5f_hadd.root"
+    ])
+
+elif SampleToRun == "ZLZTTo4L_2022EE":
+    setConf("SAMPLENAME", "ZLZTTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    #setConf("XSEC", 0.0281)
+    setConf("XSEC", 0.01551)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://eos.grif.fr/")
+    setConf("fileNames", [
+        #"/eos/grif/cms/llr/store/user/iehle/MyZLZTTo4l/crab_zlzt-4l-tarBallTest_v1/240430_100126/0000/ZLZT_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZT_5f_hadd.root"
+    ])
+
+elif SampleToRun == "ZTZTTo4L_2022EE":
+    setConf("SAMPLENAME", "ZTZTTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    #setConf("XSEC", 0.08679)
+    setConf("XSEC", 0.045113)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://eos.grif.fr/")
+    setConf("fileNames", [
+        #"/eos/grif/cms/llr/store/user/iehle/MyZTZTTo4l/crab_ztzt-4l-tarBallTest_v1/240430_154317/0000/ZTZT_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/qqZTZT_5f_hadd.root"
+    ])
+
+elif SampleToRun == "ZZTo4L_2022EE_MG":
+    setConf("SAMPLENAME", "ZTZTTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    setConf("XSEC", 0.1212)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://eos.grif.fr/")
+    setConf("fileNames", [
+        "/eos/grif/cms/llr/store/user/iehle/MyZZTo4l/crab_zz-4l-tarBallTest_v1/240522_155155/0000/ZZ_hadd.root"
+    ])
+
+elif SampleToRun == "ggZLZLTo4L_2022EE":
+    setConf("SAMPLENAME", "ggZLZLTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZGG", 2)
+    setConf("XSEC", 0.001274)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://eos.grif.fr/")
+    setConf("fileNames", [
+        #"/eos/grif/cms/llr/store/user/iehle/MyZLZLTo4l/crab_zlzl-4l-tarBallTest_v7/240429_141036/0000/ZLZL_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/ggZLZL_4l_5f.root"
+    ])
+
+# elif SampleToRun == "ggZLZTTo4L_2022EE":
+#     setConf("SAMPLENAME", "ZLZTTo4L")
+#     setConf("APPLY_K_NNLOQCD_ZZGG", 2)
+#     #setConf("XSEC", 0.0281)
+#     setConf("XSEC", 0.01551)
+#     setConf("LEPTON_SETUP", 2022)
+#     setConf("NANOVERSION", 12)
+#     setConf("IsMC", True)
+#     setConf("store", "root://eos.grif.fr/")
+#     setConf("fileNames", [
+#         #"/eos/grif/cms/llr/store/user/iehle/MyZLZTTo4l/crab_zlzt-4l-tarBallTest_v1/240430_100126/0000/ZLZT_hadd.root"
+#         "/eos/grif/cms/llr/store/user/iehle/ggZLZT_4l_5f.root"
+#     ])
+
+elif SampleToRun == "ggZTZTTo4L_2022EE":
+    setConf("SAMPLENAME", "ZTZTTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZGG", 2)
+    setConf("XSEC", 0.006941)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://eos.grif.fr/")
+    setConf("fileNames", [
+        #"/eos/grif/cms/llr/store/user/iehle/MyZTZTTo4l/crab_ztzt-4l-tarBallTest_v1/240430_154317/0000/ZTZT_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/ggZTZT_4l_5f.root"
+    ])
+
+elif SampleToRun == "ggZZ_2022EE":
+    setConf("SAMPLENAME", "ggTo4e")
+    setConf("APPLY_K_NNLOQCD_ZZGG", 1)
+    setConf("XSEC", 0.00305851)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://cms-xrd-global.cern.ch/")
+    setConf("fileNames", [
+        "/store/mc/Run3Summer22EENanoAODv12/GluGlutoContinto2Zto4E_TuneCP5_13p6TeV_mcfm-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/40000/3606c6cd-0b9c-4413-8338-4ac70c369c3a.root"
+    ])
 
 #####################################################################
 ### This import should be done AFTER all customizations (setConf calls)
