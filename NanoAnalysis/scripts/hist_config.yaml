@@ -1,0 +1,297 @@
+datasets:
+  eos_base: /eos/user/i/iehle/Analysis/
+  local_base: /afs/cern.ch/user/i/iehle/CMSSW_13_3_3/src/ZZAnalysis/
+  year_2022:
+    CD:
+      # MC: MC_2022_EraCD_FixedLeps
+      # Data: Data_2022_Updated/EraCD/ZZ4lAnalysis.root
+      # MC: MC_2022_EraCD_NewAngVars
+      # Data: Data_2022_NewAngVars/EraCD/ZZ4lAnalysis.root
+      MC: MC_2022_EraCD_FixedSR
+      Data: Data_2022_FixedSR/EraCD/ZZ4lAnalysis.root
+      Lumi: !!float 7.9804e3 # Lumi info from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
+    EFG:
+      # MC: MC_2022_EraEFG_Updated
+      # Data: Data_2022_Updated/EraEFG/ZZ4lAnalysis.root
+      # MC: MC_2022_EraEFG_NewAngVars
+      # Data: Data_2022_NewAngVars/EraEFG/ZZ4lAnalysis.root
+      MC: MC_2022_EraEFG_FixedSR
+      Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
+      Pol:
+        ZLZL: qqZLZL_5f_hadd_Skim.root
+        ZLZT: qqZLZT_5f_hadd_Skim.root
+        ZTZT: qqZTZT_5f_hadd_Skim.root
+        #ZZ_LO: ZZ_hadd_Skim.root
+      Lumi: !!float 26.6717e3
+    Full:
+      Lumi: !!float 34.6521e3
+
+  year_2023:
+    C:
+      MC: MC_2023_EraC_Updated
+      Data: Data_2023_Updated/EraC/ZZ4lAnalysis.root
+      Lumi: !!float 17.794e3
+    D:
+      MC: MC_2023_EraD_Updated
+      Data: Data_2023_Updated/EraD/ZZ4lAnalysis.root
+      Lumi: !!float 9.451e3
+    Full:
+      Lumi: !!float 27.245e3
+
+  MC_Procs:
+    ggZZ:
+      ggTo2e2mu: ggTo2e2mu
+      ggTo2e2tau: ggTo2e2tau
+      ggTo2mu2tau: ggTo2mu2tau
+      ggTo4e: ggTo4e
+      ggTo4mu: ggTo4mu
+      ggTo4tau: ggTo4tau
+    ZZ_NLO: ZZTo4l
+    DY: DYJetsToLL
+    TT: TTto2L2Nu
+    WZ: WZto3LNu
+    H: ggH125
+    VVV:
+      WWZ: WWZ
+      WZZ: WZZ
+      ZZZ: ZZZ
+
+systematics:
+  run: !!bool False
+  props: ["cosTheta1", "cosTheta3", "cosThetaStar"]
+  procs:
+    ZLZL:
+      Envelope:
+        LHEScaleWeight: [0, 1, 2] # Indices for (muR, muF) = (0.5, 0.5), (0.5, 1), (0.5, 2), from https://cms-nanoaod-integration.web.cern.ch/integration/master/mc94X_doc.html#LHE
+      RMS:
+        LHEPdfWeight: [0, 100] # Start and endpoint of variations
+    ZLZT:
+      Envelope:
+        LHEScaleWeight: [0, 1, 2] # Indices for (muR, muF) = (0.5, 0.5), (0.5, 1), (0.5, 2), from https://cms-nanoaod-integration.web.cern.ch/integration/master/mc94X_doc.html#LHE
+      RMS:
+        LHEPdfWeight: [0, 100] # Start and endpoint of variations
+    ZTZT:
+      Envelope:
+        LHEScaleWeight: [0, 1, 2] # Indices for (muR, muF) = (0.5, 0.5), (0.5, 1), (0.5, 2), from https://cms-nanoaod-integration.web.cern.ch/integration/master/mc94X_doc.html#LHE
+      RMS:
+        LHEPdfWeight: [0, 100] # Start and endpoint of variations
+
+regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
+
+fstates:
+  fs_4l: !!int -1
+  fs_4e: !!int 14641
+  fs_4mu: !!int 28561
+  fs_2e2mu: !!int 20449
+
+# Needed to extract lepton hists but we don't make hists of these variables
+extra_props: ["Z1flav", "Z2flav"]
+
+hist_info:
+  # mass:
+  #   SR:
+  #     nbinsx: !!int 82
+  #     xlow: !!int 180
+  #     xhigh: !!int 1000
+  #     # nbinsx: !!int 233
+  #     # xlow: !!int 70
+  #     # xhigh: !!int 1002
+  #     xlabel: "$m_{4l}$ GeV"
+  #     ylabel: Events / 10 GeV
+  #     Blind: !!bool False
+  #   MidMass:
+  #     nbinsx: !!int 40
+  #     xlow: !!int 140
+  #     xhigh: !!int 180
+  #     xlabel: "$m_{4l}$ GeV"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   LowMass:
+  #     nbinsx: !!int 35
+  #     xlow: !!int 105
+  #     xhigh: !!int 140
+  #     xlabel: "$m_{4l}$ GeV"
+  #     ylabel: Events
+  #     Blind: !!bool False
+
+  # pt:
+  #   nbinsx: !!int 100
+  #   xlow: !!int 0
+  #   xhigh: !!int 500
+  #   xlabel: "${p_T}^{4l}$ GeV"
+  #   ylabel: Events / 5 GeV
+  #   Blind: !!bool False
+
+  # Z1mass:
+  #   SR:
+  #     nbinsx: 21
+  #     xlow: 81
+  #     xhigh: 102
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   MidMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   LowMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+
+
+  # Z2mass:
+  #   SR:
+  #     nbinsx: 21
+  #     xlow: 81
+  #     xhigh: 102
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   MidMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   LowMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+
+  cosTheta1:
+    nbinsx: 20
+    xlow: -1
+    xhigh: 1
+    xlabel: "$cos(\theta_1)$"
+    ylabel: Events
+    Blind: !!bool True
+
+  cosTheta3:
+    nbinsx: 20
+    xlow: -1
+    xhigh: 1
+    xlabel: "$cos(\theta_3)$"
+    ylabel: Events
+    Blind: !!bool True
+
+  cosThetaStar:
+    nbinsx: 20
+    xlow: -1
+    xhigh: 1
+    xlabel: "$cos(\theta^*)$"
+    ylabel: Events
+    Blind: !!bool True
+
+  delRapidity:
+    nbinsx: 40
+    xlow: 0
+    xhigh: 4
+    #xlabel: "$\\Delta{y_{ZZ'}}$"
+    xlabel: "$Delta(y_{ZZ'})$"
+    ylabel: Events
+    Blind: !!bool True
+
+  delPhiStar:
+    nbinsx: 32
+    xlow: 0
+    xhigh: 3.2
+    #xlabel: "$\\Delta{\\phi^*_{l^+ l^{+'}}}$"
+    xlabel: "$Delta{phi^*_{l^+ l^{+'}}}$"
+    ylabel: Events
+    Blind: !!bool True
+
+  # Lepton_Z2_sip3d:
+  #   nbinsx: !!int 40
+  #   xlow: !!int 0
+  #   xhigh: !!int 40
+  #   xlabel: "$SIP_{l_{Z2}}$"
+  #   ylabel: Events
+  #   Blind: !!bool False
+
+plot_styling:
+  ratio_fig_style:
+    figsize: [10, 10]
+    gridspec_kw:
+      height_ratios: [3, 1]
+  
+  hatch_style:
+    facecolor: 'none'
+    edgecolor: [0, 0, 0, 0.5]
+    linewidth: 0
+    hatch: '///'
+
+  errorbar_style:
+    linestyle: 'none'
+    marker: '.'
+    elinewidth: 1
+    capsize: 1
+    color: 'k'
+
+  mc_colors:
+    ggZZ:
+      line: "#000099"
+      fill: "#4b78ff"
+    ZZ_NLO:
+      line: "#000099"
+      fill: "#99ccff"
+    DY:
+      line: "#000099"
+      fill: "#00ff00"
+    TT:
+      line: "#000099"
+      fill: "#ff0000"
+    WZ:
+      line: "#003300"
+      fill: "#669966"
+    H:
+      line: "#cc0000"
+      fill: "#ff9b9b"
+    VVV:
+      line: "#000099"
+      fill: "#ffd700"
+
+  proc_styling:
+    ggZZ:
+      line_color: "#000099"
+      fill_color: "#4b78ff"
+      label: "$gg\rightarrow ZZ$"
+    ZZ_NLO:
+      line_color: "#000099"
+      fill_color: "#99ccff"
+      label: "$q\bar{q} \rightarrow ZZ$"
+    DY:
+      line_color: "#000099"
+      fill_color: "#00ff00"
+      label: "$DY$"
+    TT:
+      line_color: "#000099"
+      fill_color: "#ff0000"
+      label: "$t\bar{t}$"
+    WZ:
+      line_color: "#003300"
+      fill_color: "#669966"
+      label: "$WZ$"
+    H:
+      line_color: "#cc0000"
+      fill_color: "#ff9b9b"
+      label: "$H$"
+    VVV:
+      line_color: "#000099"
+      fill_color: "#ffd700"
+      label: "$VVV$"
+      
+
+output:
+  base_dir: /eos/user/i/iehle/Analysis
+  plot_dir: /eos/user/i/iehle/www/polZZto4l/plots
