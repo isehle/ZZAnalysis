@@ -35,8 +35,8 @@ IsMC = getConf("IsMC", True)
 PD = getConf("PD", "")
 XSEC = getConf("XSEC", 1.)
 SYNCMODE = getConf("SYNCMODE", False) # fake smearing in Run2 correction modules, for synchronization purposes. No longer needed for Run3 modules.
-runMELA = getConf("runMELA", True)
-bestCandByMELA = getConf("bestCandByMELA", True) # requires also runMELA=True
+runMELA = getConf("runMELA", False)
+bestCandByMELA = getConf("bestCandByMELA", False) # requires also runMELA=True
 TRIGPASSTHROUGH = getConf("TRIGPASSTHROUGH", False) # Do not filter events that do not pass triggers (HLT_passZZ4l records if they did)
 PROCESS_CR = getConf("PROCESS_CR", False) # fill control regions
 PROCESS_ZL = getConf("PROCESS_ZL", False) # fill ZL control region
@@ -143,7 +143,7 @@ reco_sequence = [lepFiller(cuts, LEPTON_SETUP), # FSR and FSR-corrected iso; fla
                           filter=FILTER_EVENTS,
                           debug=DEBUG), # Build ZZ candidates; choose best candidate; filter events with candidates
                  jetFiller(), # Jets cleaning with leptons
-                 ZZExtraFiller(IsMC, LEPTON_SETUP, DATA_TAG, PROCESS_CR), # Additional variables to selected candidates
+                 # ZZExtraFiller(IsMC, LEPTON_SETUP, DATA_TAG, PROCESS_CR), # Additional variables to selected candidates
                  # MELAFiller(), # Compute the full set of discriminants for the best candidate
                  ]
 
@@ -243,8 +243,10 @@ branchsel_out = ['drop *',
                  'keep HLT_TripleMu*',
                  'keep HLT_IsoMu*',
                  'keep HLT_passZZ*',
-                 'keep best*', # best candidate indices
-                 'keep Z*', # Z, ZZ, ZLL candidates
+                 'keep SR',
+                 'keep OS*',
+                 'keep SS*',
+                 'keep Z*', # Z, ZZ, ZLL candidates,
                  'keep MET_pt',
                  #'keep PV*',
                  #'keep Flag*',
