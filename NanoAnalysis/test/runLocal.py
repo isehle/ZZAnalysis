@@ -18,6 +18,7 @@ if not validateCheckout() :
 #SampleToRun = "MC2022"
 
 #SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
+
 #SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
 #SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
@@ -175,60 +176,68 @@ elif SampleToRun == "ZZTo4L_2022EE":
 
 elif SampleToRun == "ZLZLTo4L_2022EE":
     setConf("SAMPLENAME", "ZLZLTo4L")
-    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
-    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    setConf("APPLY_K_NNLOQCD_ZZQQB", False)
+    setConf("APPLY_K_NNLOEW_ZZQQB", False)
     #setConf("XSEC", 0.007021)
-    setConf("XSEC", 0.003963)
+    #setConf("XSEC", 0.003963)
+    setConf("XSEC", 0.003983)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
         #"/eos/grif/cms/llr/store/user/iehle/MyZLZLTo4l/crab_zlzl-4l-tarBallTest_v7/240429_141036/0000/ZLZL_hadd.root"
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZL_5f_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZL_5f_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer22EraEFG_flatNano/crab_qqzlzl-4l-v3/241121_141747/0000/qqZLZL_5f_Summer22EraEFG_hadd.root"
     ])
 
 elif SampleToRun == "ZLZTTo4L_2022EE":
     setConf("SAMPLENAME", "ZLZTTo4L")
-    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
-    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    setConf("APPLY_K_NNLOQCD_ZZQQB", False)
+    setConf("APPLY_K_NNLOEW_ZZQQB", False)
     #setConf("XSEC", 0.0281)
-    setConf("XSEC", 0.01551)
+    #setConf("XSEC", 0.01551)
+    setConf("XSEC", 0.01617)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
         #"/eos/grif/cms/llr/store/user/iehle/MyZLZTTo4l/crab_zlzt-4l-tarBallTest_v1/240430_100126/0000/ZLZT_hadd.root"
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZT_5f_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZT_5f_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer22EraEFG_flatNano/crab_qqzlzt-4l-v1/241122_092900/0000/qqZLZT_5f_Summer22EraEFG_hadd.root"
     ])
 
 elif SampleToRun == "ZTZTTo4L_2022EE":
     setConf("SAMPLENAME", "ZTZTTo4L")
-    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
-    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    setConf("APPLY_K_NNLOQCD_ZZQQB", False)
+    setConf("APPLY_K_NNLOEW_ZZQQB", False)
     #setConf("XSEC", 0.08679)
-    setConf("XSEC", 0.045113)
+    #setConf("XSEC", 0.045113)
+    setConf("XSEC", 0.04603)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
         #"/eos/grif/cms/llr/store/user/iehle/MyZTZTTo4l/crab_ztzt-4l-tarBallTest_v1/240430_154317/0000/ZTZT_hadd.root"
-        "/eos/grif/cms/llr/store/user/iehle/qqZTZT_5f_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZTZT_5f_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer22EraEFG_flatNano/crab_qqztzt-4l-v1/241122_093029/0000/qqZTZT_5f_summer22EraEFG_hadd.root"
     ])
 
 elif SampleToRun == "ZZTo4L_2022EE_MG":
     setConf("SAMPLENAME", "ZTZTTo4L")
-    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
-    setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.1212)
+    setConf("APPLY_K_NNLOQCD_ZZQQB", False)
+    setConf("APPLY_K_NNLOEW_ZZQQB", False)
+    #setConf("XSEC", 0.1212)
+    setConf("XSEC", 0.06644)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/MyZZTo4l/crab_zz-4l-tarBallTest_v1/240522_155155/0000/ZZ_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/MyZZTo4l/crab_zz-4l-tarBallTest_v1/240522_155155/0000/ZZ_hadd.root"
+        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer22EraEFG_flatNano/crab_qqzz-4l-v1/241122_094312/0000/qqZZTo4l_5f_summer22EraEFG_hadd.root"
     ])
 
 elif SampleToRun == "ggZLZLTo4L_2022EE":
