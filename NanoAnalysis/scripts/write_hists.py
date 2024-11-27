@@ -107,7 +107,7 @@ if __name__ == "__main__":
     parser.add_argument("--tag", default="")
     args = vars(parser.parse_args())
 
-    with open("/afs/cern.ch/user/i/iehle/polZZTo4l_New/CMSSW_13_0_16/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
+    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_13_3_3/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
         cfg = yaml.safe_load(config)
 
     main(cfg, args)

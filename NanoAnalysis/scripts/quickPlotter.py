@@ -44,7 +44,7 @@ def plotter(cfg, args, prop, reg, hists, counts, errors, outfile, **kwargs):
         r"$q\bar{q} \rightarrow Z_L Z_L$",
         r"$q\bar{q} \rightarrow Z_L Z_T$",
         r"$q\bar{q} \rightarrow Z_T Z_T$",
-        #r"$(q\bar{q} \rightarrow ZZ)_{LO}$"
+        r"$(q\bar{q} \rightarrow ZZ)_{LO}$"
     ]
     new_pol_labels = []
     for lab, count, err in zip(pol_labels, pol_counts, pol_errors):
@@ -98,8 +98,8 @@ def plotter(cfg, args, prop, reg, hists, counts, errors, outfile, **kwargs):
         histtype="step",
         label = new_pol_labels,
         ax = ax,
-        #color = ["magenta", "lime", "red", "black"]
-        color = ["magenta", "lime", "red"]
+        color = ["magenta", "lime", "red", "black"]
+        #color = ["magenta", "lime", "red"]
     )
 
     hatch_style = cfg["plot_styling"]["hatch_style"]
@@ -151,8 +151,8 @@ def plotter(cfg, args, prop, reg, hists, counts, errors, outfile, **kwargs):
 def main(cfg, args):
     regions = cfg["regions"]
     props = cfg["hist_info"].keys()
-    #procs = cfg["datasets"]["MC_Procs"] | {"Data": "Data"} | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT", "ZZ_LO": "ZZ_LO"}
-    procs = cfg["datasets"]["MC_Procs"] | {"Data": "Data"} | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT"}
+    procs = cfg["datasets"]["MC_Procs"] | {"Data": "Data"} | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT", "ZZ_LO": "ZZ_LO"}
+    #procs = cfg["datasets"]["MC_Procs"] | {"Data": "Data"} | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT"}
     #procs = cfg["datasets"]["MC_Procs"] | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT"}
     #procs = cfg["datasets"]["MC_Procs"] | {"Data": "Data"}
     fstates = cfg["fstates"].keys()
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     parser.add_argument("--lumi_tag", default=0.)
     args = vars(parser.parse_args())
 
-    with open("/afs/cern.ch/user/i/iehle/polZZTo4l_New/CMSSW_13_0_16/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
+    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_13_3_3/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
         cfg = yaml.safe_load(config)
 
     main(cfg, args)
