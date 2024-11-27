@@ -4,19 +4,28 @@ import os
 def getEleScaleRes(era, tag, is_mc, overwritePt=True) :
     from PhysicsTools.NATModules.modules.eleScaleRes import eleScaleRes
 
-    if era != 2022:
-        raise ValueError("getEleScaleRes: Era", era, "not supported")
+    # Check for supported eras
+    if era not in [2022, 2023]:
+        raise ValueError(f"getEleScaleRes: Era {era} not supported")
 
-    scaleKey = "Scale" 
-    if is_mc :
-        smearKey = "Smearing"
-    else :
-        smearKey=None
+    if era == 2022:
+        scaleKey = "Scale"
+        smearKey = "Smearing" if is_mc else None
 
-    if "pre_EE" in tag :
-        fname = "electronSS_preEE.json.gz"
-    else:
-        fname = "electronSS_postEE.json.gz"
+        if "pre_EE" in tag :
+            fname = "electronSS_preEE.json.gz"
+        else:
+            fname = "electronSS_postEE.json.gz"
+
+    elif era == 2023:
+        if "preBPix" in tag:
+            scaleKey = "2023PromptC_ScaleJSON"
+            smearKey = "2023PromptC_SmearingJSON" if is_mc else None
+            fname = "electronSS_preBPix.json.gz"
+        else:
+            scaleKey = "2023PromptD_ScaleJSON"
+            smearKey = "2023PromptD_SmearingJSON" if is_mc else None
+            fname = "electronSS_postBPix.json.gz"
  
     json = "%s/src/ZZAnalysis/NanoAnalysis/data/%s" % (os.environ['CMSSW_BASE'], fname)
 
