@@ -41,8 +41,7 @@ def get_samples(cfg, year, era):
         data_sample = {}
 
     if "Pol" in cfg["datasets"]["year_"+str(year)][era]:
-        pol_base     = cfg["datasets"]["local_base"]
-        pol_samples = {cat: os.path.join(pol_base, pol_file) for cat, pol_file in cfg["datasets"]["year_"+str(year)][era]["Pol"].items()}
+        pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in cfg["datasets"]["year_"+str(year)][era]["Pol"].items()}
     else:
         pol_samples = {}
 
