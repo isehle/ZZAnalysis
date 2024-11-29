@@ -7,7 +7,7 @@
 # chmod u+x ${TMPDIR}/checkout.csh
 # ${TMPDIR}/checkout.csh
 
-############## For CMSSW_13_3_3
+############## For CMSSW_13_3_3 (2022 data/MC) or CMSSW_14_1_6 (2023 data/MC)
 
 #exit when any command fails
 set -e
@@ -58,25 +58,28 @@ ln -s ${CMSSW_BASE}/src/JHUGenMELA/MELA/data/*/*.so \
       ${CMSSW_BASE}/src/MelaAnalytics/EventContainer/lib/*.so \
       ${CMSSW_BASE}/lib/${SCRAM_ARCH}
 
-#kinematic refitting (obsolete?)
+#kinematic refitting
 git clone https://github.com/ferrico/KinZfitter.git KinZfitter
 (cd KinZfitter ; git checkout -b from-f781891 f781891)
 sed -i '/SimTracker\/Records/d' KinZfitter/HelperFunction/BuildFile.xml
 sed -i '/SimTracker\/Records/d' KinZfitter/KinZfitter/BuildFile.xml
 sed -i '/#include "RooMinuit.h"/d' KinZfitter/KinZfitter/interface/KinZfitter.h
 
-#Pick the fix from #43536 (haddNano.py); in release since 13_0_18, 14_0_2, 14_1_0; it was not backported to 13_3_X
-git cms-addpkg PhysicsTools/NanoAOD
-git cms-cherry-pick-pr 43536 CMSSW_13_0_X
-
-#Pick more fixes in NanoAODTools (support for "S" branch types); in release since 14_0_0, 14_1_0; queued in 13_3_X (X>3)
+#Fix some memory ownership issues (unreleased)
 git cms-addpkg PhysicsTools/NanoAODTools
-git fetch https://github.com/namapane/cmssw.git NAT-dev:namapane_NAT-dev
-git cherry-pick 3e73ca4c2f8
-#Fix some memory ownership issues
 git fetch https://github.com/namapane/cmssw.git nanoAOD_memfix
 git cherry-pick ed6112b942d
 
+if ($CMSSW_VERSION =~ "CMSSW_13_3*") then
+ #Pick the fix from #43536 (haddNano.py); in release since 13_0_18, 14_0_2, 14_1_0; it was not backported to 13_3_X
+ git cms-addpkg PhysicsTools/NanoAOD
+ git cms-cherry-pick-pr 43536 CMSSW_13_0_X
+   
+ #Pick more fixes in NanoAODTools (support for "S" branch types); in release since 14_0_0, 14_1_0; queued in 13_3_X (X>3)
+ git fetch https://github.com/namapane/cmssw.git NAT-dev:namapane_NAT-dev
+ git cherry-pick 3e73ca4c2f8
+fi
+   
 #get nanoAODTools modules
 git clone https://github.com/cms-cat/nanoAOD-tools-modules.git PhysicsTools/NATModules
 
