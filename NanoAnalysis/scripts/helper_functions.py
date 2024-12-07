@@ -45,6 +45,8 @@ def get_samples(cfg, year, era):
     else:
         pol_samples = {}
 
+    #return pol_samples
+
     return central_mc_samples | data_sample | pol_samples
 
 def get_hist_info(cfg, reg, prop):
@@ -141,6 +143,54 @@ def get_df(path, reg_idx="SR"):
     # dataMCWeight stored as RVec but only ever has one entry
     cand_weight = "{}_dataMCWeight.at(0)*".format(cand)
     df = df.Define("weight", "{}overallEventWeight/genEventSumw".format(cand_weight))
+
+    return df
+
+def reg_df(df, reg):
+    cand = "ZZCand" if reg=="SR" else "ZLLCand"
+    return df.Filter("{}.at(0)==1".format(reg)).Filter("{}_Z1flav.size()==1".format(cand)).Filter("{}_Z2flav.size()==1".format(cand))
+
+def fs_df(df, fs, reg):
+    cand = "ZZCand" if reg=="SR" else "ZLLCand"
+    fs_dict = dict(
+        fs_4e    = (-121, -121),
+        fs_4mu   = (-169, -169),
+        fs_2e2mu = (-121, -169),
+        fs_2mu2e = (-169, -121)
+    )
+    return df.Filter("{}_Z1flav.at(0)=={}".format(cand, fs_dict[fs][0])).Filter("{}_Z2flav.at(0)=={}".format(cand, fs_dict[fs][1]))
+
+def fillLepCols(df, reg, lep_prop):
+    cand = "ZZCand" if reg=="SR" else "ZLLCand"
+    idx = lambda z, l: "{}_Z{}l{}Idx.at(0)".format(cand, z, l)
+
+    lep_col = "Lepton_{}".format(lep_prop)
+
+    def my_define(df, new_col, comm):
+        if new_col not in df.GetDefinedColumnNames():
+            return df.Define(new_col, comm)
+        else:
+            return df.Redefine(new_col, comm) 
+
+    #df = df.Define(lep_col, "ROOT::VecOps::Concatenate(Electron_{},Muon_{})".format(lep_prop, lep_prop))
+
+    df = my_define(df, lep_col, "ROOT::VecOps::Concatenate(Electron_{},Muon_{})".format(lep_prop, lep_prop))
+
+    for Z in [1, 2]:
+        for L in [1, 2]:
+            col = lep_col + "_Z{}l{}".format(Z, L)
+            #df = df.Define(col, "{}.at({})".format(lep_col, idx(Z, L)))
+            df = my_define(df, col, "{}.at({})".format(lep_col, idx(Z, L)))
+
+    def_by_z = lambda z: "ROOT::VecOps::RVec<float> {" + lep_col +"_Z{}l1, ".format(z) + lep_col + "_Z{}l2".format(z) + "}"
+
+    #df = df.Define("{}_Z1".format(lep_col), def_by_z(1))
+    #df = df.Define("{}_Z2".format(lep_col), def_by_z(2))
+
+    df = my_define(df, "{}_Z1".format(lep_col), def_by_z(1))
+    df = my_define(df, "{}_Z2".format(lep_col), def_by_z(2))
+
+    df = df.Redefine(lep_col, "ROOT::VecOps::Concatenate({}_Z1, {}_Z2)".format(lep_col, lep_col))
 
     return df
 

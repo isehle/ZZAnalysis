@@ -17,10 +17,10 @@ datasets:
       MC: MC_2022_EraEFG_FixedSR
       Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/qqZLZL_5f_Summer22EraEFG_hadd_Skim.root
-        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/qqZLZT_5f_Summer22EraEFG_hadd_Skim.root
-        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/qqZTZT_5f_summer22EraEFG_hadd_Skim.root
-        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/qqZZTo4l_5f_summer22EraEFG_hadd_Skim.root
+        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/qqZLZL_5f_Summer22EraEFG_hadd_Skim_v2.root
+        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/qqZLZT_5f_Summer22EraEFG_hadd_Skim_v2.root
+        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/qqZTZT_5f_summer22EraEFG_hadd_Skim_v2.root
+        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/qqZZTo4l_5f_summer22EraEFG_hadd_Skim_v2.root
       Lumi: !!float 26.6717e3
     Full:
       Lumi: !!float 34.6521e3
@@ -77,11 +77,13 @@ systematics:
 
 regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
 
-fstates:
-  fs_4l: !!int -1
-  fs_4e: !!int 14641
-  fs_4mu: !!int 28561
-  fs_2e2mu: !!int 20449
+# fstates:
+#   #fs_4l: !!int -1
+#   fs_4e: !!int 14641
+#   fs_4mu: !!int 28561
+#   fs_2e2mu: !!int 20449
+
+fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
 
 # Needed to extract lepton hists but we don't make hists of these variables
 extra_props: ["Z1flav", "Z2flav"]
@@ -189,31 +191,31 @@ hist_info:
     ylabel: Events
     Blind: !!bool True
 
-  delRapidity:
-    nbinsx: 40
-    xlow: 0
-    xhigh: 4
-    #xlabel: "$\\Delta{y_{ZZ'}}$"
-    xlabel: "$Delta(y_{ZZ'})$"
-    ylabel: Events
-    Blind: !!bool True
-
-  delPhiStar:
-    nbinsx: 32
-    xlow: 0
-    xhigh: 3.2
-    #xlabel: "$\\Delta{\\phi^*_{l^+ l^{+'}}}$"
-    xlabel: "$Delta{phi^*_{l^+ l^{+'}}}$"
-    ylabel: Events
-    Blind: !!bool True
-
-  # Lepton_Z2_sip3d:
-  #   nbinsx: !!int 40
-  #   xlow: !!int 0
-  #   xhigh: !!int 40
-  #   xlabel: "$SIP_{l_{Z2}}$"
+  # delRapidity:
+  #   nbinsx: 40
+  #   xlow: 0
+  #   xhigh: 4
+  #   #xlabel: "$\\Delta{y_{ZZ'}}$"
+  #   xlabel: "$Delta(y_{ZZ'})$"
   #   ylabel: Events
-  #   Blind: !!bool False
+  #   Blind: !!bool True
+
+  # delPhiStar:
+  #   nbinsx: 32
+  #   xlow: 0
+  #   xhigh: 3.2
+  #   #xlabel: "$\\Delta{\\phi^*_{l^+ l^{+'}}}$"
+  #   xlabel: "$Delta{phi^*_{l^+ l^{+'}}}$"
+  #   ylabel: Events
+  #   Blind: !!bool True
+
+  Lepton_sip3d_Z2:
+    nbinsx: !!int 40
+    xlow: !!int 0
+    xhigh: !!int 40
+    xlabel: "$SIP_{l_{Z2}}$"
+    ylabel: Events
+    Blind: !!bool False
 
 plot_styling:
   ratio_fig_style:
