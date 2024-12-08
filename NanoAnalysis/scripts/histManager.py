@@ -12,6 +12,7 @@ from NanoAnalysis.scripts.helper_functions import *
 from NanoAnalysis.scripts.histWriter import HistWriter
 from NanoAnalysis.scripts.histReader import HistReader
 from NanoAnalysis.scripts.histPlotter import HistPlotter
+from NanoAnalysis.scripts.ZpX_estimation import ZpX
 
 class HistManager:
     def __init__(self, cfg, args):
@@ -31,6 +32,8 @@ class HistManager:
         self.histWriter = HistWriter(cfg, args)
         self.histReader = HistReader(cfg, args)
         self.histPlotter = HistPlotter(cfg, args)
+
+        self.zpx = ZpX()
 
     def write_hists(self):
         self.histWriter.write_hists()
@@ -68,6 +71,14 @@ class HistManager:
                             errors[reg][prop][fs]["MC"][category] = np.sqrt(np.sum(np.array(hist_errors)**2, axis=0))
         
         return hists, counts, errors
+
+    def plot_zpx(self):
+        all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
+        all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
+
+        zpx_info = self.zpx.get_zpx(all_hists, all_errors, self.fstates)
+        for step in zpx_info.keys():
+            self.zpx.plot_zpx(zpx_info, step)
 
     def plot_hists(self):
         all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)

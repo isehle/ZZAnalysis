@@ -35,8 +35,8 @@ class HistPlotter:
 
         self.labels = dict(
             MC = dict(
-                ggZZ   = r"$gg\rightarrow ZZ$",
-                ZZ_NLO = r"$(q\bar{q}\rightarrow ZZ)_{NLO}$",
+                ggZZ   = r"$gg \rightarrow ZZ$",
+                ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NLO}$",
                 DY     = r"$DY$",
                 TT     = r"$t\bar{t}$",
                 WZ     = r"$WZ$",
@@ -44,10 +44,10 @@ class HistPlotter:
                 VVV    = r"$VVV$"
         ),
             Pol = dict(
-            ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
-            ZLZT  = r"$q\bar{q} \rightarrow Z_L Z_T$",
-            ZTZT  = r"$q\bar{q} \rightarrow Z_T Z_T$",
-            ZZ_LO = r"$(q\bar{q} \rightarrow ZZ)_{LO}$"                
+                ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
+                ZLZT  = r"$q\bar{q} \rightarrow Z_L Z_T$",
+                ZTZT  = r"$q\bar{q} \rightarrow Z_T Z_T$",
+                ZZ_LO = r"$(q\bar{q} \rightarrow ZZ)_{LO}$"                
         ),
             Data = "Data"
         )
@@ -60,7 +60,7 @@ class HistPlotter:
         else:
             outdir = os.path.join(self.cfg["output"]["plot_dir"], "Full", reg, fstate)
         Path(outdir).mkdir(parents=True, exist_ok=True)
-        self.outfile = os.path.join(outdir, prop+self.args["tag"]+".png")
+        self.outfile = os.path.join(outdir, prop+self.args["tag"]+"_countTest.png")
 
     def set_lumi_tag(self):
         if self.args["lumi_tag"] == 0:
@@ -96,15 +96,22 @@ class HistPlotter:
         return new_list
 
     def addCounts(self, labels, counts, errors=[]):
-        new_labels = []
+
         if len(errors) == 0:
-            new_lab = labels + ": " + str(counts) + r" $\pm$ " + str(round(np.sqrt(counts), 2))
-            new_labels.append(new_lab)
+            err = np.sqrt(counts)
+            new_lab = labels + ": " + str(counts) + r" $\pm$ " + str(round(err, 2))
+            return new_lab
         else:
-            for lab, count, err in zip(labels, counts, errors):
-                new_lab = lab + ": " +str(counts[count]) + r" $\pm$ " + str(round(errors[err].sum(), 2))
+            new_labels = []
+            for proc in labels.keys():
+                init_lab = labels[proc]
+                count    = counts[proc]
+                bin_errs = errors[proc]
+                err      = np.sqrt(np.square(bin_errs).sum())
+                
+                new_lab = init_lab + ": " + str(count) + r" $\pm$ " + str(round(err, 2))
                 new_labels.append(new_lab)
-        return new_labels
+            return new_labels
 
     def writeFigs(self):
         hep.style.use("CMS")
@@ -124,27 +131,23 @@ class HistPlotter:
     def draw_mc_hists(self, hists, labels):
         ordered_hists = [hists[proc] for proc in self.labels["MC"].keys()]
         adjusted_hists = self.adjustBinEdges(ordered_hists)
-        #adjusted_hists = self.adjustBinEdges(list(hists.values()))
         hep.histplot(
             adjusted_hists,
             stack=True,
             histtype='fill',
             label = labels,
-            #label = [labels[proc] for proc in hists.keys()],
             ax = self.ax,
             color = self.fill_colors,
             edgecolor = self.line_colors
-            #color = [self.cfg["plot_styling"]["proc_styling"][proc]["fill_color"] for proc in hists.keys()],
-            #edgecolor = [self.cfg["plot_styling"]["proc_styling"][proc]["line_color"] for proc in hists.keys()],
         )
 
     def draw_pol_hists(self, hists, labels):
-        adjusted_hists = self.adjustBinEdges(list(hists.values()))
+        ordered_hists = [hists[proc] for proc in self.labels["Pol"].keys()]
+        adjusted_hists = self.adjustBinEdges(ordered_hists)
         hep.histplot(
             adjusted_hists,
             histtype="step",
-            #label = labels,
-            label = [labels[proc] for proc in hists.keys()],
+            label = labels,
             ax = self.ax,
             color = self.pol_colors
         )
@@ -169,7 +172,8 @@ class HistPlotter:
 
     def set_stackCountsErrs(self, mc_hists, mc_errors):
         mc_count_arr = np.array([mc_hists[key][0] for key in self.cfg["plot_styling"]["mc_colors"].keys()])
-        self.total_mc_counts = np.sum(mc_count_arr)
+        self.total_mc_counts = np.sum(mc_count_arr, axis=0)
+        self.total_mc_counts[ self.total_mc_counts < 0] = 0
         self.total_mc_errors = np.sqrt(np.sum([err**2 for err in mc_errors.values()], axis=0))
 
     def plotter(self, prop, reg, fs, hists, counts, errors):
@@ -192,18 +196,16 @@ class HistPlotter:
         data_counts = counts["Data"]
 
         # Add counts and errors to legend labels
-        #pol_labels = self.addCounts(self.labels["Pol"], pol_counts, pol_errors)
-        #mc_labels = self.addCounts(self.labels["MC"], mc_counts, mc_errors)
-        #data_label = self.addCounts(self.labels["Data"], data_counts)
+        pol_labels = self.addCounts(self.labels["Pol"], pol_counts, pol_errors)
+        mc_labels = self.addCounts(self.labels["MC"], mc_counts, mc_errors)
+        data_label = self.addCounts(self.labels["Data"], data_counts)
 
         # Bin centers and edges
         self.setBins(mc_hists)
 
         # Draw MC hists
-        # self.draw_mc_hists(mc_hists, mc_labels)
-        # self.draw_pol_hists(pol_hists, pol_labels)
-        self.draw_mc_hists(mc_hists, self.labels["MC"])
-        self.draw_pol_hists(pol_hists, self.labels["Pol"])
+        self.draw_mc_hists(mc_hists, mc_labels)
+        self.draw_pol_hists(pol_hists, pol_labels)
 
         # Draw MC Err
         self.set_stackCountsErrs(mc_hists, mc_errors)
@@ -211,11 +213,10 @@ class HistPlotter:
 
         # Draw Data if unblinded
         if not self.prop_info["Blind"]:
-            #self.draw_data_hist(data_hist, data_label)
-            self.draw_data_hist(data_hist, self.labels["Data"])
+            self.draw_data_hist(data_hist, data_label)
 
         # Adjust plot size to fit legend
-        max_bin_count = max([max(hist[0]) for hist in mc_hists.values()])
+        max_bin_count = max([max(hist[0]) for hist in mc_hists.values()]+[max(data_hist[0])])
         self.ax.set_ylim(0, max_bin_count*2.5) 
 
         self.ax.legend(ncol=2, fontsize="x-small")
