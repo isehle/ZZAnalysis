@@ -74,6 +74,9 @@ class ZpX:
         os_count, os_err = self.nZPP(os_reg, fs, all_hists, all_errors)
         ss_count, ss_err = self.nZPP(ss_reg, fs, all_hists, all_errors)
 
+        if os_count < 0: os_count = 1e-10
+        if ss_count < 0: ss_count = 1e-10
+
         ratio = os_count/ss_count
         ratio_err = ratio*np.sqrt((os_err/os_count)**2 + (ss_err/ss_count)**2)
 
@@ -112,7 +115,7 @@ class ZpX:
         
         return zpx_info
 
-    def plot_zpx(self, zpx_info, step):
+    def plot_zpx(self, zpx_info, step, *args):
         fstates = zpx_info[step].keys()
 
         counts = [zpx_info[step][fs][0] for fs in fstates]
@@ -127,7 +130,11 @@ class ZpX:
 
         ax.set_title(title)
 
-        fig.savefig(step+".png")
+        outfile = step
+        for arg in args:
+            outfile += "_{}".format(arg)
+
+        fig.savefig(outfile+".png")
         
 
 

@@ -2,18 +2,10 @@ datasets:
   eos_base: /eos/user/i/iehle/Analysis/
   year_2022:
     CD:
-      # MC: MC_2022_EraCD_FixedLeps
-      # Data: Data_2022_Updated/EraCD/ZZ4lAnalysis.root
-      # MC: MC_2022_EraCD_NewAngVars
-      # Data: Data_2022_NewAngVars/EraCD/ZZ4lAnalysis.root
       MC: MC_2022_EraCD_FixedSR
       Data: Data_2022_FixedSR/EraCD/ZZ4lAnalysis.root
       Lumi: !!float 7.9804e3 # Lumi info from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
     EFG:
-      # MC: MC_2022_EraEFG_Updated
-      # Data: Data_2022_Updated/EraEFG/ZZ4lAnalysis.root
-      # MC: MC_2022_EraEFG_NewAngVars
-      # Data: Data_2022_NewAngVars/EraEFG/ZZ4lAnalysis.root
       MC: MC_2022_EraEFG_FixedSR
       Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
       Pol:
@@ -83,7 +75,8 @@ regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS
 #   fs_4mu: !!int 28561
 #   fs_2e2mu: !!int 20449
 
-fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
+#fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
+fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu"]
 
 # Needed to extract lepton hists but we don't make hists of these variables
 extra_props: ["Z1flav", "Z2flav"]
@@ -183,13 +176,13 @@ hist_info:
     ylabel: Events
     Blind: !!bool True
 
-  cosThetaStar:
-    nbinsx: 20
-    xlow: -1
-    xhigh: 1
-    xlabel: "$cos(\theta^*)$"
-    ylabel: Events
-    Blind: !!bool True
+  # cosThetaStar:
+  #   nbinsx: 20
+  #   xlow: -1
+  #   xhigh: 1
+  #   xlabel: "$cos(\theta^*)$"
+  #   ylabel: Events
+  #   Blind: !!bool True
 
   # delRapidity:
   #   nbinsx: 40
