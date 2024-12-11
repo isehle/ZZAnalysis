@@ -21,11 +21,6 @@ class HistPlotter:
         self.cfg  = cfg
         self.args = args
 
-        if args["infile"] == "":
-            self.infile = os.path.join(cfg["output"]["base_dir"], "rootFiles", str(args["year"]), args["era"], "hists{}.root".format(args["tag"]))
-        else:
-            self.infile = args["infile"]
-
         self.fill_colors = [cfg["plot_styling"]["mc_colors"][proc]["fill"] for proc in cfg["datasets"]["MC_Procs"].keys()]
         self.line_colors = [cfg["plot_styling"]["mc_colors"][proc]["line"] for proc in cfg["datasets"]["MC_Procs"].keys()]
 
@@ -60,12 +55,14 @@ class HistPlotter:
         self.pol_colors = ["magenta", "lime", "red", "black"]
 
     def set_outfile(self, reg, fstate, prop):
-        if self.args["year"] != -1:
+        if self.args["era"] != -1:
             outdir = os.path.join(self.cfg["output"]["plot_dir"], str(self.args["year"]), self.args["era"], reg, fstate)
+        elif self.args["year"] != -1:
+            outdir = os.path.join(self.cfg["output"]["plot_dir"], str(self.args["year"]), "Full", reg, fstate)
         else:
             outdir = os.path.join(self.cfg["output"]["plot_dir"], "Full", reg, fstate)
         Path(outdir).mkdir(parents=True, exist_ok=True)
-        self.outfile = os.path.join(outdir, prop+self.args["tag"]+"_countTest.png")
+        self.outfile = os.path.join(outdir, prop+self.args["tag"]+".png")
 
     def set_lumi_tag(self):
         if self.args["lumi_tag"] == 0:
@@ -190,6 +187,7 @@ class HistPlotter:
         self.cms_label()
         self.set_outfile(reg, fs, prop)
 
+        print("Outfile: ", self.outfile)
         self.draw_mc   = not self.is_empty(hists, "MC")
         self.draw_pol  = not self.is_empty(hists, "Pol")
         self.draw_data = not self.is_empty(hists, "Data") and not self.prop_info["Blind"]

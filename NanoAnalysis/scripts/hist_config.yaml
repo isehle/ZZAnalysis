@@ -75,8 +75,8 @@ regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS
 #   fs_4mu: !!int 28561
 #   fs_2e2mu: !!int 20449
 
-#fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
-fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu"]
+fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
+#fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu"]
 
 # Needed to extract lepton hists but we don't make hists of these variables
 extra_props: ["Z1flav", "Z2flav"]
