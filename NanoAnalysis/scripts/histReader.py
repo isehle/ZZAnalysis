@@ -18,19 +18,13 @@ class HistReader:
         self.regions = cfg["regions"]
         self.props   = cfg["hist_info"]
         self.procs   = get_samples(cfg, args["year"], args["era"])
+
         self.fstates = dict(
             fs_4l    = (),
             fs_4e    = (-121, -121),
             fs_4mu   = (-169, -169),
             fs_2e2mu = (-121, -169),
             fs_2mu2e = (-169, -121)        
-        )
-
-        self.hist_keys = dict(
-            Regions = self.regions,
-            Props   = self.props,
-            FStates = self.fstates,
-            Procs   = self.procs,
         )
 
     def get_fileDepth(self, hist_keys):
@@ -67,10 +61,11 @@ class HistReader:
             key.append(el.replace("Procs",proc).replace("Regions",reg).replace("Props",prop).replace("FStates",fs))
         return "/".join(key)
             
-    def read_hists_and_counts(self, infile=""):
+    def read_hists_and_counts(self, infile="", procs={}):
         """Reads hists from file and arranges them in
         dictionary(ies) corresponding to
         <Regions>/<Properties>/<Final States>/<Processes>."""
+        if procs != {}: self.procs = procs["MC"] | procs["Pol"] | procs["Data"]
         with up.open(infile) as Hists:
             all_keys     = list(Hists.keys())
             depth        = self.get_fileDepth(all_keys)
