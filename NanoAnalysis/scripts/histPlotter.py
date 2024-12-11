@@ -33,6 +33,11 @@ class HistPlotter:
         self.hatch_style     = cfg["plot_styling"]["hatch_style"]
         self.errorbar_style  = cfg["plot_styling"]["errorbar_style"]
 
+        self.bin_edges   = []
+        self.bin_centers = []
+
+        self.is_empty = lambda a_dict, key: a_dict[key] == {}
+
         self.labels = dict(
             MC = dict(
                 ggZZ   = r"$gg \rightarrow ZZ$",
@@ -82,10 +87,11 @@ class HistPlotter:
         
         self.xlabel = to_raw_string(self.prop_info["xlabel"])
 
-    def setBins(self, mc_hists):
-        key = list(self.cfg["datasets"]["MC_Procs"].keys())[0]
-        self.bin_edges = mc_hists[key][1]
-        self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:])/2
+    def setBins(self, hists):
+        if self.bin_edges == []:
+            key = list(hists.keys())[0]
+            self.bin_edges = hists[key][1]
+            self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:])/2
 
     def adjustBinEdges(self, hist_list):
         new_list = []
@@ -184,46 +190,57 @@ class HistPlotter:
         self.cms_label()
         self.set_outfile(reg, fs, prop)
 
-        mc_hists  = hists["MC"]
-        mc_counts = counts["MC"]
-        mc_errors = errors["MC"]
+        self.draw_mc   = not self.is_empty(hists, "MC")
+        self.draw_pol  = not self.is_empty(hists, "Pol")
+        self.draw_data = not self.is_empty(hists, "Data") and not self.prop_info["Blind"]
 
-        pol_hists  = hists["Pol"]
-        pol_counts = counts["Pol"]
-        pol_errors = errors["Pol"]
+        if self.draw_mc:
+            mc_hists  = hists["MC"]
+            mc_counts = counts["MC"]
+            mc_errors = errors["MC"]
 
-        data_hist   = hists["Data"]
-        data_counts = counts["Data"]
+            mc_labels = self.addCounts(self.labels["MC"], mc_counts, mc_errors)
 
-        # Add counts and errors to legend labels
-        pol_labels = self.addCounts(self.labels["Pol"], pol_counts, pol_errors)
-        mc_labels = self.addCounts(self.labels["MC"], mc_counts, mc_errors)
-        data_label = self.addCounts(self.labels["Data"], data_counts)
+            # Bin centers and edges
+            self.setBins(mc_hists)
 
-        # Bin centers and edges
-        self.setBins(mc_hists)
+            # Draw MC hists
+            self.draw_mc_hists(mc_hists, mc_labels)
 
-        # Draw MC hists
-        self.draw_mc_hists(mc_hists, mc_labels)
-        self.draw_pol_hists(pol_hists, pol_labels)
+            # Draw MC Err
+            self.set_stackCountsErrs(mc_hists, mc_errors)
+            self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
+        
+        if self.draw_pol:
+            pol_hists  = hists["Pol"]
+            pol_counts = counts["Pol"]
+            pol_errors = errors["Pol"]
 
-        # Draw MC Err
-        self.set_stackCountsErrs(mc_hists, mc_errors)
-        self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
+            pol_labels = self.addCounts(self.labels["Pol"], pol_counts, pol_errors)
 
-        # Draw Data if unblinded
-        if not self.prop_info["Blind"]:
+            self.setBins(pol_hists)
+
+            self.draw_pol_hists(pol_hists, pol_labels)
+
+        if self.draw_data:
+            data_hist   = hists["Data"]
+            data_counts = counts["Data"]
+
+            data_label = self.addCounts(self.labels["Data"], data_counts)
+
+            self.setBins(data_hist)
+
             self.draw_data_hist(data_hist, data_label)
 
-        # Adjust plot size to fit legend
-        max_bin_count = max([max(hist[0]) for hist in mc_hists.values()]+[max(data_hist[0])])
-        self.ax.set_ylim(0, max_bin_count*2.5) 
+            # Adjust plot size to fit legend
+            max_bin_count = max([max(hist[0]) for hist in mc_hists.values()]+[max(data_hist[0])])
+            self.ax.set_ylim(0, max_bin_count*2.5) 
 
         self.ax.legend(ncol=2, fontsize="x-small")
 
         # Labels and ratio (xlabel drawn on rax if unblinded)
         self.ax.set_ylabel(self.ylabel)
-        if not self.prop_info["Blind"]:
+        if self.draw_data:
             self.draw_ratio(data_hist)
         else:
             self.ax.set_xlabel(self.xlabel)
@@ -231,6 +248,9 @@ class HistPlotter:
         hep.rescale_to_axessize(self.ax, 10, 10/1.62)
 
         self.fig.savefig(self.outfile)
+
+        self.bin_edges   = []
+        self.bin_centers = []
 
 
 if __name__ == "__main__":
