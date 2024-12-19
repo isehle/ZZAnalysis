@@ -4,15 +4,20 @@ datasets:
     CD:
       MC: MC_2022_EraCD_FixedSR
       Data: Data_2022_FixedSR/EraCD/ZZ4lAnalysis.root
+      Pol:
+        ZLZL: rootFiles/PrivateProduction/2022/EraCD/qqZLZL_goodSeeds_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2022/EraCD/qqZLZT_goodSeeds_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2022/EraCD/qqZTZT_goodSeeds_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2022/EraCD/qqZZ_goodSeeds_hadd_Skim.root
       Lumi: !!float 7.9804e3 # Lumi info from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
     EFG:
       MC: MC_2022_EraEFG_FixedSR
       Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/qqZLZL_5f_Summer22EraEFG_hadd_Skim_v2.root
-        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/qqZLZT_5f_Summer22EraEFG_hadd_Skim_v2.root
-        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/qqZTZT_5f_summer22EraEFG_hadd_Skim_v2.root
-        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/qqZZTo4l_5f_summer22EraEFG_hadd_Skim_v2.root
+        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/qqZLZL_goodSeeds_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/qqZLZT_goodSeeds_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/qqZTZT_goodSeeds_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/qqZZ_goodSeeds_hadd_Skim.root
       Lumi: !!float 26.6717e3
     Full:
       Lumi: !!float 34.6521e3

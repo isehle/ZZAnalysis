@@ -27,6 +27,7 @@ def hadd_files(args):
     for file in files:
         hadd_comm += " {}".format(file)
 
+    breakpoint()
     os.system(hadd_comm)
 
 

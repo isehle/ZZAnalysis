@@ -20,6 +20,9 @@ def to_raw_string(s):
 def get_samples(cfg, year, era):
     central_base = cfg["datasets"]["eos_base"]
 
+    if era == "Full":
+        era = "CD" if year==2022 else "C"
+
     mc_sub_path  = cfg["datasets"]["year_"+str(year)][era]["MC"]
 
     central_mc_procs = cfg["datasets"]["MC_Procs"]
@@ -44,8 +47,6 @@ def get_samples(cfg, year, era):
         pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in cfg["datasets"]["year_"+str(year)][era]["Pol"].items()}
     else:
         pol_samples = {}
-
-    #return pol_samples
 
     return central_mc_samples | data_sample | pol_samples
 
