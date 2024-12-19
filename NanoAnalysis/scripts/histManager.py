@@ -4,6 +4,10 @@ import sys
 parent_dir = os.path.abspath(__file__ + 3 * "/..")
 sys.path.insert(0, parent_dir)
 
+from pathlib import Path
+
+import collections
+
 import ROOT
 import uproot as up
 import numpy as np
@@ -25,24 +29,23 @@ class HistManager:
         self.year = args["year"]
         self.era  = args["era"]
 
-        self.samples = self._get_samples(args["year"], args["era"])
+        #self.samples = self._get_samples(args["year"], args["era"])
 
         self.regions = cfg["regions"]
         self.fstates = cfg["fstates"]
         self.props   = cfg["hist_info"].keys()
         
         self.mc_procs  = cfg["datasets"]["MC_Procs"]
-        self.procs = self.mc_procs | self.samples["Data"]
+        #self.procs = self.mc_procs | self.samples["Data"] | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT", "ZZ_LO": "ZZ_LO"}
+        #self.procs = self.mc_procs | {"Data": "Data"} | {"ZLZL": "ZLZL", "ZLZT": "ZLZT", "ZTZT": "ZTZT", "ZZ_LO": "ZZ_LO"}
+        self.procs = self.mc_procs | {"Data": "Data"}
 
         if args["infile"] == "":
             self.infile = os.path.join(cfg["output"]["base_dir"], "rootFiles", str(args["year"]), args["era"], "hists{}.root".format(args["tag"]))
         else:
             self.infile = args["infile"]
 
-        self.histWriter = HistWriter(cfg, args)
-        self.histReader = HistReader(cfg, args)
-
-        self.zpx = ZpX()
+        self.histReader = HistReader(self.cfg, self.args)
 
     def _get_samples(self, year, era):
         central_base = self.cfg["datasets"]["eos_base"]
@@ -78,7 +81,69 @@ class HistManager:
             Pol = pol_samples
         )
 
+    '''def _get_new(self, info_1, info_2, reg, prop, fs, i, cat):
+        add_hists = lambda hist_1, hist_2: (hist_1[0]+hist_2[0], hist_1[1])
+        add_errs  = lambda err_1, err_2: np.sqrt(err_1**2 + err_2**2)
+
+        if cat == "Data":
+            val_1 = info_1[i][reg][prop][fs][cat]
+            val_2 = info_2[i][reg][prop][fs][cat]
+
+            if i == 0:
+                return add_hists(val_1, val_2)
+            elif i == 1:
+                return val_1 + val_2
+            elif i == 2:
+                return add_errs(val_1, val_2)
+
+        new_vals = {}
+
+        procs   = info_1[i][reg][prop][fs][cat].keys()
+        procs_2 = info_2[i][reg][prop][fs][cat].keys()
+
+        if procs == procs_2:
+            vals_1 = list(info_1[i][reg][prop][fs][cat].values())
+            vals_2 = list(info_2[i][reg][prop][fs][cat].values())
+            
+            if i==0:
+                generator = (add_hists(val_1, val_2) for val_1, val_2 in zip(vals_1, vals_2))
+            elif i==1:
+                generator = (val_1 + val_2 for val_1, val_2 in zip(vals_1, vals_2))
+            elif i==2:
+                generator = (add_errs(val_1, val_2) for val_1, val_2 in zip(vals_1, vals_2))
+
+            for proc, new_val in zip(procs, generator):
+                new_vals[proc] = new_val
+        
+        return new_vals'''
+
+    def _get_new(self, info_1, info_2, reg, prop, fs, cat):
+        add_hists = lambda hist_1, hist_2: (hist_1[0]+hist_2[0], hist_1[1])
+
+        if cat == "Data":
+            val_1 = info_1[reg][prop][fs][cat]
+            val_2 = info_2[reg][prop][fs][cat]
+
+            return add_hists(val_1, val_2)
+
+        new_vals = {}
+
+        procs   = info_1[reg][prop][fs][cat].keys()
+        procs_2 = info_2[reg][prop][fs][cat].keys()
+
+        if procs == procs_2:
+            vals_1 = list(info_1[reg][prop][fs][cat].values())
+            vals_2 = list(info_2[reg][prop][fs][cat].values())
+            
+            generator = (add_hists(val_1, val_2) for val_1, val_2 in zip(vals_1, vals_2))
+
+            for proc, new_val in zip(procs, generator):
+                new_vals[proc] = new_val
+        
+        return new_vals
+
     def write_hists(self):
+        self.histWriter = HistWriter(self.cfg, self.args)
         self.histWriter.write_hists()
 
     def combine_processes(self, hists, counts, errors):
@@ -123,24 +188,75 @@ class HistManager:
             info = self.histReader.read_hists_and_counts(in_file, procs)
         return self.combine_processes(*info)
 
-    def plot_zpx(self):
-        all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
-        all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
+    def plot_zpx(self, infile_1, years, eras, infile_2=""):
+        self.zpx = ZpX()
 
-        zpx_info = self.zpx.get_zpx(all_hists, all_errors, self.fstates)
-        for step in zpx_info.keys():
-            self.zpx.plot_zpx(zpx_info, step, self.year, self.era)
+        hists_1, counts_1, errors_1 = self.histReader.read_hists_and_counts(infile_1)
+        hists_1, counts_1, errors_1 = self.combine_processes(hists_1, counts_1, errors_1)
+        zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, self.fstates)
+        if infile_2 != "":
+            hists_2, counts_2, errors_2 = self.histReader.read_hists_and_counts(infile_2)
+            hists_2, counts_2, errors_2 = self.combine_processes(hists_2, counts_2, errors_2)
+            zpx_info_2 = self.zpx.get_zpx(hists_2, errors_2, self.fstates)
+
+            categories = self.fstates
+            counts = {
+                "2022": [zpx_info_1["N_ZpX_MidMass"][fs][0] for fs in self.fstates],
+                "2023": [zpx_info_2["N_ZpX_MidMass"][fs][0] for fs in self.fstates],
+            }
+            errs = {
+                "2022": [zpx_info_1["N_ZpX_MidMass"][fs][1] for fs in self.fstates],
+                "2023": [zpx_info_2["N_ZpX_MidMass"][fs][1] for fs in self.fstates],
+            }
+
+            x = np.arange(len(self.fstates))
+            group_width = 0.5
+            offset_step = group_width/len(counts)
+
+            fig, ax = plt.subplots(layout='constrained')
+            for i, (key, val) in enumerate(counts.items()):
+                offset = x - (group_width - offset_step)/2 + i*offset_step
+                ax.errorbar(
+                    offset,
+                    counts[key],
+                    yerr=errs[key],
+                    fmt="o",
+                    label=key
+                )
+            
+            ax.legend()
+
+            ax.set_xticks(x)
+            ax.set_xticklabels(self.fstates)
+
+            ax.set_ylabel(r"$N_{Z+X}$", rotation="horizontal")
+            title = "N_ZpX Full 2022, 2023"
+            outfile = "N_ZpX_Full_2022_2023"
+            ax.set_title(title)
+            fig.savefig(outfile+".png")
+        
+        # breakpoint()
+        
+
+        # all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
+        # all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
+
+        # zpx_info = self.zpx.get_zpx(all_hists, all_errors, self.fstates)
+        # for step in zpx_info.keys():
+        #     era = "Full" if combine_eras else self.era
+        #     year = kwargs["year"] if combine_eras else self.year
+        #     self.zpx.plot_zpx(zpx_info, step, year, era)
 
     def plot_hists(self, combine_eras=False, **kwargs):
+        self.histReader = HistReader(self.cfg, self.args)
+        self.histPlotter = HistPlotter(self.cfg, self.args)
+
         if combine_eras:
-            all_hists, all_counts, all_errors = self.combine_eras(kwargs["infile_1"], kwargs["infile_2"])
-            self.args["era"] = -1
-            self.args["lumi_tag"] = 35
+            all_hists, all_counts, all_errors = self.combine_eras(kwargs["infile_1"], kwargs["infile_2"], kwargs["year"], kwargs["eras"])
         else:
             all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
             all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
 
-        self.histPlotter = HistPlotter(cfg, args)
 
         for reg in self.regions:
             for prop in self.props:
@@ -186,44 +302,8 @@ class HistManager:
             
             fig.savefig("NotZpXCountsByFS_{}.png".format(reg))
 
-    def combine_eras(self, infile_1, infile_2):
-        add_hists = lambda hist_1, hist_2: (hist_1[0]+hist_2[0], hist_1[1])
-        add_errs  = lambda err_1, err_2: np.sqrt(err_1**2 + err_2**2)
-
-        def get_new(info_1, info_2, reg, prop, fs, i, cat):
-            if cat == "Data":
-                val_1 = info_1[i][reg][prop][fs][cat]
-                val_2 = info_2[i][reg][prop][fs][cat]
-
-                if i == 0:
-                    return add_hists(val_1, val_2)
-                elif i == 1:
-                    return val_1 + val_2
-                elif i == 2:
-                    return add_errs(val_1, val_2)
-
-            new_vals = {}
-
-            procs   = info_1[i][reg][prop][fs][cat].keys()
-            procs_2 = info_2[i][reg][prop][fs][cat].keys()
-
-            if procs == procs_2:
-                vals_1 = list(info_1[i][reg][prop][fs][cat].values())
-                vals_2 = list(info_2[i][reg][prop][fs][cat].values())
-                
-                if i==0:
-                    generator = (add_hists(val_1, val_2) for val_1, val_2 in zip(vals_1, vals_2))
-                elif i==1:
-                    generator = (val_1 + val_2 for val_1, val_2 in zip(vals_1, vals_2))
-                elif i==2:
-                    generator = (add_errs(val_1, val_2) for val_1, val_2 in zip(vals_1, vals_2))
-
-                for proc, new_val in zip(procs, generator):
-                    new_vals[proc] = new_val
-            
-            return new_vals
-
-        samples_1, samples_2 = self._get_samples(2022, "CD"), self._get_samples(2022, "EFG")
+    '''def combine_eras(self, infile_1, infile_2, years, eras):
+        samples_1, samples_2 = self._get_samples(years[0], eras[0]), self._get_samples(years[1], eras[1])
         info_1, info_2 = self.get_hists(infile_1, samples_1), self.get_hists(infile_2, samples_2)
         
         new_hists = {}
@@ -242,12 +322,25 @@ class HistManager:
                     new_counts[reg][prop][fs] = {}
                     new_errs[reg][prop][fs]   = {}
                     for cat in ["Data", "MC", "Pol"]:
+                        new_hists[reg][prop][fs][cat]  = self._get_new(info_1, info_2, reg, prop, fs, 0, cat)
+                        new_counts[reg][prop][fs][cat] = self._get_new(info_1, info_2, reg, prop, fs, 1, cat)
+                        new_errs[reg][prop][fs][cat]   = self._get_new(info_1, info_2, reg, prop, fs, 2, cat)
 
-                        new_hists[reg][prop][fs][cat]  = get_new(info_1, info_2, reg, prop, fs, 0, cat)
-                        new_counts[reg][prop][fs][cat] = get_new(info_1, info_2, reg, prop, fs, 1, cat)
-                        new_errs[reg][prop][fs][cat]   = get_new(info_1, info_2, reg, prop, fs, 2, cat)
+        return new_hists, new_counts, new_errs'''
 
-        return new_hists, new_counts, new_errs
+    def combine_eras(self, infile_1, infile_2, years, eras):
+
+        if years[0]==years[1]:
+            base_dir, filename = os.path.split(infile_1)
+            outdir = base_dir.replace(eras[0], "Full")
+            Path(outdir).mkdir(parents=True, exist_ok=True)
+            outfile = os.path.join(outdir, filename)
+
+        with up.open(infile_1) as Hists_1, up.open(infile_2) as Hists_2, up.recreate(outfile) as NewHists:
+            for key in tqdm(Hists_1.keys()):
+                if key.count("/")==3 and key in Hists_2.keys():
+                    hist_1, hist_2 = Hists_1[key], Hists_2[key]
+                    NewHists[key.replace(";1", "")] = hist_1.to_pyroot() + hist_2.to_pyroot()
  
 if __name__ == "__main__":
     import yaml
@@ -256,7 +349,7 @@ if __name__ == "__main__":
     parser.add_argument("--reg", choices=("SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"), default="SR")
     parser.add_argument("--prop", default="mass")
     parser.add_argument("--year", choices=(2022, 2023), default=2022, type=int)
-    parser.add_argument("--era", choices=("C", "D", "CD", "EFG", "B"), default="EFG")
+    parser.add_argument("--era", choices=("C", "D", "CD", "EFG", "Full"), default="Full")
     parser.add_argument("--tag", default="")
     parser.add_argument("--infile", default="")
     parser.add_argument("--lumi_tag", default=0, type=int)
@@ -268,12 +361,14 @@ if __name__ == "__main__":
     histManager = HistManager(cfg, args)
 
     base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/CD/hists.root")
-    infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_correctedSS.root")
+    infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_goodSeeds.root")
+    infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists.root")
+    histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2 = infile_2)
 
-    histManager.plot_hists(combine_eras=True, infile_1=infile_1, infile_2=infile_2)
+    # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
+    # histManager.plot_hists()
     
     #histManager.write_hists()
-    #histManager.plot_hists()
-    #histManager.plot_zpx()
+    #histManager.plot_hists(combine_eras=True, infile_1=infile_1, infile_2=infile_2, year=2022, eras=["CD", "EFG"])
+    #histManager.plot_zpx(combine_eras=True, infile_1=infile_1, infile_2=infile_2, year=2023, eras=["C", "D"])
     #histManager.plot_counts()

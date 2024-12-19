@@ -118,23 +118,67 @@ class ZpX:
     def plot_zpx(self, zpx_info, step, *args):
         fstates = zpx_info[step].keys()
 
-        counts = [zpx_info[step][fs][0] for fs in fstates]
-        errs   = [zpx_info[step][fs][1] for fs in fstates]
+        if "N_ZpX" in step:
+            categories = fstates
+            counts = dict(
+                MidMass = [zpx_info["N_ZpX_MidMass"][fs][0] for fs in fstates],
+                LowMass = [zpx_info["N_ZpX_LowMass"][fs][0] for fs in fstates]
+            )
+            errs = dict(
+                MidMass = [zpx_info["N_ZpX_MidMass"][fs][1] for fs in fstates],
+                LowMass = [zpx_info["N_ZpX_LowMass"][fs][1] for fs in fstates]
+            )
 
-        y_label = self.plot_info[step]["y_label"]
-        title   = self.plot_info[step]["title"]
+            x = np.arange(len(fstates))
+            group_width = 0.5
+            offset_step = group_width/len(counts)
 
-        fig, ax = plt.subplots()
-        ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
-        ax.set_ylabel(y_label, rotation="horizontal")
+            fig, ax = plt.subplots(layout='constrained')
+            for i, (key, val) in enumerate(counts.items()):
+                offset = x - (group_width - offset_step)/2 + i*offset_step
+                ax.errorbar(
+                    offset,
+                    counts[key],
+                    yerr=errs[key],
+                    fmt="o",
+                    label=key
+                )
+            
+            ax.legend()
 
-        ax.set_title(title)
+            ax.set_xticks(x)
+            ax.set_xticklabels(fstates)
 
-        outfile = step
-        for arg in args:
-            outfile += "_{}".format(arg)
+            ax.set_ylabel(r"$N_{Z+X}$", rotation="horizontal")
 
-        fig.savefig(outfile+".png")
+            outfile, title = "N_ZpX", "N_ZpX"
+            for arg in args:
+                outfile += "_{}".format(arg)
+                title += " {}".format(arg)
+            
+            ax.set_title(title)
+
+            fig.savefig(outfile+".png")
+        
+        else:
+
+            counts = [zpx_info[step][fs][0] for fs in fstates]
+            errs   = [zpx_info[step][fs][1] for fs in fstates]
+
+            y_label = self.plot_info[step]["y_label"]
+            title   = self.plot_info[step]["title"]
+
+            fig, ax = plt.subplots()
+            ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
+            ax.set_ylabel(y_label, rotation="horizontal")
+
+            ax.set_title(title)
+
+            outfile = step
+            for arg in args:
+                outfile += "_{}".format(arg)
+
+            fig.savefig(outfile+".png")
         
 
 
