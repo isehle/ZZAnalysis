@@ -16,11 +16,11 @@ import csv
 import numpy as np
 
 class StoreOption:
-    # Define which SR candidates should be stored in the ZZCand branches collection.
+    # Enum used to define which candidates should be stored in the ZZCand collection.
     # BestCandOnly = only the best SR candidate in the event is retained. This is normally the default for production jobs.
-    # AllSRCands   = keep all SR candidates passing the full selection cuts (including permutation of leptons)
+    # AllCands   = keep all SR candidates passing the full selection and analysis cuts (including permutations of leptons).
     # AllWithRelaxedMuId = keep any SR candidate that can be made, even if leptons don't pass ID cuts (useful for ID cut optimization studies).
-    # Note: For CRs the best candidate for each of the ZLL CRs that is activated with addSSCR, addOSCR, addSIPCR is stored. 
+    # Note: This does not affect the ZLLCand collection; for each CR that is activated, only the best candidate is stored.
     BestCandOnly, AllCands, AllWithRelaxedMuId = range(0,3)
 
 '''class AngularVars:
@@ -201,8 +201,26 @@ class candProps:
 
 class ZZFiller(Module):
 
-    def __init__(self, runMELA, bestCandByMELA, isMC, year, processCR, data_tag, filter, addZL=False, debug=False):
-        print("***ZZFiller: isMC:", isMC, "year:", year, flush=True)
+    def __init__(self, runMELA, bestCandByMELA, isMC, year, data_tag, processCR=False, addZL=False, filter='Cands', debug=False):
+        """Build candidates:
+        -ZZCand: SR candidates. The index of the best ZZ candidate in each event is stored as bestCandIdx
+        -ZLLCand: CR candidates (SS, 3P1F, 2P2F, SIP CRs, with indices: ZZLLbestSSIdx, ZLLbest3P1FIdx, ZLLbest2P2FIdx, ZLLbestSIPCRIdx)
+        -ZLCand: Z+L CR, for fake rate computation (only the index of the additional lepton is stored)
+        -ZCand: Zs referenced in the above collections (note that when filter='Cands', are applied, only events with at least one candidate in the above collections are retained, so the tree will not contain all events with one Z)
+        Parameters:
+          runMELA: compute MELA KD
+          bestCandByMELA: True = select best candidate by KD; False = with best Z1/highest-pTsum Z2 
+          year: data taking year        
+          processCR: add ZLLCand CR collections
+          data_tag: subperiod or processing, e.g. "pre_EE" (currently unused)
+          addZL: add ZL CR
+          filter: criteria to keep or skip events:
+                  'Cands' = store only events with at least one ZZ, ZLL, or ZL candidate are kept
+                  'Z' = store any event that has at least one good Z candidate (passing the analysis Z selection criteria, and 12<mll<120)
+                  '3L_20_10' = filter on events with 3 good leptons, pt1>20, pt2>10; useful for trigger studies
+                  'NoFilter' = don't skip events
+        """
+        print("***ZZFiller: isMC:", isMC, "year:", year, "data_tag:", data_tag, "bestCandByMELA:", bestCandByMELA, "filter:", filter, "- This module filters events.",  flush=True)
         self.writeHistFile = False
         self.isMC = isMC
         self.year = year
@@ -217,13 +235,15 @@ class ZZFiller(Module):
 
         self.DATA_TAG = data_tag
 
-        self.noFilter, self.filterOnCands, self.filter_3L_20_10 = range(0,3)
-        self.filterType = self.noFilter
-        if filter == 'Cands' :
-            self.filterType = self.filterOnCands
-        elif filter == '3L_20_10' :
-            self.filterType = self.filter_3L_20_10
-        else :
+        # Translate filter string into an enum, for efficiency
+        self.noFilter, self.filterOnCands, self.filterOnZ, self.filter_3L_20_10 = range(0,4)
+        filters = {'NoFilter':self.noFilter,
+                   'Cands':self.filterOnCands,
+                   'Z':self.filterOnZ,
+                   '3L_20_10':self.filter_3L_20_10}
+        try:
+            self.filterType = filters[filter]
+        except :
             raise ValueError("ZZFiller: filter =", filter, "not supported")
         self.DEBUG = debug
         self.ZmassValue = 91.1876
@@ -235,9 +255,11 @@ class ZZFiller(Module):
 
         self.lepsExclusive = lambda z1, z2: z1.l1 != z2.l1 and z1.l1 != z2.l2 and z1.l2 != z2.l1 and z1.l2 != z2.l2
 
-        # Pre-selection of leptons to build Z and LL candidates.
+        # Pre-selection of leptons used to reduce combinatorial when building Z and LL candidates.
         # Normally it is the full ID + iso if only the SR is considered, or the relaxed ID if CRs are also filled,
-        # but can be relaxed further to store loose candidates for ID studies (see below)
+        # but can be relaxed further to also build loose candidates for ID studies (see below).
+        # Note that the actual lepton selection cuts for SR and CR are applied later; this preselection only affects what
+        # leptons are considered in making the combinatorial (ie processing speed)
         if self.addSIPCR or self.addOSCR or self.addSSCR :
             self.leptonPresel = (lambda l : l.ZZRelaxedIdNoSIP) # minimal selection good for all CRs: no SIP, no ID, no iso
         else : # SR only
@@ -245,11 +267,14 @@ class ZZFiller(Module):
 
         self.muonIDs=[]
         self.muonIDVars=[]
-
-        # Use relaxed muon preselection for ID studies: fully relax muon ID. Electron ID is unchanged.
+        
+        # Use relaxed muon preselection for muon ID studies: fully relax muon ID. Electron ID is unchanged.
         if self.candsToStore == StoreOption.AllWithRelaxedMuId :
-            self.leptonPresel = (lambda l : (abs(l.pdgId)==13 and l.pt>5 and abs(l.eta) < 2.4) or (abs(l.pdgId)==11 and l.ZZFullId))
-
+            if self.addSIPCR or self.addOSCR or self.addSSCR :
+                self.leptonPresel = (lambda l : (abs(l.pdgId)==13 and l.pt>5 and abs(l.eta) < 2.4) or (abs(l.pdgId)==11 and l.ZZRelaxedIdNoSIP))
+            else : 
+                self.leptonPresel = (lambda l : (abs(l.pdgId)==13 and l.pt>5 and abs(l.eta) < 2.4) or (abs(l.pdgId)==11 and l.ZZFullSel))
+            
             # Add flags for muon ID studies. Each Flag will be set to true for a candidate if all of its muons pass the specified ID.
             self.muonIDs=[dict(name="ZZFullSel", sel=lambda l : l.ZZFullId and l.passIso), # Standard ZZ selection; this is used for setting default bestCandIdx
                           dict(name="ZZRelaxedIDNoSIP",sel=lambda l : l.pt>5 and abs(l.eta)<2.4 and (l.isGlobal or (l.isTracker and l.nStations>0))),# ZZ relaxed mu ID without dxy, dz, SIP cuts (for optimization). Note: this is looser than nanoAOD presel.
@@ -269,11 +294,13 @@ class ZZFiller(Module):
             # Add variable to store the worst value of a given quantity among the 4 leptons of a candidate, for optimization studies.
             # Worst is intended as lowest value (as for an MVA), unless the variable's name starts with "max".
             self.muonIDVars=[dict(name="maxsip3d", sel=lambda l : l.sip3d if (abs(l.dxy)<0.5 and abs(l.dz) < 1) else 999.), # dxy, dz cuts included with SIP
-                             dict(name="maxpfRelIso03FsrCorr", sel=lambda l : l.pfRelIso03FsrCorr),
-                             dict(name="maxminiPFRelIso_all", sel=lambda l : l.miniPFRelIso_all),
-                             # Can also try: puppiIsoId, multiIsoId
-                             dict(name="mvaMuID", sel=lambda l : l.mvaMuID if (l.looseId and l.sip3d<4. and l.dxy<0.5 and l.dz < 1) else -2.), # additional presel required?
-                             dict(name="mvaLowPt", sel=lambda l : l.mvaLowPt if (l.looseId and l.sip3d<4. and l.dxy<0.5 and l.dz < 1) else -2.), # additional presel required, cf: https://cmssdt.cern.ch/dxr/CMSSW/source/PhysicsTools/PatAlgos/plugins/PATMuonProducer.cc#1027-1046
+                             dict(name="maxpfRelIso03FsrCorr", sel=lambda l : l.pfRelIso03FsrCorr), # FSR-corrected iso, DR=0.3
+                             dict(name="maxpfRelIso03_all", sel=lambda l : l.pfRelIso03_all),
+                             dict(name="maxpfRelIso04_all", sel=lambda l : l.pfRelIso04_all),
+                             dict(name="maxminiPFRelIso_all", sel=lambda l : l.miniPFRelIso_all), # miniIso
+                             dict(name="mvaLowPt", sel=lambda l : l.mvaLowPt if (l.looseId and l.sip3d<4. and l.dxy<0.5 and l.dz < 1) else -2.), # additional presel is required, cf: https://github.com/cms-sw/cmssw/blob/90f498af750cf4271c0a988fef352b0698012a40/PhysicsTools/PatAlgos/plugins/PATMuonProducer.cc#L762-L764
+#                             dict(name="promptMVA", sel=lambda l : l.promptMVA if (l.looseId and l.sip3d<4. and l.dxy<0.5 and l.dz < 1) else -2.), # former mvaTTH. adding H4l preselection for consistencty with mvaLowPt; this is looser than the original recommendation (https://twiki.cern.ch/twiki/bin/viewauth/CMS/LeptonMVA). Variable retrained in v14 (and renamed)
+                             dict(name="mvaMuID", sel=lambda l : l.mvaMuID if (l.looseId and l.sip3d<4. and l.dxy<0.5 and l.dz < 1) else -2.), # muon MVA from 22-001. FIXME: Was retrained in v14; using H4l preselection for consistency, see above
                              ]
 
 
