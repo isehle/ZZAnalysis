@@ -8,7 +8,7 @@ from __future__ import print_function
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.HeppyCore.utils.deltar import deltaR
-
+from ZZAnalysis.NanoAnalysis.tools import branchCollection
 
 class lepFiller(Module):
     def __init__(self, cuts, era):
@@ -53,6 +53,17 @@ class lepFiller(Module):
         self.out.branch("Muon_pfRelIso03FsrCorr", "F", lenVar="nMuon", title="FSR-subtracted pfRelIso03")
         self.out.branch("Muon_passIso", "O", lenVar="nMuon", title="Pass ZZ isolation cut")
 
+        # Copy selected lepton variables into a merged Electron + Muon collection, for convenience
+        self.filler = branchCollection(wrappedOutputTree, lenVar="nLepton", title="Merged Electron + Muon collection")
+        self.filler.branch("Lepton_pt",    "F", getter=(lambda lep:lep.pt), title="pt")
+        self.filler.branch("Lepton_eta",   "F", getter=(lambda lep:lep.eta), title="eta")
+        self.filler.branch("Lepton_phi",   "F", getter=(lambda lep:lep.phi), title="phi")
+        self.filler.branch("Lepton_mass",  "F", getter=(lambda lep:lep.mass), title="mass")
+        self.filler.branch("Lepton_pdgId", "I", getter=(lambda lep:lep.pdgId), title="PDG code assigned by the event reconstruction (not by MC truth)")
+        self.filler.branch("Lepton_ZZFullSel", "I", getter=(lambda lep:lep.ZZFullSel), title="pass H4l full SR selection (FullID + isolation)")
+        self.filler.branch("Lepton_ZZRelaxedId", "I", getter=(lambda lep:lep.ZZRelaxedId), title="pass H4l relaxed ID including SIP (base for SS and OS CRs)")
+        self.filler.branch("Lepton_fsrPhotonIdx", "S", getter=(lambda lep:lep.fsrPhotonIdx), title="Index of the lowest-dR/ET2 among associated FSR photons")
+        
 #    def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
 #        pass
 
@@ -83,11 +94,6 @@ class lepFiller(Module):
         muFullId = list(self.muFullId(m, self.era) for m in muons)
         eleFullIdNoSIP = list(self.eleFullIdNoSIP(e, self.era) for e in electrons)
         muFullIdNoSIP = list(self.muFullIdNoSIP(m, self.era) for m in muons)
-
-        # Skip events that do not contain enough tight leptons (note: for CRs, this should be modified)
-#FIXME: a filter here could speed up things, but must be handled properly
-#        if (len(eleTight)+len(muTight)<4) : return False
-
         
         # Re-match FSR with Loose leptons, as default associati1on may be wrong due to different cuts, masking/stealing.
         # Store new FSR idxs, dRET2, and commpute FSR-corrected isolation
@@ -185,4 +191,7 @@ class lepFiller(Module):
         self.out.fillBranch("Muon_pfRelIso03FsrCorr", mu_isoFsrCorr)
         self.out.fillBranch("Muon_passIso", mu_passIso)
 
+        leps = list(electrons) + list(muons)
+        self.filler.fillBranches(leps)
+        
         return True

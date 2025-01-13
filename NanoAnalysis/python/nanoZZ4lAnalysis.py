@@ -52,9 +52,11 @@ APPLY_K_NNLOQCD_ZZQQB = getConf("APPLY_K_NNLOQCD_ZZQQB", False)
 APPLY_K_NNLOEW_ZZQQB  = getConf("APPLY_K_NNLOEW_ZZQQB", False)
 # Add separate tree with gen info for all events
 ADD_ALLEVENTS = getConf("ADD_ALLEVENTS", False)
-FILTER_EVENTS = getConf("FILTER_EVENTS", 'Cands') # Filter to be applied to filter events to be applied on output. Currently supported:
+FILTER_EVENTS = getConf("FILTER_EVENTS", 'Cands') # Filter to be applied on events. Currently supported:
                                                   # 'Cands' = any event with a SR or CR candidate (default)
+                                                  # 'Z' = any event with a good Z candidate (passing the analysis Z selection criteria)
                                                   # '3L_20_10' = any event with  with 3 good leptons, pt1>20, pt2>10 (useful for trigger studies)
+                                                  # 'NoFilter' = no additional filtering (besides trigger, PV filter)
 
 ### Definition of analysis cuts
 cuts = dict(
@@ -98,17 +100,25 @@ cuts = dict(
     )
 
 ### Preselection to speed up processing.
-if ADD_ALLEVENTS : # Remove preselection and filter events after cloneBranches, which needs to see all events
+if FILTER_EVENTS == 'NoFilter' :
     preselection = None
-    if PROCESS_ZL :
-        postPresel = lambda evt : (evt.nMuon+evt.nElectron>=3)
-    else :
-        postPresel = lambda evt : (evt.nMuon+evt.nElectron>=4)
-else: # Set a preselection for the postprocessor
-    if PROCESS_ZL :
-        preselection = "nMuon+nElectron >= 3 && Sum$(Muon_pt > {muPt}-2.)+Sum$(Electron_pt>{elePt}-2.)>= 3".format(**cuts)
-    else :
-        preselection = "nMuon+nElectron >= 4 && Sum$(Muon_pt > {muPt}-2.)+Sum$(Electron_pt>{elePt}-2.)>= 4".format(**cuts)
+    postPresel =  lambda evt : (True)
+else :
+    if ADD_ALLEVENTS : # No preselection in the postprocessor; filter events in cloneBranches, which needs to see all events
+        preselection = None
+        if FILTER_EVENTS == 'Z' :
+            postPresel = lambda evt : (evt.nMuon>=2 or evt.nElectron>=2)
+        elif PROCESS_ZL or FILTER_EVENTS == '3L_20_10' :
+            postPresel = lambda evt : (evt.nMuon+evt.nElectron>=3)
+        else :
+            postPresel = lambda evt : (evt.nMuon+evt.nElectron>=4)
+    else : # Set a preselection for the postprocessor
+        if FILTER_EVENTS == 'Z' :
+            preselection = "(nMuon>=2 || nElectron>=2) && (Sum$(Muon_pt > {muPt}-2.)>=2 || Sum$(Electron_pt>{elePt}-2.)>=2)".format(**cuts)
+        elif PROCESS_ZL or FILTER_EVENTS == '3L_20_10' :
+            preselection = "nMuon+nElectron >= 3 && Sum$(Muon_pt > {muPt}-2.)+Sum$(Electron_pt>{elePt}-2.)>= 3".format(**cuts)
+        else :
+            preselection = "nMuon+nElectron >= 4 && Sum$(Muon_pt > {muPt}-2.)+Sum$(Electron_pt>{elePt}-2.)>= 4".format(**cuts)
 
 ### Input file specification
 store = getConf("store","") # "/eos/cms/" for files available on eos; "root://cms-xrd-global.cern.ch/" for remote files
@@ -233,6 +243,7 @@ branchsel_out = ['drop *',
                  'keep Flag*',
                  'keep Electron*',
                  'keep Muon*',
+                 'keep Lepton*',
                  'keep Jet*',
                  'keep nCleanedJet*',
                  'keep FsrPhoton*',
