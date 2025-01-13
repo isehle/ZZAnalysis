@@ -122,3 +122,34 @@ def getEff(tot, sel):
     up = TEfficiency.ClopperPearson(tot, sel, 0.683, True)
     dn = TEfficiency.ClopperPearson(tot, sel, 0.683, False)
     return eff, up-eff, eff-dn
+
+# Define a set of branches to be booked and filled for a collection
+class branchCollection():
+    def __init__(self, wrappedOutputTree, lenVar=None, title=None) :
+        """Helper to book and fill a set of branches for a collection. 
+        Arguments: 
+           lenVar = variable wich holds the collection lenght
+           title = documentation string for the collection
+        """
+        self.out = wrappedOutputTree
+        self.branchNames = []
+        self.getters = []
+        self.lenVar = lenVar
+        if title != None : # Needs to be booked explicitly only to set the title
+            self.out.branch(lenVar, "I", title=title)
+
+    def branch(self, name, rootBranchType, getter, title = None, limitedPrecision = False) :
+        """Define a branch to be filled. 
+        Parameters:
+           getter: lambda that will be used to extract the value vor variable 'name'
+           title: documentation string
+        """
+        self.out.branch(name, rootBranchType, lenVar=self.lenVar, title=title, limitedPrecision=limitedPrecision)
+        self.branchNames.append(name)
+        self.getters.append(getter)
+
+    def fillBranches(self, collection) :
+        """Fill all branches with one entry per item in collection"""
+        for i, name in enumerate(self.branchNames) :
+            vals = [(self.getters[i])(item) for item in collection]
+            self.out.fillBranch(name, vals)
