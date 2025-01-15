@@ -440,6 +440,7 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
   
     histManager = HistManager(cfg, args)
+    histManager.write_hists()
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_Z1pt.root") # Both with no Tau pols

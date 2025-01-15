@@ -108,28 +108,28 @@ fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
 lep_reqs: [20, 15, 15, 10]
 
 hist_info:
-  mass:
-    SR:
-      nbinsx: !!int 82
-      xlow: !!int 180
-      xhigh: !!int 1000
-      xlabel: "$m_{4l}$ GeV"
-      ylabel: Events / 10 GeV
-      Blind: !!bool False
-    MidMass:
-      nbinsx: !!int 40
-      xlow: !!int 140
-      xhigh: !!int 180
-      xlabel: "$m_{4l}$ GeV"
-      ylabel: Events
-      Blind: !!bool False
-    LowMass:
-      nbinsx: !!int 35
-      xlow: !!int 105
-      xhigh: !!int 140
-      xlabel: "$m_{4l}$ GeV"
-      ylabel: Events
-      Blind: !!bool False
+  # mass:
+  #   SR:
+  #     nbinsx: !!int 82
+  #     xlow: !!int 180
+  #     xhigh: !!int 1000
+  #     xlabel: "$m_{4l}$ GeV"
+  #     ylabel: Events / 10 GeV
+  #     Blind: !!bool False
+  #   MidMass:
+  #     nbinsx: !!int 40
+  #     xlow: !!int 140
+  #     xhigh: !!int 180
+  #     xlabel: "$m_{4l}$ GeV"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   LowMass:
+  #     nbinsx: !!int 35
+  #     xlow: !!int 105
+  #     xhigh: !!int 140
+  #     xlabel: "$m_{4l}$ GeV"
+  #     ylabel: Events
+  #     Blind: !!bool False
 
   # eta:
   #   nbinsx: !!int 10
@@ -157,52 +157,52 @@ hist_info:
   #     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
   #     #vars: [LHEScaleWeight, LHEPdfWeight, puWeight]
 
-  Z1mass:
-    SR:
-      nbinsx: 21
-      xlow: 81
-      xhigh: 102
-      xlabel: "$m_{ll}$"
-      ylabel: Events
-      Blind: !!bool False
-    MidMass:
-      nbinsx: 80
-      xlow: 40
-      xhigh: 120
-      xlabel: "$m_{ll}$"
-      ylabel: Events
-      Blind: !!bool False
-    LowMass:
-      nbinsx: 80
-      xlow: 40
-      xhigh: 120
-      xlabel: "$m_{ll}$"
-      ylabel: Events
-      Blind: !!bool False
+  # Z1mass:
+  #   SR:
+  #     nbinsx: 21
+  #     xlow: 81
+  #     xhigh: 102
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   MidMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   LowMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
 
 
-  Z2mass:
-    SR:
-      nbinsx: 21
-      xlow: 81
-      xhigh: 102
-      xlabel: "$m_{ll}$"
-      ylabel: Events
-      Blind: !!bool False
-    MidMass:
-      nbinsx: 80
-      xlow: 40
-      xhigh: 120
-      xlabel: "$m_{ll}$"
-      ylabel: Events
-      Blind: !!bool False
-    LowMass:
-      nbinsx: 80
-      xlow: 40
-      xhigh: 120
-      xlabel: "$m_{ll}$"
-      ylabel: Events
-      Blind: !!bool False
+  # Z2mass:
+  #   SR:
+  #     nbinsx: 21
+  #     xlow: 81
+  #     xhigh: 102
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   MidMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
+  #   LowMass:
+  #     nbinsx: 80
+  #     xlow: 40
+  #     xhigh: 120
+  #     xlabel: "$m_{ll}$"
+  #     ylabel: Events
+  #     Blind: !!bool False
 
   cosTheta1:
     nbinsx: 20
@@ -286,7 +286,42 @@ hist_info:
     xhigh: !!int 40
     xlabel: "$SIP_{l_{Z2}}$"
     ylabel: Events
-    Blind: !!bool False
+    Blind: !!bool True
+    systematics:
+      procs: [ZLZL, ZLZT, ZTZT]
+      vars: [LHEScaleWeight, LHEPdfWeight]
+
+  delRapidity:
+    nbinsx: 40
+    xlow: 0
+    xhigh: 4
+    #xlabel: "$\\Delta{y_{ZZ'}}$"
+    xlabel: "$Delta(y_{ZZ'})$"
+    ylabel: Events
+    Blind: !!bool True
+    systematics:
+      procs: [ZLZL, ZLZT, ZTZT]
+      vars: [LHEScaleWeight, LHEPdfWeight]
+
+  delPhiStar:
+    nbinsx: 32
+    xlow: 0
+    xhigh: 3.2
+    #xlabel: "$\\Delta{\\phi^*_{l^+ l^{+'}}}$"
+    xlabel: "$Delta{phi^*_{l^+ l^{+'}}}$"
+    ylabel: Events
+    Blind: !!bool True
+    systematics:
+      procs: [ZLZL, ZLZT, ZTZT]
+      vars: [LHEScaleWeight, LHEPdfWeight]
+
+  # Lepton_sip3d_Z2:
+  #   nbinsx: !!int 40
+  #   xlow: !!int 0
+  #   xhigh: !!int 40
+  #   xlabel: "$SIP_{l_{Z2}}$"
+  #   ylabel: Events
+  #   Blind: !!bool False
 
   # Lepton_pt:
   #   nbinsx: !!int 50

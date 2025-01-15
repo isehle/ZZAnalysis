@@ -32,7 +32,12 @@ SampleToRun = "ZTZTTo4L_2022EE"
 #SampleToRun = "ZLZLTo4L_2023C"
 #SampleToRun = "ZLZTTo4L_2023C"
 #SampleToRun = "ZTZTTo4L_2023C"
-#SampleToRun = "ZZTo4L_2023C_LO"
+SampleToRun = "ZZTo4L_2023C_LO"
+
+#SampleToRun = "ZLZLTo4L_2023D"
+#SampleToRun = "ZLZTTo4L_2023D"
+#SampleToRun = "ZTZTTo4L_2023D"
+#SampleToRun = "ZZTo4L_2023D_LO"
 
 #SampleToRun = "ZLZLTo4L_2023D"
 #SampleToRun = "ZLZTTo4L_2023D"
