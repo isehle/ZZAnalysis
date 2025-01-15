@@ -252,7 +252,7 @@ class HistManager:
         self.histPlotter = HistPlotter(self.cfg, self.args)
 
         if combine_eras:
-            all_hists, all_counts, all_errors = self.combine_eras(kwargs["infile_1"], kwargs["infile_2"], kwargs["year"], kwargs["eras"])
+            all_hists, all_counts, all_errors = self.combine_eras(kwargs["infile_1"], kwargs["infile_2"], kwargs["years"], kwargs["eras"])
         else:
             all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
             all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
@@ -359,11 +359,18 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
   
     histManager = HistManager(cfg, args)
+    histManager.write_hists()
 
-    base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_goodSeeds.root")
-    infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists.root")
-    histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2 = infile_2)
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2023/C/hists_wPols.root")
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/D/hists_wPols.root")
+   
+    # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
+
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_goodSeeds.root")
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists.root")
+    # histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2 = infile_2)
 
     # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
     # histManager.plot_hists()

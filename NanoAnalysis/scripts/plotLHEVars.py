@@ -52,11 +52,12 @@ def plotter(var, pol_hists, outfile, **kwargs):
     fig.savefig(outfile)
 
 if __name__ == "__main__":
-    infile = "qqZZ_2e2mu_LHE_vars.root"
+    infile = "qqZZ_2e2mu_LHE_delPhi_LAB.root"
 
     states = ["ZLZL", "ZLZT", "ZTZL", "ZTZT"]
 
-    variables = ["cosTheta1", "cosTheta3", "cosThetaStar", "delRapidity", "delPhiStar"]
+    #variables = ["cosTheta1", "cosTheta3", "cosThetaStar", "delRapidity", "delPhiStar"]
+    variables = ["delPhiStar"]
 
     with up.open(infile) as MyFile:
         for var in variables:
@@ -66,5 +67,5 @@ if __name__ == "__main__":
 
             mixed_pol = (mixed, zlzt[1])
 
-            outfile = var + "_LHE_Normalized_wMixed_v2.png"
+            outfile = var + "_LHE_Normalized_delPhi_LAB.png"
             plotter(var, [zlzl, zlzt, ztzl, mixed_pol, ztzt], outfile)
