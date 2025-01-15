@@ -83,7 +83,7 @@ def delRapidity(lhe_parts):
 
     return np.abs(z1_rapidity - z2_rapidity)
 
-def delPhiStar(lhe_parts):
+'''def delPhiStar(lhe_parts):
     pos_el_p4 = getLorentzVec(lhe_parts, -11)
     pos_mu_p4 = getLorentzVec(lhe_parts, -13)
 
@@ -126,28 +126,39 @@ def delPhiStar(lhe_parts):
 
     # az_diff = np.abs(pos_el_zCM.Phi() - pos_mu_zCM.Phi())
 
-    # return min(az_diff, 2*np.pi - az_diff)
+    # return min(az_diff, 2*np.pi - az_diff)'''
 
+def delPhiStar(lhe_parts):
+    pos_el_p4 = getLorentzVec(lhe_parts, -11)
+    pos_mu_p4 = getLorentzVec(lhe_parts, -13)
+
+    phi_diff = abs(pos_el_p4.Phi() - pos_mu_p4.Phi())
+    if phi_diff > np.pi:
+        return 2*np.pi - phi_diff
+    else:
+        return phi_diff
+    #return min(phi_diff, 2*np.pi - phi_diff)
 
 def make_vars(filename, state):
 
-    cosTheta1Hist = ROOT.TH1F("cosTheta1_"+state, "cosTheta1_"+state, 20, -1., 1.)
-    cosTheta1Hist.GetXaxis().SetTitle("cos(#theta_1)")
-    cosTheta1Hist.GetYaxis().SetTitle("Events")
+    # cosTheta1Hist = ROOT.TH1F("cosTheta1_"+state, "cosTheta1_"+state, 20, -1., 1.)
+    # cosTheta1Hist.GetXaxis().SetTitle("cos(#theta_1)")
+    # cosTheta1Hist.GetYaxis().SetTitle("Events")
 
-    cosTheta3Hist = ROOT.TH1F("cosTheta3_"+state, "cosTheta3_"+state, 20, -1., 1.)
-    cosTheta3Hist.GetXaxis().SetTitle("cos(#theta_3)")
-    cosTheta3Hist.GetYaxis().SetTitle("Events")
+    # cosTheta3Hist = ROOT.TH1F("cosTheta3_"+state, "cosTheta3_"+state, 20, -1., 1.)
+    # cosTheta3Hist.GetXaxis().SetTitle("cos(#theta_3)")
+    # cosTheta3Hist.GetYaxis().SetTitle("Events")
 
-    cosThetaStarHist = ROOT.TH1F("cosThetaStar_"+state, "cosThetaStar_"+state, 20, -1., 1.)
-    cosThetaStarHist.GetXaxis().SetTitle("cos(#theta^*)")
-    cosThetaStarHist.GetYaxis().SetTitle("Events")
+    # cosThetaStarHist = ROOT.TH1F("cosThetaStar_"+state, "cosThetaStar_"+state, 20, -1., 1.)
+    # cosThetaStarHist.GetXaxis().SetTitle("cos(#theta^*)")
+    # cosThetaStarHist.GetYaxis().SetTitle("Events")
 
-    delRapHist = ROOT.TH1F("delRapidity_"+state, "delRapidity_"+state, 40, 0., 4.0)
-    delRapHist.GetXaxis().SetTitle("Delta(y_(z z')")
-    delRapHist.GetYaxis().SetTitle("Events")
+    # delRapHist = ROOT.TH1F("delRapidity_"+state, "delRapidity_"+state, 40, 0., 4.0)
+    # delRapHist.GetXaxis().SetTitle("Delta(y_(z z')")
+    # delRapHist.GetYaxis().SetTitle("Events")
 
-    delPhiHist = ROOT.TH1F("delPhiStar_"+state, "delPhiStar_"+state, 36, 0., 180.)
+    #delPhiHist = ROOT.TH1F("delPhiStar_"+state, "delPhiStar_"+state, 36, 0., 180.)
+    delPhiHist = ROOT.TH1F("delPhiStar_"+state, "delPhiStar_"+state, 13, 0., 3.2)
     delPhiHist.GetXaxis().SetTitle("Delta(Phi_(e+ mu+)")
     delPhiHist.GetYaxis().SetTitle("Events")
 
@@ -163,35 +174,36 @@ def make_vars(filename, state):
         
         LHEParts = Collection(event, "LHEPart")
 
-        cosTheta1 = cosTheta(LHEParts, 1)
-        cosTheta3 = cosTheta(LHEParts, 2)
-        cosThetaStar = getCosThetaStar(LHEParts)
-        delRap = delRapidity(LHEParts)
+        # cosTheta1 = cosTheta(LHEParts, 1)
+        # cosTheta3 = cosTheta(LHEParts, 2)
+        # cosThetaStar = getCosThetaStar(LHEParts)
+        # delRap = delRapidity(LHEParts)
         delPhi = delPhiStar(LHEParts)
 
-        cosTheta1Hist.Fill(cosTheta1)
-        cosTheta3Hist.Fill(cosTheta3)
-        cosThetaStarHist.Fill(cosThetaStar)
-        delRapHist.Fill(delRap)
+        # cosTheta1Hist.Fill(cosTheta1)
+        # cosTheta3Hist.Fill(cosTheta3)
+        # cosThetaStarHist.Fill(cosThetaStar)
+        # delRapHist.Fill(delRap)
         delPhiHist.Fill(delPhi)
 
     f.Close()
 
     xsec = xsecs[state]
 
-    cosTheta1Hist.Scale(xsec)
-    cosTheta3Hist.Scale(xsec)
-    cosThetaStarHist.Scale(xsec)
-    delRapHist.Scale(xsec)
-    delPhiHist.Scale(xsec)
+    # cosTheta1Hist.Scale(xsec)
+    # cosTheta3Hist.Scale(xsec)
+    # cosThetaStarHist.Scale(xsec)
+    # delRapHist.Scale(xsec)
+    # delPhiHist.Scale(xsec)
 
     # cosTheta1Hist.Scale(1.)
     # cosTheta3Hist.Scale(1.)
     # cosThetaStarHist.Scale(1.)
     # delRapHist.Scale(1.)
-    # delPhiHist.Scale(1.)
+    delPhiHist.Scale(1.)
     
-    return [cosTheta1Hist, cosTheta3Hist, cosThetaStarHist, delRapHist, delPhiHist]     
+    return [delPhiHist]
+    #return [cosTheta1Hist, cosTheta3Hist, cosThetaStarHist, delRapHist, delPhiHist]     
 
 if __name__=="__main__":
 
@@ -201,7 +213,7 @@ if __name__=="__main__":
 
     variables = ["LHEPart_{}".format(var) for var in ["pdgID", "status", "pt", "spin", "eta", "phi", "mass"]]
 
-    outfile = "qqZZ_2e2mu_LHE_vars_byXSec.root"
+    outfile = "qqZZ_2e2mu_LHE_delPhi_LAB.root"
 
     OutFile = ROOT.TFile.Open(outfile, "recreate")
 

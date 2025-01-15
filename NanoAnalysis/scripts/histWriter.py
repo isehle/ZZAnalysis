@@ -6,6 +6,7 @@ sys.path.insert(0, parent_dir)
 
 import ROOT
 import uproot as up
+import numpy as np
 from tqdm import tqdm
 
 from NanoAnalysis.scripts.helper_functions import *
@@ -31,8 +32,6 @@ class HistWriter:
 
         self.cand     = lambda reg: "ZZCand" if reg=="SR" else "ZLLCand"
         self.reg_filt = lambda reg: "{}.at(0) == 1".format(reg)
-        self.z1_flav  = lambda reg, fs: "{}_Z1flav.at(0)=={}".format(self.cand(reg), self.fstates[fs][0])
-        self.z2_flav  = lambda reg, fs: "{}_Z2flav.at(0)=={}".format(self.cand(reg), self.fstates[fs][1])
         self.lep_idx  = lambda reg, z, l: "{}_Z{}l{}Idx.at(0)".format(self.cand(reg), z, l)
 
     def z_flav(self, reg, fs, z):
@@ -44,28 +43,27 @@ class HistWriter:
     def _get_samples(self, year, era):
         central_base = self.cfg["datasets"]["eos_base"]
 
-        mc_sub_path  = self.cfg["datasets"]["year_"+str(year)][era]["MC"]
-
-        central_mc_procs = self.cfg["datasets"]["MC_Procs"]
-        
-        central_mc_path = os.path.join(central_base, mc_sub_path)
+        era_dict = self.cfg["datasets"]["year_"+str(year)][era]
 
         central_mc_samples = {}
-        for cat, procs in central_mc_procs.items():
-            if isinstance(procs, dict):
-                for key, val in procs.items():
-                    central_mc_samples[key] = os.path.join(central_mc_path, val, "ZZ4lAnalysis.root")
-            else:
-                central_mc_samples[cat] = os.path.join(central_mc_path, procs, "ZZ4lAnalysis.root")
+        if "MC" in era_dict:
+            central_mc_path = os.path.join(central_base, era_dict["MC"])
+            central_mc_procs = self.cfg["datasets"]["MC_Procs"]
+            for cat, procs in central_mc_procs.items():
+                if isinstance(procs, dict):
+                    for key, val in procs.items():
+                        central_mc_samples[key] = os.path.join(central_mc_path, val, "ZZ4lAnalysis.root")
+                else:
+                    central_mc_samples[cat] = os.path.join(central_mc_path, procs, "ZZ4lAnalysis.root")
 
-        if "Data" in self.cfg["datasets"]["year_"+str(year)][era]:
-            data_sub_path = self.cfg["datasets"]["year_"+str(year)][era]["Data"]
+        if "Data" in era_dict:
+            data_sub_path = era_dict["Data"]
             data_sample = dict(Data = os.path.join(central_base, data_sub_path))
         else:
             data_sample = {}
 
-        if "Pol" in self.cfg["datasets"]["year_"+str(year)][era]:
-            pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in self.cfg["datasets"]["year_"+str(year)][era]["Pol"].items()}
+        if "Pol" in era_dict:
+            pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in era_dict["Pol"].items()}
         else:
             pol_samples = {}
 
@@ -93,7 +91,6 @@ class HistWriter:
 
     def fs_df(self, df, fs, reg):
         return df.Filter(self.z_flav(reg, fs, 1)).Filter(self.z_flav(reg, fs, 2))
-        #return df.Filter(self.z1_flav(reg, fs)).Filter(self.z2_flav(reg, fs))
 
     def lep_df(self, df, reg, lep_prop):
         prop = lep_prop.split("_")[1]
@@ -132,11 +129,50 @@ class HistWriter:
         else:
             return "{}_{}".format(self.cand(reg), prop)
 
-    def write_hist(self, df, reg, prop, hist_info):
+    def get_vars(self, df, reg, prop, hist_info, var):
+        column = self.get_column_name(reg, prop)
+
+        th1_model = ROOT.RDF.TH1DModel("", "", int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"]))
+
+        up_hist = ROOT.TH1D(prop+"_Up", prop+"_Up", int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"]))
+        dn_hist = ROOT.TH1D(prop+"_Down", prop+"_Down", int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"]))
+
+        if var == "LHEScaleWeight":
+            nominal      = df.Vary("weight", "weight*LHEScaleWeight", [f"qcd_{i}" for i in range(9)]).Histo1D(th1_model, column, "weight")
+            hists_varied = ROOT.RDF.Experimental.VariationsFor(nominal)
+
+            for bin_idx in range(int(hist_info["nbinsx"])):
+                max_bin_count = np.max([hists_varied[f"weight:qcd_{i}"].GetBinContent(bin_idx) for i in range(9)])
+                min_bin_count = np.min([hists_varied[f"weight:qcd_{i}"].GetBinContent(bin_idx) for i in range(9)])
+
+                up_hist.SetBinContent(bin_idx, max_bin_count)
+                dn_hist.SetBinContent(bin_idx, min_bin_count)
+
+                up_hist.Scale(self.lumi)
+                dn_hist.Scale(self.lumi)
+
+        elif var == "LHEPdfWeight":
+
+            nominal      = df.Vary("weight","weight*LHEPdfWeight",[f"pdf_{i}" for i in range(103)]).Histo1D(th1_model, column, "weight")
+            hists_varied = ROOT.RDF.Experimental.VariationsFor(nominal) 
+
+            for bin_idx in range(int(hist_info["nbinsx"])):
+                nom_bin_count = hists_varied["nominal"].GetBinContent(bin_idx) * self.lumi
+                bin_std       = np.std([hists_varied[f"weight:pdf_{i}"].GetBinContent(bin_idx)*self.lumi for i in range(103)])
+
+                up_hist.SetBinContent(bin_idx, nom_bin_count + bin_std)
+                dn_hist.SetBinContent(bin_idx, nom_bin_count - bin_std)
+  
+        else:
+            raise ValueError("{} is not a supported varation. Options are LHEScaleWeight and LHEPdfWeight.".format(var))
+        
+        return up_hist, dn_hist
+
+    def write_hist(self, df, reg, prop, hist_info, weight_col="weight"):
         column = self.get_column_name(reg, prop)
 
         if not self.isData:
-            hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), column, "weight")
+            hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), column, weight_col)
             hist.Scale(self.lumi)
             hist = hist.GetValue()
         else:
@@ -183,6 +219,12 @@ class HistWriter:
 
                         for fs, df_fs in tqdm(fs_dfs.items(), desc = "Final States", position = 3, leave = False):
                             OutFile["{}/{}/{}/{}".format(sample, reg, prop, fs)] = self.write_hist(df_fs, reg, prop, hist_info)
+                            if "systematics" in hist_info and reg=="SR":
+                                if sample in hist_info["systematics"]["procs"]:
+                                    for var in hist_info["systematics"]["vars"]:
+                                        up_hist, dn_hist = self.get_vars(df_fs, reg, prop, hist_info, var)
+                                        OutFile["{}/{}/{}/{}_{}Up".format(sample, reg, prop, fs, var)]   = up_hist
+                                        OutFile["{}/{}/{}/{}_{}Down".format(sample, reg, prop, fs, var)] = dn_hist
         
         return hists
 

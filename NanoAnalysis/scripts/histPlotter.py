@@ -62,7 +62,7 @@ class HistPlotter:
         else:
             outdir = os.path.join(self.cfg["output"]["plot_dir"], "Full", reg, fstate)
         Path(outdir).mkdir(parents=True, exist_ok=True)
-        self.outfile = os.path.join(outdir, prop+self.args["tag"]+"_v2.png")
+        self.outfile = os.path.join(outdir, prop+self.args["tag"]+".png")
 
     def set_lumi_tag(self):
         if self.args["lumi_tag"] == 0:

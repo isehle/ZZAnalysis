@@ -18,7 +18,7 @@ def getEleScaleRes(era, tag, is_mc, overwritePt=True) :
             fname = "electronSS_postEE.json.gz"
 
     elif era == 2023:
-        if "preBPix" in tag:
+        if "pre_BPix" in tag:
             scaleKey = "2023PromptC_ScaleJSON"
             smearKey = "2023PromptC_SmearingJSON" if is_mc else None
             fname = "electronSS_preBPix.json.gz"
