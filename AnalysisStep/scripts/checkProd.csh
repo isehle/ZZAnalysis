@@ -2,6 +2,7 @@
 # Search for missing root files
 # parameter to be specified: mf = move failed jobs
 #                            lf = link failed jobs (then you can run cleanup.csh; resubmit_Condor.csh in AAAFAIL)
+#                            quiet = do not list jobs that are still running
 
 #set echo
 
@@ -90,9 +91,11 @@ foreach chunk ( *Chunk* )
 	    else
 		echo $chunk ": terminated, unknown failure"
 	    endif
-        else
+        else if ( $opt != "quiet" ) then
 	    echo $chunk ": still running (or unknown failure)"
 	endif
+     else if ( $opt != "quiet" ) then
+	echo $chunk ": still pending (or unknown failure)"
      endif
      unset nonomatch
    else

@@ -220,6 +220,7 @@ x509userproxy           = {home}/x509up_u{uid}
 periodic_remove         = JobStatus == 5
 
 {transfer}
+max_materialize = '''+str(batchManager.max_materialize)+'''
 '''   
    if transferOutput == True :
        transfer=''
@@ -331,9 +332,9 @@ class MyBatchManager:
         # Handle optional EOS transfer
         self.eosTransferPath=self.options_.transferPath
         if self.eosTransferPath!="":
-            #Check that the specified path is legal. Only /eos/user is supported for the time being
-            if not self.eosTransferPath.startswith('/eos/user/'):
-                print('Invalid path for -t:', self.eosTransferPath, ': only paths on /eos/user/ are supported')
+            #Check that the specified path is legal. Only eos user areas are supported for the time being
+            if not (self.eosTransferPath.startswith('/eos/user/') or self.eosTransferPath.startswith('/eos/home-')) :
+                print('Invalid path for -t:', self.eosTransferPath, ': only paths on /eos/user/ or /eos/home- are supported')
                 sys.exit(4)
             #Check that the specified path is accessible
             ret = os.system('mkdir -p '+ self.eosTransferPath)
@@ -393,8 +394,10 @@ class MyBatchManager:
            else :
                if inputType == 'miniAOD' :
                    self.jobmem = '4000M'
+                   self.max_materialize = 0
                else :
                    self.jobmem = '3000M'
+                   self.max_materialize = 50
 
        if self.jobflavour == None:
            if batchManager.options_.jobflavour != None:

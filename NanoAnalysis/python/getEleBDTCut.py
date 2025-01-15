@@ -57,7 +57,6 @@ def getEleBDTCut(era, dataTag, nanoVersion, useUncorrPt=False) :
 
     elif era >=2022 :
         if useUncorrPt:
-            print("unc")
             return eleBDTCut_RunIII_ULTraining_uncorr
         else :
             return eleBDTCut_RunIII_ULTraining_def
