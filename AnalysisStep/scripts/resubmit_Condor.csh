@@ -1,5 +1,8 @@
 #!/bin/tcsh -f
 
+# parameter: XX = number of the bigbirdXX schedd; to look at loads in the different schedds run:
+# condor_status -schedd
+
 # Make the grid proxy available in ~, if existing and valid
 set proxy_valid=`voms-proxy-info --timeleft`
 if ($proxy_valid > 10 ) then
