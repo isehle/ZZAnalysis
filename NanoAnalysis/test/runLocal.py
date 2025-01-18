@@ -31,7 +31,7 @@ if not validateCheckout() :
 #SampleToRun = "ZLZLTo4L_2023C"
 #SampleToRun = "ZLZTTo4L_2023C"
 #SampleToRun = "ZTZTTo4L_2023C"
-SampleToRun = "ZZTo4L_2023C_LO"
+#SampleToRun = "ZZTo4L_2023C_LO"
 
 #SampleToRun = "ZLZLTo4L_2023D"
 #SampleToRun = "ZLZTTo4L_2023D"
@@ -40,7 +40,7 @@ SampleToRun = "ZZTo4L_2023C_LO"
 
 #SampleToRun = "ggZLZLTo4L_2022EE" # Privately produced gg-->ZZ (box diagram) MadGraph
 #SampleToRun = "ggZLZTTo4L_2022EE"
-#SampleToRun = "ggZTZTTo4L_2022EE"
+SampleToRun = "ggZTZTTo4L_2022EE"
 
 #SampleToRun = "ggZZ_2022EE"
 
@@ -259,7 +259,7 @@ elif SampleToRun == "ZZTo4L_2022EE_MG":
 
 elif SampleToRun == "ggZLZLTo4L_2022EE":
     setConf("SAMPLENAME", "ggZLZLTo4L")
-    setConf("APPLY_K_NNLOQCD_ZZGG", 2)
+    setConf("APPLY_K_NNLOQCD_ZZGG", 2) # NNLO/NLO
     setConf("XSEC", 0.001274)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
@@ -285,7 +285,7 @@ elif SampleToRun == "ggZLZLTo4L_2022EE":
 
 elif SampleToRun == "ggZTZTTo4L_2022EE":
     setConf("SAMPLENAME", "ZTZTTo4L")
-    setConf("APPLY_K_NNLOQCD_ZZGG", 2)
+    setConf("APPLY_K_NNLOQCD_ZZGG", 2) # NNLO/NLO
     setConf("XSEC", 0.006941)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
@@ -298,7 +298,7 @@ elif SampleToRun == "ggZTZTTo4L_2022EE":
 
 elif SampleToRun == "ggZZ_2022EE":
     setConf("SAMPLENAME", "ggTo4e")
-    setConf("APPLY_K_NNLOQCD_ZZGG", 1)
+    setConf("APPLY_K_NNLOQCD_ZZGG", 1) # NNLO/LO
     setConf("XSEC", 0.00305851)
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
