@@ -24,8 +24,10 @@ datasets:
 
   year_2023:
     C:
-      MC: MC_2023_EraC_Updated
-      Data: Data_2023_Updated/EraC/ZZ4lAnalysis.root
+      # MC: MC_2023_EraC_Updated
+      # Data: Data_2023_Updated/EraC/ZZ4lAnalysis.root
+      MC: MC_2023_EraC_AllVars
+      Data: Data_2023_AllVars/EraC/ZZ4lAnalysis.root
       Pol:
         ZLZL: rootFiles/PrivateProduction/2023/EraC/qqZLZL_goodSeeds_hadd_Skim.root
         ZLZT: rootFiles/PrivateProduction/2023/EraC/qqZLZT_goodSeeds_hadd_Skim.root
@@ -33,8 +35,10 @@ datasets:
         ZZ_LO: rootFiles/PrivateProduction/2023/EraC/qqZZ_goodSeeds_hadd_Skim.root
       Lumi: !!float 17.794e3
     D:
-      MC: MC_2023_EraD_Updated
-      Data: Data_2023_Updated/EraD/ZZ4lAnalysis.root
+      # MC: MC_2023_EraD_Updated
+      # Data: Data_2023_Updated/EraD/ZZ4lAnalysis.root
+      MC: MC_2023_EraD_AllVars
+      Data: Data_2023_AllVars/EraD/ZZ4lAnalysis.root
       Pol:
         ZLZL: rootFiles/PrivateProduction/2023/EraD/qqZLZL_goodSeeds_hadd_Skim.root
         ZLZT: rootFiles/PrivateProduction/2023/EraD/qqZLZT_goodSeeds_hadd_Skim.root
@@ -97,83 +101,83 @@ fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
 extra_props: ["Z1flav", "Z2flav"]
 
 hist_info:
-  # mass:
-  #   SR:
-  #     nbinsx: !!int 82
-  #     xlow: !!int 180
-  #     xhigh: !!int 1000
-  #     xlabel: "$m_{4l}$ GeV"
-  #     ylabel: Events / 10 GeV
-  #     Blind: !!bool False
-  #   MidMass:
-  #     nbinsx: !!int 40
-  #     xlow: !!int 140
-  #     xhigh: !!int 180
-  #     xlabel: "$m_{4l}$ GeV"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   LowMass:
-  #     nbinsx: !!int 35
-  #     xlow: !!int 105
-  #     xhigh: !!int 140
-  #     xlabel: "$m_{4l}$ GeV"
-  #     ylabel: Events
-  #     Blind: !!bool False
+  mass:
+    SR:
+      nbinsx: !!int 82
+      xlow: !!int 180
+      xhigh: !!int 1000
+      xlabel: "$m_{4l}$ GeV"
+      ylabel: Events / 10 GeV
+      Blind: !!bool False
+    MidMass:
+      nbinsx: !!int 40
+      xlow: !!int 140
+      xhigh: !!int 180
+      xlabel: "$m_{4l}$ GeV"
+      ylabel: Events
+      Blind: !!bool False
+    LowMass:
+      nbinsx: !!int 35
+      xlow: !!int 105
+      xhigh: !!int 140
+      xlabel: "$m_{4l}$ GeV"
+      ylabel: Events
+      Blind: !!bool False
 
-  # pt:
-  #   nbinsx: !!int 100
-  #   xlow: !!int 0
-  #   xhigh: !!int 500
-  #   xlabel: "${p_T}^{4l}$ GeV"
-  #   ylabel: Events / 5 GeV
-  #   Blind: !!bool False
+  pt:
+    nbinsx: !!int 100
+    xlow: !!int 0
+    xhigh: !!int 500
+    xlabel: "${p_T}^{4l}$ GeV"
+    ylabel: Events / 5 GeV
+    Blind: !!bool False
 
-  # Z1mass:
-  #   SR:
-  #     nbinsx: 21
-  #     xlow: 81
-  #     xhigh: 102
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   MidMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   LowMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
+  Z1mass:
+    SR:
+      nbinsx: 21
+      xlow: 81
+      xhigh: 102
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
+    MidMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
+    LowMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
 
 
-  # Z2mass:
-  #   SR:
-  #     nbinsx: 21
-  #     xlow: 81
-  #     xhigh: 102
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   MidMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   LowMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
+  Z2mass:
+    SR:
+      nbinsx: 21
+      xlow: 81
+      xhigh: 102
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
+    MidMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
+    LowMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
 
   cosTheta1:
     nbinsx: 20
@@ -224,7 +228,6 @@ hist_info:
     nbinsx: 32
     xlow: 0
     xhigh: 3.2
-    #xlabel: "$\\Delta{\\phi^*_{l^+ l^{+'}}}$"
     xlabel: "$Delta{phi^*_{l^+ l^{+'}}}$"
     ylabel: Events
     Blind: !!bool True
@@ -232,13 +235,13 @@ hist_info:
       procs: [ZLZL, ZLZT, ZTZT]
       vars: [LHEScaleWeight, LHEPdfWeight]
 
-  # Lepton_sip3d_Z2:
-  #   nbinsx: !!int 40
-  #   xlow: !!int 0
-  #   xhigh: !!int 40
-  #   xlabel: "$SIP_{l_{Z2}}$"
-  #   ylabel: Events
-  #   Blind: !!bool False
+  Lepton_sip3d_Z2:
+    nbinsx: !!int 40
+    xlow: !!int 0
+    xhigh: !!int 40
+    xlabel: "$SIP_{l_{Z2}}$"
+    ylabel: Events
+    Blind: !!bool False
 
 plot_styling:
   ratio_fig_style:
