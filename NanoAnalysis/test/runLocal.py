@@ -23,7 +23,7 @@ if not validateCheckout() :
 #SampleToRun = "ZZTo4L_2022CD_LO"
 
 #SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
-#SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
+SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
 #SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
 #SampleToRun = "ZTZTTo4L_2022EE"
@@ -40,7 +40,7 @@ if not validateCheckout() :
 
 #SampleToRun = "ggZLZLTo4L_2022EE" # Privately produced gg-->ZZ (box diagram) MadGraph
 #SampleToRun = "ggZLZTTo4L_2022EE"
-SampleToRun = "ggZTZTTo4L_2022EE"
+#SampleToRun = "ggZTZTTo4L_2022EE"
 
 #SampleToRun = "ggZZ_2022EE"
 
@@ -58,7 +58,7 @@ SampleToRun = "ggZTZTTo4L_2022EE"
 #setConf("APPLY_QCD_GGF_UNCERT", True)
 
 setConf("PROCESS_CR", True)
-setConf("PROCESS_ZL", True)
+setConf("PROCESS_ZL", False)
 setConf("DEBUG", False)
 setConf("SYNCMODE", True) # Force muon resolution correction with fixed +1 sigma smearing
 #setConf("ADD_ALLEVENTS", True) # Add extra tree of gen info for all events
@@ -209,52 +209,63 @@ elif SampleToRun == "ZLZLTo4L_2022EE":
     setConf("SAMPLENAME", "ZLZLTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.003963)
+    #setConf("XSEC", 0.003963)
+    setConf("XSEC", 0.001765) # noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqzlzl-4l-cern/241214_150850/0000/qqZLZL_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqzlzl-4l-cern/241214_150850/0000/qqZLZL_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_noTau_5f_Summer22EraEFG_onlyCERN/crab_qqzlzl-4l-noTau-cern/250120_103551/0000/qqZLZL_noTau_hadd.root"
     ])
+    ### For testing!
+    # setConf("TRIGPASSTHROUGH", True)
+    # setConf("ADD_ALLEVENTS", True)
 
 elif SampleToRun == "ZLZTTo4L_2022EE":
     setConf("SAMPLENAME", "ZLZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.01551)
+    #setConf("XSEC", 0.01551)
+    setConf("XSEC", 0.00716) #noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqzlzt-4l-v3/241215_112122/0000/qqZLZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqzlzt-4l-v3/241215_112122/0000/qqZLZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_noTau_5f_Summer22EraEFG_onlyCERN/crab_qqzlzt-4l-noTau-cern/250122_150413/0000/qqZLZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZTZTTo4L_2022EE":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.045113)
+    #setConf("XSEC", 0.045113)
+    setConf("XSEC", 0.020548) #noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqztzt-4l-v3/241215_112239/0000/qqZTZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqztzt-4l-v3/241215_112239/0000/qqZTZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_noTau_5f_Summer22EraEFG_onlyCERN/crab_qqztzt-4l-noTau-cern/250122_150556/0000/qqZTZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZZTo4L_2022EE_MG":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.06644)
+    #setConf("XSEC", 0.06644)
+    setConf("XSEC", 0.02935) #noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqzz-4l-v3/241215_112331/0000/qqZZ_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer22EraEFG_onlyCERN/crab_qqzz-4l-v3/241215_112331/0000/qqZZ_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_noTau_5f_Summer22EraEFG_onlyCERN/crab_qqzz-4l-noTau-cern/250122_150738/0000/qqZZ_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ggZLZLTo4L_2022EE":

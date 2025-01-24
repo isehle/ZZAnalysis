@@ -17,7 +17,7 @@ from tqdm import tqdm
 def to_raw_string(s):
     return s.encode('unicode_escape').decode('utf-8')
 
-def get_samples(cfg, year, era):
+'''def get_samples(cfg, year, era):
     central_base = cfg["datasets"]["eos_base"]
 
     if era == "Full":
@@ -45,6 +45,35 @@ def get_samples(cfg, year, era):
 
     if "Pol" in cfg["datasets"]["year_"+str(year)][era]:
         pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in cfg["datasets"]["year_"+str(year)][era]["Pol"].items()}
+    else:
+        pol_samples = {}
+
+    return central_mc_samples | data_sample | pol_samples'''
+
+def get_samples(cfg, year, era):
+    central_base = cfg["datasets"]["eos_base"]
+
+    era_dict = cfg["datasets"]["year_"+str(year)][era]
+
+    central_mc_samples = {}
+    if "MC" in era_dict:
+        central_mc_path = os.path.join(central_base, era_dict["MC"])
+        central_mc_procs = cfg["datasets"]["MC_Procs"]
+        for cat, procs in central_mc_procs.items():
+            if isinstance(procs, dict):
+                for key, val in procs.items():
+                    central_mc_samples[key] = os.path.join(central_mc_path, val, "ZZ4lAnalysis.root")
+            else:
+                central_mc_samples[cat] = os.path.join(central_mc_path, procs, "ZZ4lAnalysis.root")
+
+    if "Data" in era_dict:
+        data_sub_path = era_dict["Data"]
+        data_sample = dict(Data = os.path.join(central_base, data_sub_path))
+    else:
+        data_sample = {}
+
+    if "Pol" in era_dict:
+        pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in era_dict["Pol"].items()}
     else:
         pol_samples = {}
 

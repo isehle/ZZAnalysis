@@ -50,6 +50,7 @@ class HistReader:
             elif el in self.props:
                 template.append("Props")
             else:
+                breakpoint()
                 raise Exception("Unrecognized key: ", el)
         return template
 
