@@ -208,6 +208,19 @@ class HistManager:
                 "2022": [zpx_info_1["N_ZpX_MidMass"][fs][1] for fs in self.fstates],
                 "2023": [zpx_info_2["N_ZpX_MidMass"][fs][1] for fs in self.fstates],
             }
+            
+            lumi_2022 = self.cfg["datasets"]["year_2022"]["Full"]["Lumi"]
+            lumi_2023 = self.cfg["datasets"]["year_2023"]["Full"]["Lumi"]
+
+            norm_counts = {
+                "2022": [cnt/(lumi_2022*1e-3) for cnt in counts["2022"]],
+                "2023": [cnt/(lumi_2023*1e-3) for cnt in counts["2023"]]
+            }
+            # Assuming a 1.5% lumi err for full 2022 and 2023
+            norm_errs = {
+                "2022": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts["2022"], errs["2022"], counts["2022"])],
+                "2023": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts["2023"], errs["2023"], counts["2023"])]
+            }
 
             x = np.arange(len(self.fstates))
             group_width = 0.5
@@ -218,8 +231,8 @@ class HistManager:
                 offset = x - (group_width - offset_step)/2 + i*offset_step
                 ax.errorbar(
                     offset,
-                    counts[key],
-                    yerr=errs[key],
+                    norm_counts[key],
+                    yerr=norm_errs[key],
                     fmt="o",
                     label=key
                 )
@@ -229,23 +242,22 @@ class HistManager:
             ax.set_xticks(x)
             ax.set_xticklabels(self.fstates)
 
-            ax.set_ylabel(r"$N_{Z+X}$", rotation="horizontal")
-            title = "N_ZpX Full 2022, 2023"
-            outfile = "N_ZpX_Full_2022_2023"
+            #ax.set_ylabel(r"$N_{Z+X}/{fb^{-1}}$", rotation="horizontal")
+            ax.set_ylabel(r"$N_{Z+X}/{fb^{-1}}$")
+            title = "N_ZpX/fb^-1 Full 2022, 2023"
+            outfile = "N_ZpX_Full_2022_2023_perInvFb"
             ax.set_title(title)
             fig.savefig(outfile+".png")
         
+        else:
         # breakpoint()
-        
-
-        # all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
-        # all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
-
-        # zpx_info = self.zpx.get_zpx(all_hists, all_errors, self.fstates)
-        # for step in zpx_info.keys():
-        #     era = "Full" if combine_eras else self.era
-        #     year = kwargs["year"] if combine_eras else self.year
-        #     self.zpx.plot_zpx(zpx_info, step, year, era)
+            for step in zpx_info_1.keys():
+                if step != "N_ZPP_SS":
+                    continue
+                era, year = eras[0], years[0]
+                # era = "Full" if combine_eras else self.era
+                # year = kwargs["year"] if combine_eras else self.year
+                self.zpx.plot_zpx(zpx_info_1, step, year, era)
 
     def plot_hists(self, combine_eras=False, **kwargs):
         self.histReader = HistReader(self.cfg, self.args)
@@ -341,6 +353,21 @@ class HistManager:
                 if key.count("/")==3 and key in Hists_2.keys():
                     hist_1, hist_2 = Hists_1[key], Hists_2[key]
                     NewHists[key.replace(";1", "")] = hist_1.to_pyroot() + hist_2.to_pyroot()
+
+    def insert_hists(self, infile_1, infile_2, new_file=False):
+        if new_file:
+            tag = self.args["tag"]
+            outfile = infile_1.replace(".root", f"_{tag}.root")
+            with up.open(infile_1) as Hists_1, up.open(infile_2) as Hists_2, up.recreate(outfile) as NewHists:
+                for key in tqdm(Hists_1.keys()):
+                    pass
+        else:
+            with up.update(infile_1) as Hists_1, up.open(infile_2) as Hists_2:
+                for key in tqdm(Hists_2.keys()):
+                    if key.count("/") == 3:
+                        Hists_1[key.replace(";", "")] = Hists_2[key].to_pyroot()
+
+
  
 if __name__ == "__main__":
     import yaml
@@ -359,7 +386,13 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
   
     histManager = HistManager(cfg, args)
-    histManager.write_hists()
+
+    base_dir = "/eos/user/i/iehle/Analysis"
+    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds_v2.root") # Copy of original for testing insert
+    # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_noTau.root")
+    # histManager.insert_hists(infile_1, infile_2)
+
+    histManager.plot_hists()
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2023/C/hists_wPols.root")
@@ -369,8 +402,8 @@ if __name__ == "__main__":
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_goodSeeds.root")
-    # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists.root")
-    # histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2 = infile_2)
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_17Jan.root")
+    # histManager.plot_zpx(infile_2, years=(2023, 2023), eras=("Full", "Full"))
 
     # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
     # histManager.plot_hists()

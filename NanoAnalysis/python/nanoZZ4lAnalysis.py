@@ -310,9 +310,7 @@ if IsMC:
                           'keep HTXS_Higgs*',
                           'keep HTXS_njets30',
                           'keep Pileup*',
-                          'keep GenJet*',
-                          #'keep LHEMela*', 
-                        #  'keep LHEPart*',
+                          'keep LHE*',
                           #'keep Generator*',
                           #'keep PV*',
                         ])

@@ -10,8 +10,9 @@ class ZpX:
 
         self.plot_info = dict(
             N_ZPP_SS        = dict(
-                y_label = r"$N_{ZPP_{SS}}$",
-                title   = "Passing Same Sign High Mass",
+                y_label = r"$N_{ZPP_{SS}}/{fb^{-1}}$",
+                #title   = "Passing Same Sign High Mass",
+                title   = r"$N_{ZPP_{SS}}/{fb^{-1}}$"
             ),
             r_OS_SS_MidMass = dict(
                 y_label = r"$r_{OS/SS}$",
@@ -116,6 +117,8 @@ class ZpX:
         return zpx_info
 
     def plot_zpx(self, zpx_info, step, *args):
+        r_os_ss_y_lim  = (0, 7)
+        n_zpp_ss_y_lim = (-1, 8)
         fstates = zpx_info[step].keys()
 
         if "N_ZpX" in step:
@@ -149,6 +152,8 @@ class ZpX:
             ax.set_xticks(x)
             ax.set_xticklabels(fstates)
 
+            ax.set_ylim()
+
             ax.set_ylabel(r"$N_{Z+X}$", rotation="horizontal")
 
             outfile, title = "N_ZpX", "N_ZpX"
@@ -165,12 +170,27 @@ class ZpX:
             counts = [zpx_info[step][fs][0] for fs in fstates]
             errs   = [zpx_info[step][fs][1] for fs in fstates]
 
+            if step == "N_ZPP_SS":
+                lumi = 34.6521 if int(args[0]) == 2022 else 27.245
+
+                norm_counts = [cnt/lumi for cnt in counts]
+                norm_errs   = [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts, errs, counts)]
+
+                counts, errs = norm_counts, norm_errs
+
             y_label = self.plot_info[step]["y_label"]
             title   = self.plot_info[step]["title"]
 
             fig, ax = plt.subplots()
             ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
-            ax.set_ylabel(y_label, rotation="horizontal")
+            #ax.set_ylabel(y_label, rotation="horizontal")
+            ax.set_ylabel(y_label)
+
+            if "r_OS" in step:
+                ax.set_ylim(*r_os_ss_y_lim)
+            else:
+                #ax.set_ylim(*n_zpp_ss_y_lim)
+                ax.set_ylim(-0.05, 0.3)
 
             ax.set_title(title)
 
@@ -178,7 +198,7 @@ class ZpX:
             for arg in args:
                 outfile += "_{}".format(arg)
 
-            fig.savefig(outfile+".png")
+            fig.savefig(outfile+"_goodYLim_perInvFb.png")
         
 
 
