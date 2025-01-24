@@ -24,7 +24,7 @@ if not validateCheckout() :
 #SampleToRun  = "ZZTo4L_2022CD_NLO"
 
 #SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
-#SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
+SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
 #SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
 SampleToRun = "ZTZTTo4L_2022EE"
