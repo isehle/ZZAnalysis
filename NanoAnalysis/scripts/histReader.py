@@ -17,7 +17,11 @@ class HistReader:
 
         self.regions = cfg["regions"]
         self.props   = cfg["hist_info"]
-        self.procs   = get_samples(cfg, args["year"], args["era"])
+        if args["era"] != "Full":
+            self.procs   = get_samples(cfg, args["year"], args["era"])
+        else:
+            era = "EFG" if args["year"] == 2022 else "C"
+            self.procs = get_samples(cfg, args["year"], era)
 
         self.fstates = dict(
             fs_4l    = (),
@@ -90,7 +94,10 @@ class HistReader:
                         errors[reg][prop][fs] = dict(MC = {}, Pol = {})
                         for proc in self.procs:
                             key = self.get_final_key(order, reg, proc, prop, fs)
-                            hist = Hists[key]
+                            try:
+                                hist = Hists[key]
+                            except up.exceptions.KeyInFileError:
+                                hist = Hists[key+"1"]
 
                             np_hist = hist.to_numpy(flow = True)
                             cnts  = round(np.sum(np_hist[0]), 3)

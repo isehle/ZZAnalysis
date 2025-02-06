@@ -20,10 +20,11 @@ if not validateCheckout() :
 #SampleToRun = "ZLZLTo4L_2022CD"
 #SampleToRun = "ZLZTTo4L_2022CD"
 #SampleToRun = "ZTZTTo4L_2022CD"
-#SampleToRun = "ZZTo4L_2022CD_LO"
+SampleToRun = "ZZTo4L_2022CD_LO"
+#SampleToRun  = "ZZTo4L_2022CD_NLO"
 
 #SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
-SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
+#SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
 #SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
 #SampleToRun = "ZTZTTo4L_2022EE"
@@ -160,56 +161,78 @@ elif SampleToRun == "ZLZLTo4L_2022CD":
     setConf("SAMPLENAME", "ZLZLTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.003963)
+    #setConf("XSEC", 0.003963)
+    setConf("XSEC", 0.001765) # noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("DATA_TAG", "pre_EE")
     setConf("NANOVERSION", 11)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer22EraCD_onlyCERN/crab_qqzlzl-4l-v3/241216_101620/0000/qqZLZL_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer22EraCD_onlyCERN/crab_qqzlzl-4l-v3/241216_101620/0000/qqZLZL_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZLZLTo4l_noTau_Summer22EraCD_onlyCERN/crab_qqzlzl-4l-noTau/250127_111334/0000/qqZLZL_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZLZTTo4L_2022CD":
     setConf("SAMPLENAME", "ZLZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.01551)
+    #setConf("XSEC", 0.01551)
+    setConf("XSEC", 0.00716) #noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("DATA_TAG", "pre_EE")
     setConf("NANOVERSION", 11)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer22EraCD_onlyCERN/crab_qqzlzt-4l-v3/241216_161621/0000/qqZLZT_goodSeeds_hadd.root"
+       # "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer22EraCD_onlyCERN/crab_qqzlzt-4l-v3/241216_161621/0000/qqZLZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZLZTTo4l_noTau_Summer22EraCD_onlyCERN/crab_qqzlzt-4l-noTau/250127_111404/0000/qqZLZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZTZTTo4L_2022CD":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.045113)
+    #setConf("XSEC", 0.045113)
+    setConf("XSEC", 0.020548) #noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("DATA_TAG", "pre_EE")
     setConf("NANOVERSION", 11)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer22EraCD_onlyCERN/crab_qqztzt-4l-v3/241216_162933/0000/qqZTZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer22EraCD_onlyCERN/crab_qqztzt-4l-v3/241216_162933/0000/qqZTZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZTZTTo4l_noTau_Summer22EraCD_onlyCERN/crab_qqztzt-4l-noTau/250127_111431/0000/qqZTZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZZTo4L_2022CD_LO":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("XSEC", 0.06644)
+    #setConf("XSEC", 0.06644)
+    setConf("XSEC", 0.02935) #noTau
     setConf("LEPTON_SETUP", 2022)
     setConf("DATA_TAG", "pre_EE")
     setConf("NANOVERSION", 11)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer22EraCD_onlyCERN/crab_qqzz-4l-v3/241216_163742/0000/qqZZ_goodSeeds_hadd.root"
+        # "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer22EraCD_onlyCERN/crab_qqzz-4l-v3/241216_163742/0000/qqZZ_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZZTo4l_noTau_Summer22EraCD_onlyCERN/crab_qqzz-4l-noTau/250127_111459/0000/qqZZ_noTau_hadd.root"
+    ])
+
+elif SampleToRun == "ZZTo4L_2022CD_NLO":
+    setConf("SAMPLENAME", "ZTZTTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    setConf("XSEC", 1.39)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("DATA_TAG", "pre_EE")
+    setConf("NANOVERSION", 12)
+    setConf("IsMC", True)
+    setConf("store", "root://cms-xrd-global.cern.ch/")
+    setConf("fileNames", [
+        "/store/mc/Run3Summer22NanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/4d781eeb-a411-4c0b-92a8-e3e2aff000d4.root"
     ])
 
 elif SampleToRun == "ZLZLTo4L_2022EE":
@@ -287,20 +310,6 @@ elif SampleToRun == "ggZLZLTo4L_2022EE":
         "/eos/grif/cms/llr/store/user/iehle/ggZLZL_4l_5f.root"
     ])
 
-# elif SampleToRun == "ggZLZTTo4L_2022EE":
-#     setConf("SAMPLENAME", "ZLZTTo4L")
-#     setConf("APPLY_K_NNLOQCD_ZZGG", 2)
-#     #setConf("XSEC", 0.0281)
-#     setConf("XSEC", 0.01551)
-#     setConf("LEPTON_SETUP", 2022)
-#     setConf("NANOVERSION", 12)
-#     setConf("IsMC", True)
-#     setConf("store", "root://eos.grif.fr/")
-#     setConf("fileNames", [
-#         #"/eos/grif/cms/llr/store/user/iehle/MyZLZTTo4l/crab_zlzt-4l-tarBallTest_v1/240430_100126/0000/ZLZT_hadd.root"
-#         "/eos/grif/cms/llr/store/user/iehle/ggZLZT_4l_5f.root"
-#     ])
-
 elif SampleToRun == "ggZTZTTo4L_2022EE":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZGG", 2) # NNLO/NLO
@@ -332,14 +341,16 @@ elif SampleToRun == "ZLZLTo4L_2023C":
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
-    setConf("XSEC", 0.003939)
+    #setConf("XSEC", 0.003963)
+    setConf("XSEC", 0.001753) # noTau # Mean value of LHEWeight_originalXWGTUP
     setConf("LEPTON_SETUP", 2023)
     setConf("NANOVERSION", 12)
     setConf("DATA_TAG", "pre_BPix")
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqzlzl-4l-v5/241220_112409/0000/qqZLZL_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqzlzl-4l-v5/241220_112409/0000/qqZLZL_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZLZLTo4l_noTau_Summer23EraC_onlyCERN_good/crab_qqzlzl_noTau-4l-noTau/250128_104826/0000/qqZLZL_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZLZTTo4L_2023C":
@@ -348,14 +359,16 @@ elif SampleToRun == "ZLZTTo4L_2023C":
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
-    setConf("XSEC", 0.01592) # Mean value of LHEWeight_originalXWGTUP
+    #setConf("XSEC", 0.01592) # Mean value of LHEWeight_originalXWGTUP
+    setConf("XSEC", 0.00711) #noTau ^^ same
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "pre_BPix")
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqzlzt-4l-v2/241220_112440/0000/qqZLZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqzlzt-4l-v2/241220_112440/0000/qqZLZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZLZTTo4l_noTau_Summer23EraC_onlyCERN_good/crab_qqzlzt_noTau-4l-noTau/250128_105028/0000/qqZLZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZTZTTo4L_2023C":
@@ -365,14 +378,15 @@ elif SampleToRun == "ZTZTTo4L_2023C":
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.045113)
-    setConf("XSEC", 0.04569)
+    setConf("XSEC", 0.02032) #noTau mean val...
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "pre_BPix")
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqztzt-4l-v2/241220_112509/0000/qqZTZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqztzt-4l-v2/241220_112509/0000/qqZTZT_goodSeeds_hadd.root"
+        "/eos/grif/cms/llr//store/user/iehle/qqZTZTTo4l_noTau_Summer23EraC_onlyCERN_good/crab_qqztzt_noTau-4l-noTau/250128_105054/0000/qqZTZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZZTo4L_2023C_LO":
@@ -381,15 +395,15 @@ elif SampleToRun == "ZZTo4L_2023C_LO":
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
-    setConf("XSEC", 0.0664)
-    #setConf("XSEC", 0.06761)
+    setConf("XSEC", 0.02952) #noTau mean val...
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "pre_BPix")
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqzz-4l-v3/241220_112540/0000/qqZZ_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer23EraC_onlyCERN_good/crab_qqzz-4l-v3/241220_112540/0000/qqZZ_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr//store/user/iehle/qqZZTo4l_noTau_Summer23EraC_onlyCERN_good/crab_qqzz_noTau-4l-noTau/250128_105122/0000/qqZZ_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZLZLTo4L_2023D":
@@ -398,14 +412,16 @@ elif SampleToRun == "ZLZLTo4L_2023D":
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
-    setConf("XSEC", 0.003939)
+    #setConf("XSEC", 0.003963)
+    setConf("XSEC", 0.001753) # noTau mean val..
     setConf("LEPTON_SETUP", 2023)
     setConf("NANOVERSION", 12)
     setConf("DATA_TAG", "post_BPix")
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer23EraD_goodSeeds/crab_qqzlzl-4l-v3/241220_103638/0000/qqZLZL_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_5f_Summer23EraD_goodSeeds/crab_qqzlzl-4l-v3/241220_103638/0000/qqZLZL_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZLTo4l_noTau_Summer23EraD_goodSeeds/crab_qqzlzl-4l-noTau/250128_112045/0000/qqZLZL_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZLZTTo4L_2023D":
@@ -414,14 +430,16 @@ elif SampleToRun == "ZLZTTo4L_2023D":
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
-    setConf("XSEC", 0.01592) # Mean value of LHEWeight_originalXWGTUP
+    #setConf("XSEC", 0.01592) # Mean value of LHEWeight_originalXWGTUP
+    setConf("XSEC", 0.00711) #noTau
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "post_BPix")
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer23EraD_goodSeeds/crab_qqzlzt-4l-v3/241220_103717/0000/qqZLZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_5f_Summer23EraD_goodSeeds/crab_qqzlzt-4l-v3/241220_103717/0000/qqZLZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZLZTTo4l_noTau_Summer23EraD_goodSeeds/crab_qqzlzt-4l-noTau/250128_112114/0000/qqZLZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZTZTTo4L_2023D":
@@ -431,14 +449,15 @@ elif SampleToRun == "ZTZTTo4L_2023D":
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.045113)
-    setConf("XSEC", 0.04569)
+    setConf("XSEC", 0.02032) #noTau
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "post_BPix")
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer23EraD_goodSeeds/crab_qqztzt-4l-v3/241220_103744/0000/qqZTZT_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_5f_Summer23EraD_goodSeeds/crab_qqztzt-4l-v3/241220_103744/0000/qqZTZT_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZTZTTo4l_noTau_Summer23EraD_goodSeeds/crab_qqztzt-4l-noTau/250128_112141/0000/qqZTZT_noTau_hadd.root"
     ])
 
 elif SampleToRun == "ZZTo4L_2023D_LO":
@@ -447,15 +466,16 @@ elif SampleToRun == "ZZTo4L_2023D_LO":
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
     setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
     setConf("APPLYJETCORR", False)
-    setConf("XSEC", 0.0664)
-    #setConf("XSEC", 0.06761)
+    #setConf("XSEC", 0.0664)
+    setConf("XSEC", 0.02952) #noTau
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "post_BPix")
     setConf("NANOVERSION", 12)
     setConf("IsMC", True)
     setConf("store", "root://eos.grif.fr/")
     setConf("fileNames", [
-        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer23EraD_goodSeeds/crab_qqzz-4l-v3/241220_103811/0000/qqZZ_goodSeeds_hadd.root"
+        #"/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_5f_Summer23EraD_goodSeeds/crab_qqzz-4l-v3/241220_103811/0000/qqZZ_goodSeeds_hadd.root",
+        "/eos/grif/cms/llr/store/user/iehle/qqZZTo4l_noTau_Summer23EraD_goodSeeds/crab_qqzz-4l-noTau/250128_112207/0000/qqZZ_noTau_hadd.root"
     ])
 
 #####################################################################

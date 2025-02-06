@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Note: originally done considering ZpX = DY+TT,
+# should really include also WZto3LNu
 class ZpX:
     def __init__(self, zpx_procs = ["DY","TT"], max_sip = 4):
         self.zpx_procs = zpx_procs
@@ -10,9 +12,10 @@ class ZpX:
 
         self.plot_info = dict(
             N_ZPP_SS        = dict(
-                y_label = r"$N_{ZPP_{SS}}/{fb^{-1}}$",
-                #title   = "Passing Same Sign High Mass",
-                title   = r"$N_{ZPP_{SS}}/{fb^{-1}}$"
+                # y_label = r"$N_{ZPP_{SS}}/{fb^{-1}}$",
+                # title   = r"$N_{ZPP_{SS}}/{fb^{-1}}$"
+                y_label = r"$N_{ZPP_{SS}}$",
+                title   = r"$N_{ZPP_{SS}}$"
             ),
             r_OS_SS_MidMass = dict(
                 y_label = r"$r_{OS/SS}$",
@@ -118,7 +121,7 @@ class ZpX:
 
     def plot_zpx(self, zpx_info, step, *args):
         r_os_ss_y_lim  = (0, 7)
-        n_zpp_ss_y_lim = (-1, 8)
+        n_zpp_ss_y_lim = (-3, 3)
         fstates = zpx_info[step].keys()
 
         if "N_ZpX" in step:
@@ -163,10 +166,9 @@ class ZpX:
             
             ax.set_title(title)
 
-            fig.savefig(outfile+".png")
+            fig.savefig(outfile+"_newLepPtReqs_v3.png")
         
         else:
-
             counts = [zpx_info[step][fs][0] for fs in fstates]
             errs   = [zpx_info[step][fs][1] for fs in fstates]
 
@@ -183,14 +185,13 @@ class ZpX:
 
             fig, ax = plt.subplots()
             ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
-            #ax.set_ylabel(y_label, rotation="horizontal")
             ax.set_ylabel(y_label)
 
             if "r_OS" in step:
                 ax.set_ylim(*r_os_ss_y_lim)
             else:
-                #ax.set_ylim(*n_zpp_ss_y_lim)
-                ax.set_ylim(-0.05, 0.3)
+                ax.set_ylim(*n_zpp_ss_y_lim)
+                #ax.set_ylim(-0.1, 0.1)
 
             ax.set_title(title)
 
@@ -198,7 +199,7 @@ class ZpX:
             for arg in args:
                 outfile += "_{}".format(arg)
 
-            fig.savefig(outfile+"_goodYLim_perInvFb.png")
+            fig.savefig(outfile+"_newLepPtReqs_v3.png")
         
 
 

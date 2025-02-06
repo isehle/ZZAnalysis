@@ -96,7 +96,8 @@ class HistWriter:
         prop = lep_prop.split("_")[1]
 
         lep_col = "Lepton_{}".format(prop)
-        df = df.Define(lep_col, "ROOT::VecOps::Concatenate(Electron_{},Muon_{})".format(prop, prop))
+        if not lep_col in df.GetColumnNames():
+            df = df.Define(lep_col, "ROOT::VecOps::Concatenate(Electron_{},Muon_{})".format(prop, prop))
 
         for Z in [1, 2]:
             for L in [1, 2]:
@@ -109,6 +110,9 @@ class HistWriter:
         df = df.Define("{}_Z2".format(lep_col), def_by_z(2))
 
         df = df.Redefine(lep_col, "ROOT::VecOps::Concatenate({}_Z1, {}_Z2)".format(lep_col, lep_col))
+
+        # Useful for debugging
+        # df = df.Define(f"{lep_col}_sorted",f"ROOT::VecOps::Reverse(ROOT::VecOps::Sort({lep_col}))")
 
         return df
 
@@ -148,9 +152,9 @@ class HistWriter:
                 up_hist.SetBinContent(bin_idx, max_bin_count)
                 dn_hist.SetBinContent(bin_idx, min_bin_count)
 
-                up_hist.Scale(self.lumi)
-                dn_hist.Scale(self.lumi)
-
+            up_hist.Scale(self.lumi)
+            dn_hist.Scale(self.lumi)
+            
         elif var == "LHEPdfWeight":
 
             nominal      = df.Vary("weight","weight*LHEPdfWeight",[f"pdf_{i}" for i in range(103)]).Histo1D(th1_model, column, "weight")
@@ -185,6 +189,8 @@ class HistWriter:
         with up.recreate(self.outfile) as OutFile:
             hists = {}
             for sample, sample_path in tqdm(self.samples.items(), desc = "Processes", position = 0):
+                # print("\n===================\n")
+                # print(sample)
                 if "Data" in sample_path: self.isData = True
                 else: self.isData = False
 
@@ -204,6 +210,14 @@ class HistWriter:
                         # Define lepton columns
                         if "Lepton" in prop:
                             df_4l = self.lep_df(df_reg, reg, prop)
+                            # df_pass_new_lepPtReqs = df_4l.Filter("(Lepton_pt_sorted.at(1) > 15) && (Lepton_pt_sorted.at(2) > 15) && (Lepton_pt_sorted.at(3) > 15)")
+                            # OutFile["{}/{}/{}/fs_4l".format(sample, reg, prop)] = self.write_hist(df_pass_new_lepPtReqs, reg, prop, hist_info)
+                            # try:
+                            #     percent = df_pass_new_lepPtReqs.Count().GetValue()/df_4l.Count().GetValue()
+                            #     print(f"pPassing: {percent}\n")
+                            # except ZeroDivisionError:
+                            #     print("NNo Events\n")
+                            #     continue
                         else:
                             df_4l = df_reg
 

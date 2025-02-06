@@ -242,32 +242,25 @@ class HistManager:
             ax.set_xticks(x)
             ax.set_xticklabels(self.fstates)
 
-            #ax.set_ylabel(r"$N_{Z+X}/{fb^{-1}}$", rotation="horizontal")
             ax.set_ylabel(r"$N_{Z+X}/{fb^{-1}}$")
             title = "N_ZpX/fb^-1 Full 2022, 2023"
-            outfile = "N_ZpX_Full_2022_2023_perInvFb"
+            outfile = "N_ZpX_Full_2022_2023_perInvFb_newLepPtReqs_v3"
             ax.set_title(title)
             fig.savefig(outfile+".png")
         
         else:
-        # breakpoint()
             for step in zpx_info_1.keys():
-                if step != "N_ZPP_SS":
-                    continue
+                if step != "N_ZPP_SS": continue
                 era, year = eras[0], years[0]
-                # era = "Full" if combine_eras else self.era
-                # year = kwargs["year"] if combine_eras else self.year
                 self.zpx.plot_zpx(zpx_info_1, step, year, era)
 
-    def plot_hists(self, combine_eras=False, **kwargs):
+    def plot_hists(self):
         self.histReader = HistReader(self.cfg, self.args)
         self.histPlotter = HistPlotter(self.cfg, self.args)
 
-        if combine_eras:
-            all_hists, all_counts, all_errors = self.combine_eras(kwargs["infile_1"], kwargs["infile_2"], kwargs["years"], kwargs["eras"])
-        else:
-            all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
-            all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
+
+        all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
+        all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
 
 
         for reg in self.regions:
@@ -313,32 +306,6 @@ class HistManager:
             ax.legend()
             
             fig.savefig("NotZpXCountsByFS_{}.png".format(reg))
-
-    '''def combine_eras(self, infile_1, infile_2, years, eras):
-        samples_1, samples_2 = self._get_samples(years[0], eras[0]), self._get_samples(years[1], eras[1])
-        info_1, info_2 = self.get_hists(infile_1, samples_1), self.get_hists(infile_2, samples_2)
-        
-        new_hists = {}
-        new_counts = {}
-        new_errs = {}
-        for reg in self.regions:
-            new_hists[reg] = {}
-            new_counts[reg] = {}
-            new_errs[reg] = {}
-            for prop in self.props:
-                new_hists[reg][prop] = {}
-                new_counts[reg][prop] = {}
-                new_errs[reg][prop] = {}
-                for fs in self.fstates:
-                    new_hists[reg][prop][fs]  = {}
-                    new_counts[reg][prop][fs] = {}
-                    new_errs[reg][prop][fs]   = {}
-                    for cat in ["Data", "MC", "Pol"]:
-                        new_hists[reg][prop][fs][cat]  = self._get_new(info_1, info_2, reg, prop, fs, 0, cat)
-                        new_counts[reg][prop][fs][cat] = self._get_new(info_1, info_2, reg, prop, fs, 1, cat)
-                        new_errs[reg][prop][fs][cat]   = self._get_new(info_1, info_2, reg, prop, fs, 2, cat)
-
-        return new_hists, new_counts, new_errs'''
 
     def combine_eras(self, infile_1, infile_2, years, eras):
 
@@ -388,17 +355,27 @@ if __name__ == "__main__":
     histManager = HistManager(cfg, args)
 
     base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds_v2.root") # Copy of original for testing insert
-    # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_noTau.root")
-    # histManager.insert_hists(infile_1, infile_2)
-
-    histManager.plot_hists()
+    infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_newLepPtReqs_v3.root") # Both with no Tau pols
+    infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_newLepPtReqs_v3.root") # Both with no Tau pols
+    histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2=infile_2)
+    #histManager.plot_zpx(infile_1, years=(2022, 2022), eras=("Full", "Full"))
+    #histManager.plot_zpx(infile_2, years=(2023, 2023), eras=("Full", "Full"))
 
     # base_dir = "/eos/user/i/iehle/Analysis"
-    # infile_1 = os.path.join(base_dir, "rootFiles/2023/C/hists_wPols.root")
-    # infile_2 = os.path.join(base_dir, "rootFiles/2023/D/hists_wPols.root")
-   
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/CD/hists_newLepPtReqs_v3.root") # Both with no Tau pols
+    # infile_2 = os.path.join(base_dir, "rootFiles/2022/CD/hists_ZZLO_newLepPtReqs_v3.root") # Both with no Tau pols
+    #histManager.insert_hists(infile_1, infile_2)
+    
+    #histManager.write_hists()
+
+    #histManager.plot_hists()
+
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2023/C/hists_newLepPtReqs_v3.root")
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/D/hists_newLepPtReqs_v3.root")
     # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
+   
+    # histManager.combine_eras(infile_1, infile_2, years=[2022, 2022], eras=["CD", "EFG"])
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_goodSeeds.root")

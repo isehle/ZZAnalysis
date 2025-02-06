@@ -2,22 +2,31 @@ datasets:
   eos_base: /eos/user/i/iehle/Analysis/
   year_2022:
     CD:
-      MC: MC_2022_EraCD_FixedSR
-      Data: Data_2022_FixedSR/EraCD/ZZ4lAnalysis.root
+      # MC: MC_2022_EraCD_FixedSR
+      # Data: Data_2022_FixedSR/EraCD/ZZ4lAnalysis.root
+      MC: MC_2022_EraCD_newLepPtReqs_v3
+      Data: Data_2022_newLepPtReqs_v3/EraCD/ZZ4lAnalysis.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2022/EraCD/qqZLZL_goodSeeds_hadd_Skim.root
-        ZLZT: rootFiles/PrivateProduction/2022/EraCD/qqZLZT_goodSeeds_hadd_Skim.root
-        ZTZT: rootFiles/PrivateProduction/2022/EraCD/qqZTZT_goodSeeds_hadd_Skim.root
-        ZZ_LO: rootFiles/PrivateProduction/2022/EraCD/qqZZ_goodSeeds_hadd_Skim.root
+        ZLZL: rootFiles/PrivateProduction/2022/EraCD/noTau/newLepPtReqs/v3/qqZLZL_noTau_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2022/EraCD/noTau/newLepPtReqs/v3/qqZLZT_noTau_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2022/EraCD/noTau/newLepPtReqs/v3/qqZTZT_noTau_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2022/EraCD/noTau/newLepPtReqs/v3/qqZZ_noTau_hadd_Skim.root
       Lumi: !!float 7.9804e3 # Lumi info from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
     EFG:
-      MC: MC_2022_EraEFG_FixedSR
-      Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
+      # MC: MC_2022_EraEFG_FixedSR
+      # Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
+      MC: MC_2022_EraEFG_newLepPtReqs_v3
+      Data: Data_2022_newLepPtReqs_v3/EraEFG/ZZ4lAnalysis.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZL_noTau_hadd_Skim.root
-        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZT_noTau_hadd_Skim.root
-        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZTZT_noTau_hadd_Skim.root
-        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZZ_noTau_hadd_Skim.root
+        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/v3/qqZLZL_noTau_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/v3/qqZLZT_noTau_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/v3/qqZTZT_noTau_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/v3/qqZZ_noTau_hadd_Skim.root
+        # ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZL_noTau_hadd_Skim.root
+        # ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZL_noTau_origLepPtReqs_hadd_Skim.root
+        # ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZT_noTau_hadd_Skim.root
+        # ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZTZT_noTau_hadd_Skim.root
+        # ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZZ_noTau_hadd_Skim.root
       Lumi: !!float 26.6717e3
     Full:
       Lumi: !!float 34.6521e3
@@ -26,24 +35,28 @@ datasets:
     C:
       # MC: MC_2023_EraC_Updated
       # Data: Data_2023_Updated/EraC/ZZ4lAnalysis.root
-      MC: MC_2023_EraC_AllVars
-      Data: Data_2023_AllVars/EraC/ZZ4lAnalysis.root
+      # MC: MC_2023_EraC_AllVars
+      # Data: Data_2023_AllVars/EraC/ZZ4lAnalysis.root
+      MC: MC_2023_EraC_newLepPtReqs_v3
+      Data: Data_2023_newLepPtReqs_v3/EraC/ZZ4lAnalysis.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2023/EraC/qqZLZL_goodSeeds_hadd_Skim.root
-        ZLZT: rootFiles/PrivateProduction/2023/EraC/qqZLZT_goodSeeds_hadd_Skim.root
-        ZTZT: rootFiles/PrivateProduction/2023/EraC/qqZTZT_goodSeeds_hadd_Skim.root
-        ZZ_LO: rootFiles/PrivateProduction/2023/EraC/qqZZ_goodSeeds_hadd_Skim.root
+        ZLZL: rootFiles/PrivateProduction/2023/EraC/noTau/newLepPtReqs/v3/qqZLZL_noTau_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2023/EraC/noTau/newLepPtReqs/v3/qqZLZT_noTau_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2023/EraC/noTau/newLepPtReqs/v3/qqZTZT_noTau_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2023/EraC/noTau/newLepPtReqs/v3/qqZZ_noTau_hadd_Skim.root
       Lumi: !!float 17.794e3
     D:
       # MC: MC_2023_EraD_Updated
       # Data: Data_2023_Updated/EraD/ZZ4lAnalysis.root
-      MC: MC_2023_EraD_AllVars
-      Data: Data_2023_AllVars/EraD/ZZ4lAnalysis.root
+      # MC: MC_2023_EraD_AllVars
+      # Data: Data_2023_AllVars/EraD/ZZ4lAnalysis.root
+      MC: MC_2023_EraD_newLepPtReqs_v3
+      Data: Data_2023_newLepPtReqs_v3/EraD/ZZ4lAnalysis.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2023/EraD/qqZLZL_goodSeeds_hadd_Skim.root
-        ZLZT: rootFiles/PrivateProduction/2023/EraD/qqZLZT_goodSeeds_hadd_Skim.root
-        ZTZT: rootFiles/PrivateProduction/2023/EraD/qqZTZT_goodSeeds_hadd_Skim.root
-        ZZ_LO: rootFiles/PrivateProduction/2023/EraD/qqZZ_goodSeeds_hadd_Skim.root
+        ZLZL: rootFiles/PrivateProduction/2023/EraD/noTau/newLepPtReqs/v3/qqZLZL_noTau_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2023/EraD/noTau/newLepPtReqs/v3/qqZLZT_noTau_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2023/EraD/noTau/newLepPtReqs/v3/qqZTZT_noTau_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2023/EraD/noTau/newLepPtReqs/v3/qqZZ_noTau_hadd_Skim.root
       Lumi: !!float 9.451e3
     Full:
       Lumi: !!float 27.245e3
@@ -87,6 +100,7 @@ systematics:
         LHEPdfWeight: [0, 100] # Start and endpoint of variations
 
 regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
+#regions: ["SR"]
 
 # fstates:
 #   #fs_4l: !!int -1
@@ -95,7 +109,7 @@ regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS
 #   fs_2e2mu: !!int 20449
 
 fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
-#fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu"]
+#fstates: ["fs_4l"]
 
 # Needed to extract lepton hists but we don't make hists of these variables
 extra_props: ["Z1flav", "Z2flav"]
@@ -240,6 +254,14 @@ hist_info:
     xlow: !!int 0
     xhigh: !!int 40
     xlabel: "$SIP_{l_{Z2}}$"
+    ylabel: Events
+    Blind: !!bool False
+
+  Lepton_pt:
+    nbinsx: !!int 50
+    xlow: !!int 0
+    xhigh: !!int 500
+    xlabel: "$p_T^l$"
     ylabel: Events
     Blind: !!bool False
 

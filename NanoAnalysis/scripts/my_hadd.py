@@ -3,7 +3,10 @@ import subprocess
 
 store = "root://eos.grif.fr/"
 
+eos_llr = "/eos/grif/cms/llr/"
+
 def get_store_files(direc):
+    if not direc.startswith("/eos/"): direc = eos_llr + direc
     result_string = subprocess.check_output("xrdfs {} ls {}".format(store, direc), shell=True, text=True)
     result_list = result_string.split("\n")
     return [store+file for file in result_list[:-1]]

@@ -5,17 +5,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mplhep as hep
 
-pol_hist_file = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/hists_shapeVars.root"
+procs = dict(
+    ggZZ = ['ggTo2e2mu', 'ggTo2e2tau', 'ggTo2mu2tau', 'ggTo4e', 'ggTo4mu', 'ggTo4tau'],
+    ZpX  = ['DY', 'TT', 'WZ'],
+    VVV  = ['WWZ', 'WZZ', 'ZZZ'],
+    H125 = 'H',
+    ZLZL = 'ZLZL',
+    ZLZT = 'ZLZT',
+    ZTZT = 'ZTZT'
+)
 
-# cosTheta1_path    = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/cosTheta1_hists_polOnlyQCDScaleTestv3.root"
-# cosTheta3_path    = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/cosTheta1_hists_polOnly.root"
-# cosThetaStar_path = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/cosTheta1_hists_polOnly.root"
-# delRapidity_path  = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/cosTheta1_hists_polOnly.root"
+fstates = ['fs_4e', 'fs_4mu', ['fs_2e2mu', 'fs_2mu2e']]
 
-#out_cosTheta1    = ROOT.TFile.Open(cosTheta1_path, "RECREATE")
-# out_cosTheta3    = ROOT.TFile.Open(cosTheta3_path, "RECREATE")
-# out_cosThetaStar = ROOT.TFile.Open(cosThetaStar_path, "RECREATE")
-# out_delRapidity  = ROOT.TFile.Open(delRapidity_path, "RECREATE")
+pol_samples = ['ZLZL', 'ZLZT', 'ZTZT']
+
+get_vars = lambda proc: ["", "_LHEScaleWeightUp", "_LHEScaleWeightDown", "_LHEPdfWeightUp", "_LHEPdfWeightDown"] if proc in pol_samples else [""]
 
 norm_hist = lambda hist: hist.Scale(1./hist.Integral())
 
@@ -30,10 +34,18 @@ def th1_to_np(hist):
 def get_hists(pol_hist_file):
     with up.open(pol_hist_file) as InFile:
         nominal = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu"].to_pyroot()
-        PDFUp   = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu_LHEScaleWeightUp"].to_pyroot()
-        PDFDn   = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu_LHEScaleWeightDown"].to_pyroot()
+
+        QCDUp   = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu_LHEScaleWeightUp"].to_pyroot()
+        QCDDn   = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu_LHEScaleWeightDown"].to_pyroot()
+
+        PDFUp   = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu_LHEPdfWeightUp"].to_pyroot()
+        PDFDn   = InFile["ZLZL"]["SR"]["cosTheta1"]["fs_4mu_LHEPdfWeightDown"].to_pyroot()
 
         norm_hist(nominal)
+
+        norm_hist(QCDUp)
+        norm_hist(QCDDn)
+
         norm_hist(PDFUp)
         norm_hist(PDFDn)
 
@@ -91,28 +103,69 @@ def writeFigs(hist_file):
     outfile = f"cosTheta1_ZLZL_qcdVarRatio_4mu_2022EE.png"
     fig.savefig(outfile)
 
+
+def sum_hist_list(hists, subprocs, fs_key, var, proc):
+    hist_list = [hists[subproc][fs_key][var] for subproc in subprocs]
+    new_hist = hist_list[0].Clone(proc)
+    for hist in hist_list[1:]:
+        new_hist.Add(hist)
+
+    return new_hist
+
 if __name__ == "__main__":
-    pol_hist_file = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/hists_shapeVars.root"
-    cosTheta1_path    = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/cosTheta1_hists_polOnlyTheoryVars.root"
+    pol_hist_file = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/hists_newLepPtReqs_v2.root"
+    outpath       = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/cosTheta3_hists_newLepPtReqs.root"
 
     #writeFigs(pol_hist_file)
 
     with up.open(pol_hist_file) as InFile:
-        with up.recreate(cosTheta1_path) as OutFile:
-            for proc in ["ZLZL", "ZLZT", "ZTZT"]:
-                for fs in ["fs_4e", "fs_4mu", ["fs_2e2mu", "fs_2mu2e"]]:
-                    if type(fs) == list:
-                        for var in ["", "_LHEScaleWeightUp", "_LHEScaleWeightDown", "_LHEPdfWeightUp", "_LHEPdfWeightDown"]:
-                            hist_1 = InFile[proc]["SR"]["cosTheta1"][f"{fs[0]}{var}"].to_pyroot()
-                            hist_2 = InFile[proc]["SR"]["cosTheta1"][f"{fs[1]}{var}"].to_pyroot()
+        with up.recreate(outpath) as OutFile:
+            for proc, subprocs in procs.items():
+                if isinstance(subprocs, list):
+                    variations = get_vars(proc[0])
+                    hists = {}
+                    for subproc in subprocs:
+                        hists[subproc] = {}
+                        for fs in fstates:
+                            if type(fs) == list:
+                                hists[subproc][fs[0]] = {}
+                                for var in variations:
+                                    hist_1 = InFile[subproc]["SR"]["cosTheta3"][f"{fs[0]}{var}"].to_pyroot()
+                                    hist_2 = InFile[subproc]["SR"]["cosTheta3"][f"{fs[1]}{var}"].to_pyroot()
 
-                            hist = hist_1 + hist_2
-                            norm_hist(hist)
+                                    hist = hist_1 + hist_2
 
-                            OutFile[f"{fs[0]}/{proc}{var}"] = hist
-                    else:
-                        for var in ["", "_LHEScaleWeightUp", "_LHEScaleWeightDown", "_LHEPdfWeightUp", "_LHEPdfWeightDown"]:
-                            hist = InFile[proc]["SR"]["cosTheta1"][f"{fs}{var}"].to_pyroot()
-                            norm_hist(hist)
+                                    if not hist.Integral() ==  0 and proc in pol_samples: norm_hist(hist)
+                                    hists[subproc][fs[0]][var] = hist
 
-                            OutFile[f"{fs}/{proc}{var}"] = hist
+                            else:
+                                hists[subproc][fs] = {}
+                                for var in variations:
+                                    hist = InFile[subproc]["SR"]["cosTheta3"][f"{fs}{var}"].to_pyroot()
+
+                                    if not hist.Integral() ==  0 and proc in pol_samples: norm_hist(hist)
+                                    hists[subproc][fs][var] = hist
+                    
+                    for fs in fstates:
+                        fs_key = fs if type(fs) != list else fs[0]
+                        for var in variations:
+                            new_hist = sum_hist_list(hists, subprocs, fs_key, var, proc)
+                            OutFile[f"{fs_key}/{proc}{var}"] = new_hist
+                else:
+                    variations = get_vars(proc)
+                    for fs in fstates:
+                        if type(fs) == list:
+                            for var in variations:
+                                hist_1 = InFile[subprocs]["SR"]["cosTheta3"][f"{fs[0]}{var}"].to_pyroot()
+                                hist_2 = InFile[subprocs]["SR"]["cosTheta3"][f"{fs[1]}{var}"].to_pyroot()
+
+                                hist = hist_1 + hist_2
+                                if not hist.Integral() ==  0 and proc in pol_samples: norm_hist(hist)
+
+                                OutFile[f"{fs[0]}/{proc}{var}"] = hist
+                        else:
+                            for var in variations:
+                                hist = InFile[subprocs]["SR"]["cosTheta3"][f"{fs}{var}"].to_pyroot()
+                                if not hist.Integral() ==  0 and proc in pol_samples: norm_hist(hist)
+
+                                OutFile[f"{fs}/{proc}{var}"] = hist
