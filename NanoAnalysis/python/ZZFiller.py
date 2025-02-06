@@ -283,7 +283,7 @@ class ZZFiller(Module):
         # Note that the actual lepton selection cuts for SR and CR are applied later; this preselection only affects what
         # leptons are considered in making the combinatorial (ie processing speed)
         
-        if self.candsToStore != StoreOption.AllWithRelaxedMuId :
+        if self.candsToStore != self.AllWithRelaxedMuId :
             # Normal case: is the full ID + iso if only the SR is considered, or the relaxed ID if CRs are also filled.
             if self.addSIPCR or self.addOSCR or self.addSSCR or self.addZLCR:
                 self.leptonPresel = (lambda l : l.ZZRelaxedIdNoSIP) # minimal selection good for all CRs: no SIP, no ID, no iso
@@ -294,13 +294,13 @@ class ZZFiller(Module):
             # Electron ID is unchanged; FullSel electrons are preselected in this case, so the effect of cut variations can be studied for muons only.
             # for this reason, CRs cannot be properly built.
             if self.addSIPCR or self.addOSCR or self.addSSCR or self.addZLCR:
-                raise Exception("WARNING: CRs are not supported when StoreOption = AllWithRelaxedMuId")
+                raise Exception("WARNING: CRs are not supported when candsToStore==AllWithRelaxedMuId")
             self.leptonPresel = (lambda l : (abs(l.pdgId)==13 and l.pt>5 and abs(l.eta) < 2.4) or (abs(l.pdgId)==11 and l.ZZFullSel))
             
             # Add flags for muon ID studies. Each Flag will be set to true for a candidate if all of its muons pass the specified ID.
             self.muonIDs=[dict(name="ZZFullSel", sel=lambda l : l.ZZFullId and l.passIso), # Standard ZZ selection; this is used for setting default bestCandIdx
-                          dict(name="ZZRelaxedIDNoSIP",sel=lambda l : l.pt>5 and abs(l.eta)<2.4 and (l.isGlobal or (l.isTracker and l.nStations>0))),# ZZ relaxed mu ID without dxy, dz, SIP cuts (for optimization). Note: this is looser than nanoAOD presel.
-                          dict(name="ZZFullIDNoSIP",   sel=lambda l : l.pt>5 and abs(l.eta)<2.4 and (l.isGlobal or (l.isTracker and l.nStations>0)) and (l.isPFcand or (l.highPtId>0 and l.pt>200.))),# ZZ full ID without dxy, dz, SIP, and isolation cuts (for optimization)                      
+                          dict(name="ZZRelaxedIDOnly",sel=lambda l : l.pt>5 and abs(l.eta)<2.4 and (l.isGlobal or (l.isTracker and l.nStations>0))),# ZZ relaxed mu ID without dxy, dz, SIP, isolation cuts (for optimization). Note: this is looser than nanoAOD presel.
+                          dict(name="ZZFullIDOnly",   sel=lambda l : l.pt>5 and abs(l.eta)<2.4 and (l.isGlobal or (l.isTracker and l.nStations>0)) and (l.isPFcand or (l.highPtId>0 and l.pt>200.))),# ZZ full ID without dxy, dz, SIP, and isolation cuts (for optimization)
                           dict(name="looseId", sel=lambda l : l.looseId),   # POG CutBasedIdLoose
                           dict(name="mediumId", sel=lambda l : l.mediumId), # POG CutBasedIdMedium
                           dict(name="mediumPromptId", sel=lambda l : l.mediumPromptId), # POG CutBasedIdMediumPrompt (=mediumId + tighter dxy, dz cuts)
@@ -315,9 +315,9 @@ class ZZFiller(Module):
 
             # Add variable to store the worst value of a given quantity among the 4 leptons of a candidate, for optimization studies.
             # Worst is intended as lowest value (as for an MVA), unless the variable's name starts with "max".
-            self.muonIDVars=[dict(name="maxdxy", sel=lambda l : l.dxy),
-                             dict(name="maxdz", sel=lambda l : l.dz),
-                             dict(name="maxsip3d", sel=lambda l : l.sip3d),
+            self.muonIDVars=[dict(name="maxdxy", sel=lambda l : abs(l.dxy)),
+                             dict(name="maxdz", sel=lambda l : abs(l.dz)),
+                             dict(name="maxsip3d", sel=lambda l : abs(l.sip3d)),
                              dict(name="maxpfRelIso03FsrCorr", sel=lambda l : l.pfRelIso03FsrCorr), # FSR-corrected iso, DR=0.3
                              dict(name="maxpfRelIso03_all", sel=lambda l : l.pfRelIso03_all),
                              dict(name="maxpfRelIso04_all", sel=lambda l : l.pfRelIso04_all),

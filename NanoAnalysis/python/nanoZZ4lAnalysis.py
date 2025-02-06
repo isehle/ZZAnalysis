@@ -70,8 +70,6 @@ CANDSTOSTORE = getConf("CANDSTOSTORE", 'BestCandOnly') # which candidates should
                                                   #   don't pass ID cuts (useful for ID cut optimization studies).
                                                   # Note that this option does not affect the ZLLCand collection: for each
                                                   # CR that is activated, only the best candidate is stored.
-
-mela = initializeMELA(runMELA, LEPTON_SETUP)
                                                   
 ### Definition of analysis cuts
 cuts = dict(
