@@ -14,6 +14,7 @@ from ZZAnalysis.NanoAnalysis.triggerAndSkim import * # Trigger requirements are 
 from ZZAnalysis.NanoAnalysis.lepFiller import *
 from ZZAnalysis.NanoAnalysis.jetFiller import *
 from ZZAnalysis.NanoAnalysis.ZZFiller import *
+from ZZAnalysis.NanoAnalysis.jetIdUpdate import *
 from ZZAnalysis.NanoAnalysis.ZZExtraFiller import *
 from ZZAnalysis.NanoAnalysis.weightFiller import weightFiller
 from ZZAnalysis.NanoAnalysis.LHEFiller import * 
@@ -167,6 +168,7 @@ reco_sequence = [lepFiller(cuts, LEPTON_SETUP), # FSR and FSR-corrected iso; fla
                           filter=FILTER_EVENTS,
                           candsToStore=CANDSTOSTORE,
                           debug=DEBUG), # Build ZZ candidates; choose best candidate; filter events with candidates
+                 jetIdUpdate(), # Update of JetId from manual recipe for NanoAOD v12
                  jetFiller(), # Jets cleaning with leptons
                  # ZZExtraFiller(IsMC, LEPTON_SETUP, DATA_TAG, PROCESS_CR), # Additional variables to selected candidates
                  # MELAFiller(), # Compute the full set of discriminants for the best candidate
