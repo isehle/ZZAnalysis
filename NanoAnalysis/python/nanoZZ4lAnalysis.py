@@ -168,7 +168,6 @@ reco_sequence = [lepFiller(cuts, LEPTON_SETUP), # FSR and FSR-corrected iso; fla
                           filter=FILTER_EVENTS,
                           candsToStore=CANDSTOSTORE,
                           debug=DEBUG), # Build ZZ candidates; choose best candidate; filter events with candidates
-                 jetIdUpdate(), # Update of JetId from manual recipe for NanoAOD v12
                  jetFiller(), # Jets cleaning with leptons
                  # ZZExtraFiller(IsMC, LEPTON_SETUP, DATA_TAG, PROCESS_CR), # Additional variables to selected candidates
                  # MELAFiller(), # Compute the full set of discriminants for the best candidate
