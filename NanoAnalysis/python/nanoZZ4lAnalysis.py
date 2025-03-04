@@ -21,7 +21,6 @@ from ZZAnalysis.NanoAnalysis.LHEFiller import *
 from ZZAnalysis.NanoAnalysis.genAngProbFiller import * 
 from ZZAnalysis.NanoAnalysis.initializeMELA import * 
 
-
 ### Get processing customizations, if defined in the including .py; use defaults otherwise
 DEBUG = getConf("DEBUG", False)
 SAMPLENAME = getConf("SAMPLENAME", "test")
@@ -56,6 +55,8 @@ APPLY_K_NNLOQCD_ZZGG = getConf("APPLY_K_NNLOQCD_ZZGG", 0)
 APPLY_K_NNLOQCD_ZZQQB = getConf("APPLY_K_NNLOQCD_ZZQQB", False)
 APPLY_K_NNLOEW_ZZQQB  = getConf("APPLY_K_NNLOEW_ZZQQB", False)
 # Add separate tree with gen info for all events
+ADD_ALLEVENTS = getConf("ADD_ALLEVENTS", True)
+FILTER_EVENTS = getConf("FILTER_EVENTS", 'Cands') # Filter to be applied to filter events to be applied on output. Currently supported:
 ADD_ALLEVENTS = getConf("ADD_ALLEVENTS", False)
 FILTER_EVENTS = getConf("FILTER_EVENTS", 'Cands') # Filter to be applied on events. Currently supported:
                                                   # 'Cands' = any event with a SR or CR candidate (default)
@@ -71,6 +72,8 @@ CANDSTOSTORE = getConf("CANDSTOSTORE", 'BestCandOnly') # which candidates should
                                                   #   don't pass ID cuts (useful for ID cut optimization studies).
                                                   # Note that this option does not affect the ZLLCand collection: for each
                                                   # CR that is activated, only the best candidate is stored.
+
+m = initializeMELA(runMELA, LEPTON_SETUP)
                                                   
 ### Definition of analysis cuts
 cuts = dict(
@@ -320,7 +323,8 @@ if IsMC:
                               'keep FidDressedLeps_*',
                               'keep FidZ*',
                               'keep passedFiducial',
-                              #'keep LHEPart*'
+                              'keep LHEPart*',
+                              'keep gen*',
                               ])
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
