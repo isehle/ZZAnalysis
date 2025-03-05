@@ -229,7 +229,6 @@ if IsMC:
                         cloneBranches(treeName='AllEvents',
                                       varlist=['run', 'luminosityBlock', 'event',
                                                'GenDressedLepton_*',
-                                               #'LHEPart*',
                                                'FidDressedLeps_*',
                                                'FidZ*',
                                                'LHE*Weight',
@@ -324,7 +323,6 @@ if IsMC:
                               'keep FidZ*',
                               'keep passedFiducial',
                               'keep LHEPart*',
-                              'keep gen*',
                               ])
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
