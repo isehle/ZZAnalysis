@@ -9,6 +9,7 @@ import uproot as up
 import numpy as np
 from tqdm import tqdm
 
+from NanoAnalysis.scripts.histSystematics import HistSystematics
 from NanoAnalysis.scripts.helper_functions import *
 
 class HistWriter:
@@ -112,7 +113,15 @@ class HistWriter:
         df = df.Redefine(lep_col, "ROOT::VecOps::Concatenate({}_Z1, {}_Z2)".format(lep_col, lep_col))
 
         # Useful for debugging
-        # df = df.Define(f"{lep_col}_sorted",f"ROOT::VecOps::Reverse(ROOT::VecOps::Sort({lep_col}))")
+        df = df.Define(f"{lep_col}_sorted",f"ROOT::VecOps::Reverse(ROOT::VecOps::Sort({lep_col}))")
+
+        return df
+
+    def filter_lep_reqs(self, df, lep_reqs):
+
+        for i, pt_cut in enumerate(lep_reqs):
+            df = df.Define(f"Lepton_pt_{i+1}", f"Lepton_pt_sorted.at({i})")
+            df = df.Filter(f"Lepton_pt_{i+1} > {lep_reqs[i]}")
 
         return df
 
@@ -124,7 +133,7 @@ class HistWriter:
             else:
                 reg = reg.split("_")
                 hist_info = hist_info[reg[-1]]
-        
+
         return hist_info
     
     def get_column_name(self, reg, prop):
@@ -132,45 +141,6 @@ class HistWriter:
             return prop
         else:
             return "{}_{}".format(self.cand(reg), prop)
-
-    def get_vars(self, df, reg, prop, hist_info, var):
-        column = self.get_column_name(reg, prop)
-
-        th1_model = ROOT.RDF.TH1DModel("", "", int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"]))
-
-        up_hist = ROOT.TH1D(prop+"_Up", prop+"_Up", int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"]))
-        dn_hist = ROOT.TH1D(prop+"_Down", prop+"_Down", int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"]))
-
-        if var == "LHEScaleWeight":
-            nominal      = df.Vary("weight", "weight*LHEScaleWeight", [f"qcd_{i}" for i in range(9)]).Histo1D(th1_model, column, "weight")
-            hists_varied = ROOT.RDF.Experimental.VariationsFor(nominal)
-
-            for bin_idx in range(int(hist_info["nbinsx"])):
-                max_bin_count = np.max([hists_varied[f"weight:qcd_{i}"].GetBinContent(bin_idx) for i in range(9)])
-                min_bin_count = np.min([hists_varied[f"weight:qcd_{i}"].GetBinContent(bin_idx) for i in range(9)])
-
-                up_hist.SetBinContent(bin_idx, max_bin_count)
-                dn_hist.SetBinContent(bin_idx, min_bin_count)
-
-            up_hist.Scale(self.lumi)
-            dn_hist.Scale(self.lumi)
-            
-        elif var == "LHEPdfWeight":
-
-            nominal      = df.Vary("weight","weight*LHEPdfWeight",[f"pdf_{i}" for i in range(103)]).Histo1D(th1_model, column, "weight")
-            hists_varied = ROOT.RDF.Experimental.VariationsFor(nominal) 
-
-            for bin_idx in range(int(hist_info["nbinsx"])):
-                nom_bin_count = hists_varied["nominal"].GetBinContent(bin_idx) * self.lumi
-                bin_std       = np.std([hists_varied[f"weight:pdf_{i}"].GetBinContent(bin_idx)*self.lumi for i in range(103)])
-
-                up_hist.SetBinContent(bin_idx, nom_bin_count + bin_std)
-                dn_hist.SetBinContent(bin_idx, nom_bin_count - bin_std)
-  
-        else:
-            raise ValueError("{} is not a supported varation. Options are LHEScaleWeight and LHEPdfWeight.".format(var))
-        
-        return up_hist, dn_hist
 
     def write_hist(self, df, reg, prop, hist_info, weight_col="weight"):
         column = self.get_column_name(reg, prop)
@@ -185,7 +155,7 @@ class HistWriter:
 
         return hist
 
-    def write_hists(self):
+    def write_hists(self, lep_reqs):
         with up.recreate(self.outfile) as OutFile:
             hists = {}
             for sample, sample_path in tqdm(self.samples.items(), desc = "Processes", position = 0):
@@ -202,22 +172,17 @@ class HistWriter:
                         df_reg = self.write_weight(df, reg)
                     else: 
                         df_reg = df.Filter(self.reg_filt(reg))
+
+                    # df_4l = self.lep_df(df_reg, reg, "Lepton_pt")
+                    # df_4l = self.filter_lep_reqs(df_4l, lep_reqs)
                     
                     hists[sample][reg] = {}               
                     for prop in tqdm(self.props, desc = "Properties", position = 2, leave = False):
                         hist_info = self.get_hist_info(reg, prop)
 
-                        # Define lepton columns
                         if "Lepton" in prop:
                             df_4l = self.lep_df(df_reg, reg, prop)
-                            # df_pass_new_lepPtReqs = df_4l.Filter("(Lepton_pt_sorted.at(1) > 15) && (Lepton_pt_sorted.at(2) > 15) && (Lepton_pt_sorted.at(3) > 15)")
-                            # OutFile["{}/{}/{}/fs_4l".format(sample, reg, prop)] = self.write_hist(df_pass_new_lepPtReqs, reg, prop, hist_info)
-                            # try:
-                            #     percent = df_pass_new_lepPtReqs.Count().GetValue()/df_4l.Count().GetValue()
-                            #     print(f"pPassing: {percent}\n")
-                            # except ZeroDivisionError:
-                            #     print("NNo Events\n")
-                            #     continue
+                            #df_4l = self.lep_df(df_4l, reg, prop)
                         else:
                             df_4l = df_reg
 
@@ -235,8 +200,10 @@ class HistWriter:
                             OutFile["{}/{}/{}/{}".format(sample, reg, prop, fs)] = self.write_hist(df_fs, reg, prop, hist_info)
                             if "systematics" in hist_info and reg=="SR":
                                 if sample in hist_info["systematics"]["procs"]:
+                                    column = self.get_column_name(reg, prop)
+                                    systWriter = HistSystematics(hist_info, self.lumi, prop, column)
                                     for var in hist_info["systematics"]["vars"]:
-                                        up_hist, dn_hist = self.get_vars(df_fs, reg, prop, hist_info, var)
+                                        up_hist, dn_hist = systWriter.get_vars(df_fs, var)
                                         OutFile["{}/{}/{}/{}_{}Up".format(sample, reg, prop, fs, var)]   = up_hist
                                         OutFile["{}/{}/{}/{}_{}Down".format(sample, reg, prop, fs, var)] = dn_hist
         

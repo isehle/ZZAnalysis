@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import mplhep as hep
 
 from NanoAnalysis.scripts.helper_functions import *
+from NanoAnalysis.scripts.histReader import HistReader
 
 class HistPlotter:
     def __init__(self, cfg, args):
@@ -62,7 +63,7 @@ class HistPlotter:
         else:
             outdir = os.path.join(self.cfg["output"]["plot_dir"], "Full", reg, fstate)
         Path(outdir).mkdir(parents=True, exist_ok=True)
-        self.outfile = os.path.join(outdir, prop+self.args["tag"]+".png")
+        self.outfile = os.path.join(outdir, prop+self.args["tag"]+"_norm.png")
 
     def set_lumi_tag(self):
         if self.args["lumi_tag"] == 0:
@@ -203,10 +204,10 @@ class HistPlotter:
         self.total_mc_counts[ self.total_mc_counts < 0] = 0
         self.total_mc_errors = np.sqrt(np.sum([err**2 for err in mc_errors.values()], axis=0))
 
-    def plotter(self, prop, reg, fs, hists, counts, errors):
+    def plotter(self, prop, reg, fs, hists, counts, errors, norm=False):
         # Set up figures, styling, names etc
         self.set_prop_info(prop, reg)
-        self.set_lumi_tag()    
+        if not norm: self.set_lumi_tag()    
         self.writeFigs()
         self.cms_label()
         self.set_outfile(reg, fs, prop)
@@ -242,7 +243,16 @@ class HistPlotter:
             pol_counts = counts["Pol"]
             pol_errors = errors["Pol"]
 
-            pol_labels = self.addCounts(self.labels["Pol"], pol_counts, pol_errors)
+            if norm:
+                bins = pol_hists["ZLZL"][1]
+                pol_hists = dict(
+                    ZLZL = (pol_hists["ZLZL"][0]/pol_hists["ZLZL"][0].sum(), bins),
+                    ZLZT = (pol_hists["ZLZT"][0]/pol_hists["ZLZT"][0].sum(), bins),
+                    ZTZT = (pol_hists["ZTZT"][0]/pol_hists["ZTZT"][0].sum(), bins),
+                )
+                pol_labels = self.labels["Pol"]
+            else:
+                pol_labels = self.addCounts(self.labels["Pol"], pol_counts, pol_errors)
 
             self.setBins(pol_hists)
 
@@ -291,11 +301,21 @@ if __name__ == "__main__":
     parser.add_argument("--reg", choices=("SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"), default="SR")
     parser.add_argument("--prop", default="mass")
     parser.add_argument("--year", choices=(2022, 2023), default=2022, type=int)
-    parser.add_argument("--era", choices=("C", "D", "CD", "EFG", "B"), default="EFG")
+    parser.add_argument("--era", choices=("C", "D", "CD", "EFG", "Full"), default="Full")
     parser.add_argument("--tag", default="")
+    parser.add_argument("--infile", default="")
     args = vars(parser.parse_args())
 
-    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_13_3_3/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
+    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_14_1_6/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
         cfg = yaml.safe_load(config)
 
-    plots = HistPlotter(cfg, args)
+    histRead = HistReader(cfg, args)
+
+    all_hists, all_counts, all_errors = histRead.read_hists_and_counts(args["infile"])
+
+    plots    = HistPlotter(cfg, args)
+
+    for prop in cfg["hist_info"].keys():
+        for fs in cfg["fstates"]:
+            hists, counts, errors = all_hists["SR"][prop][fs], all_counts["SR"][prop][fs], all_errors["SR"][prop][fs]
+            plots.plotter(prop, "SR", fs, hists, counts, errors, norm=True)

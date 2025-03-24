@@ -12,6 +12,7 @@ import ROOT
 import uproot as up
 import numpy as np
 from tqdm import tqdm
+import pprint
 
 import matplotlib.pyplot as plt
 
@@ -44,6 +45,8 @@ class HistManager:
             self.infile = os.path.join(cfg["output"]["base_dir"], "rootFiles", str(args["year"]), args["era"], "hists{}.root".format(args["tag"]))
         else:
             self.infile = args["infile"]
+
+        self.lep_reqs = cfg["lep_reqs"]
 
         self.histReader = HistReader(self.cfg, self.args)
 
@@ -144,7 +147,7 @@ class HistManager:
 
     def write_hists(self):
         self.histWriter = HistWriter(self.cfg, self.args)
-        self.histWriter.write_hists()
+        self.histWriter.write_hists(self.lep_reqs)
 
     def combine_processes(self, hists, counts, errors):
         for category in self.procs.keys():
@@ -244,13 +247,12 @@ class HistManager:
 
             ax.set_ylabel(r"$N_{Z+X}/{fb^{-1}}$")
             title = "N_ZpX/fb^-1 Full 2022, 2023"
-            outfile = "N_ZpX_Full_2022_2023_perInvFb_newLepPtReqs_v3"
+            outfile = "N_ZpX_Full_2022_2023_perInvFb_Z1pt"
             ax.set_title(title)
             fig.savefig(outfile+".png")
         
         else:
             for step in zpx_info_1.keys():
-                if step != "N_ZPP_SS": continue
                 era, year = eras[0], years[0]
                 self.zpx.plot_zpx(zpx_info_1, step, year, era)
 
@@ -314,6 +316,9 @@ class HistManager:
             outdir = base_dir.replace(eras[0], "Full")
             Path(outdir).mkdir(parents=True, exist_ok=True)
             outfile = os.path.join(outdir, filename)
+        else:
+            # NEED TO CHANGE THIS
+            outfile = "/eos/user/i/iehle/Analysis/rootFiles/hists_full.root"
 
         with up.open(infile_1) as Hists_1, up.open(infile_2) as Hists_2, up.recreate(outfile) as NewHists:
             for key in tqdm(Hists_1.keys()):
@@ -322,6 +327,31 @@ class HistManager:
                     NewHists[key.replace(";1", "")] = hist_1.to_pyroot() + hist_2.to_pyroot()
 
     def insert_hists(self, infile_1, infile_2, new_file=False):
+        def get_histograms(directory, path=""):
+            histograms = {}
+    
+            # Get list of keys in the current directory
+            keys = directory.GetListOfKeys()
+            if not keys:
+                return histograms
+
+            for key in keys:
+                obj = key.ReadObj()
+                
+                # If it's a TDirectory, recurse into it
+                if isinstance(obj, ROOT.TDirectory):
+                    subdir_name = obj.GetName()
+                    subdir_path = f"{path}/{subdir_name}" if path else subdir_name
+                    histograms.update(get_histograms(obj, subdir_path))
+                
+                # If it's a TH1 (or other histogram type), save it
+                elif isinstance(obj, ROOT.TH1):
+                    hist_name = obj.GetName()
+                    full_hist_path = f"{path}/{hist_name}" if path else hist_name
+                    histograms[full_hist_path] = obj
+            
+            return histograms
+
         if new_file:
             tag = self.args["tag"]
             outfile = infile_1.replace(".root", f"_{tag}.root")
@@ -329,13 +359,70 @@ class HistManager:
                 for key in tqdm(Hists_1.keys()):
                     pass
         else:
-            with up.update(infile_1) as Hists_1, up.open(infile_2) as Hists_2:
-                for key in tqdm(Hists_2.keys()):
-                    if key.count("/") == 3:
-                        Hists_1[key.replace(";", "")] = Hists_2[key].to_pyroot()
+            with ROOT.TFile(infile_1, "UPDATE") as File1, ROOT.TFile(infile_2, "READ") as File2:
+                file_2_hists = get_histograms(File2)
+                for key, hist in tqdm(file_2_hists.items()):
+                    dir_list = key.split("/")
+                    dir_name, hist_name = "/".join(dir_list[:-1]), dir_list[-1]
+
+                    File1.cd(dir_name)
+                    hist.SetDirectory(File1)
+                    hist.Write(hist_name, ROOT.TObject.kOverwrite)
+                    #File1.WriteObject(hist, hist_name)
+
+    def write_zpx_hists(self, infile, year, era):
+        self.zpx = ZpX()
+
+        hists, counts, errors = self.histReader.read_hists_and_counts(infile)
+        hists, counts, errors = self.combine_processes(hists, counts, errors)
+        
+        #zpx_info = self.zpx.get_zpx(hists, errors, self.fstates)
+        yields = self.zpx.get_yields(hists, errors, self.fstates)
+
+        with up.recreate("SS_NoSIP_HighMass_OneBin.root") as OutFile:
+            for fs in yields.keys():
+                for proc in yields[fs].keys():
+                    count, err = yields[fs][proc]
+
+                    hist = ROOT.TH1D(proc, proc, 1, 0., 1.)
+                    hist.SetBinContent(1, count)
+                    hist.SetBinError(1, err)
+
+                    OutFile[f"{fs}/{proc}"] = hist
 
 
- 
+
+        #pprint.pprint(yields)
+
+        # my_dict = {}
+        # for fs in ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]:
+        #     key = fs
+        #     n_zpp_ss = max(0, zpx_info["N_ZPP_SS"][fs][0])
+        #     r_os_ss  = zpx_info["r_OS_SS_MidMass"][fs][0]
+            
+        #     my_dict[key] = dict(
+        #         N_ZPP_SS = n_zpp_ss,
+        #         r_OS_SS  = r_os_ss
+        #     )
+
+        # import json
+        # with open("ZpX_info_2022_EFG_20_15_15_15.json", "w") as myfile:
+        #     json.dump(my_dict, myfile, indent=4)
+        
+        #for prop in self.props:
+        # for prop in ["cosTheta1", "cosTheta3", "cosThetaStar", "delRapidity", "delPhi"]:
+        #     outfile = f"{prop}_{year}_{era}_ZpX_up_down_good.root"
+
+        #     hist_info = self.cfg["hist_info"][prop]
+            
+        #     hists = self.zpx.write_hists(zpx_info, hist_info, prop)
+
+        #     with up.recreate(outfile) as OutFile:
+        #         for fs, hist_dict in hists.items():
+        #             OutFile[f"{fs}/ZpX"]         = hist_dict["Nominal"]
+        #             OutFile[f"{fs}/ZpX_sipUp"]   = hist_dict["Up"]
+        #             OutFile[f"{fs}/ZpX_sipDown"] = hist_dict["Down"]
+
 if __name__ == "__main__":
     import yaml
     from argparse import ArgumentParser
@@ -349,30 +436,43 @@ if __name__ == "__main__":
     parser.add_argument("--lumi_tag", default=0, type=int)
     args = vars(parser.parse_args())
 
-    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_13_3_3/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
+    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_14_1_6/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
         cfg = yaml.safe_load(config)
   
     histManager = HistManager(cfg, args)
 
-    base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_newLepPtReqs_v3.root") # Both with no Tau pols
-    infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_newLepPtReqs_v3.root") # Both with no Tau pols
-    histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2=infile_2)
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_Z1pt.root") # Both with no Tau pols
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_Z1pt.root") # Both with no Tau pols
+    #histManager.plot_zpx(infile_1, years=(2022, 2023), eras=("Full", "Full"), infile_2=infile_2)
     #histManager.plot_zpx(infile_1, years=(2022, 2022), eras=("Full", "Full"))
     #histManager.plot_zpx(infile_2, years=(2023, 2023), eras=("Full", "Full"))
 
     # base_dir = "/eos/user/i/iehle/Analysis"
-    # infile_1 = os.path.join(base_dir, "rootFiles/2022/CD/hists_newLepPtReqs_v3.root") # Both with no Tau pols
-    # infile_2 = os.path.join(base_dir, "rootFiles/2022/CD/hists_ZZLO_newLepPtReqs_v3.root") # Both with no Tau pols
-    #histManager.insert_hists(infile_1, infile_2)
-    
-    #histManager.write_hists()
-
-    #histManager.plot_hists()
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_Z1pt_v2.root")
+    # histManager.plot_zpx(infile_1, years=(2022,2022), eras=("EFG", "EFG"))
 
     # base_dir = "/eos/user/i/iehle/Analysis"
-    # infile_1 = os.path.join(base_dir, "rootFiles/2023/C/hists_newLepPtReqs_v3.root")
-    # infile_2 = os.path.join(base_dir, "rootFiles/2023/D/hists_newLepPtReqs_v3.root")
+    # infile = os.path.join(base_dir, "rootFiles/2022/EFG/hists_Z1pt_v2.root")
+    # histManager.write_zpx_hists(infile, year=2022, era="EFG")
+
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_Z1pt_v2.root") # Both with no Tau pols
+    # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_Z1pt_polOnly_puAndLepIDRecoVars_v2.root") # Both with no Tau pols
+    # histManager.insert_hists(infile_1, infile_2)
+
+    base_dir = "/eos/user/i/iehle/Analysis"
+    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/delPhi_hists_NormZpX_wAsimov.root") # Both with no Tau pols
+    infile_2 = "/afs/cern.ch/user/i/iehle/CMSSW_14_1_0_pre4/src/HiggsAnalysis/CombinedLimit/asimov_data_delPhi_test.root" # Both with no Tau pols
+    histManager.insert_hists(infile_1, infile_2)
+
+    #histManager.write_hists()
+
+    # histManager.plot_hists()
+
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2023/C/hists_Z1pt.root")
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/D/hists_Z1pt.root")
     # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
    
     # histManager.combine_eras(infile_1, infile_2, years=[2022, 2022], eras=["CD", "EFG"])

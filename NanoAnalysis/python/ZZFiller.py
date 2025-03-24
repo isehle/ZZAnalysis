@@ -32,6 +32,17 @@ class AngularVars:
         self.ZZ = ZZ
         self.Z  = {"1": ZZ.Z1, "2": ZZ.Z2}
 
+        # Cache useful p4s
+        self.ZZ_p4 = self.ZZ.p4
+        self.Z1_p4 = self.ZZ.Z1.p4
+        self.Z2_p4 = self.ZZ.Z2.p4
+        
+        # Define boosts
+        self.boost_to_4l = self._getBoost(self._getLorentzVec(self.ZZ_p4))
+        self.boost_to_z1 = self._getBoost(self._getLorentzVec(self.Z1_p4))
+        self.boost_to_z2 = self._getBoost(self._getLorentzVec(self.Z2_p4))
+
+
     def _getLorentzVec(self, tLorVec):
         return LorentzVector(PxPyPzE4D('double'))(
             tLorVec.Px(),
@@ -44,6 +55,10 @@ class AngularVars:
         lep_p4 = z_cand.l1DressedP4 if z_cand.l1.charge == 1 else z_cand.l2DressedP4
         return self._getLorentzVec(lep_p4)
 
+    def _getNegLep(self, z_cand):
+        lep_p4 = z_cand.l1DressedP4 if z_cand.l1.charge == -1 else z_cand.l2DressedP4
+        return self._getLorentzVec(lep_p4)
+
     def _getBoost(self, p4):
         return Boost(p4.BoostToCM())
 
@@ -51,52 +66,77 @@ class AngularVars:
         lab_z_cand = self.Z[z]
         
         # Four vectors in the lab frame for 4l system, Z, and its associated l+
-        lab_4l_p4   = self._getLorentzVec(self.ZZ.p4)
-        lab_z_p4    = self._getLorentzVec(lab_z_cand.p4)
+        # lab_4l_p4   = self._getLorentzVec(self.ZZ.p4)
+        # lab_z_p4    = self._getLorentzVec(lab_z_cand.p4)
         
         lab_pos_lep = self._getPosLep(lab_z_cand)
 
         # Boost vectors to 4l rest frame and Z rest frame
-        boost_to_4l  = self._getBoost(lab_4l_p4)
-        boost_to_ZCM = self._getBoost(lab_z_p4)
+        # boost_to_4l  = self._getBoost(lab_4l_p4)
+        # boost_to_ZCM = self._getBoost(lab_z_p4)
 
-        zcand_4l_com  = boost_to_4l*lab_z_p4
-        pos_lep_z_com = boost_to_ZCM*lab_pos_lep
+        # zcand_4l_com  = boost_to_4l*lab_z_p4
+        # pos_lep_z_com = boost_to_ZCM*lab_pos_lep
+
+        zcand_4l_com  = self.boost_to_4l*self.Z1_p4 if z=="1" else self.boost_to_4l*self.Z2_p4
+        pos_lep_z_com = self.boost_to_z1*lab_pos_lep if z=="1" else self.boost_to_z2*lab_pos_lep
 
         return ROOT.Math.VectorUtil.CosTheta(pos_lep_z_com, zcand_4l_com)
 
     def cosThetaStar(self, z="1"):
-        lab_z_cand = self.Z[z]
-
-        # Four vectors in the lab frame for 4l system and Z
-        lab_4l_p4   = self._getLorentzVec(self.ZZ.p4)
-        lab_z_p4    = self._getLorentzVec(lab_z_cand.p4)
-
-        # Boost vectors to 4l rest frame and Z rest frame
-        boost_to_4l  = self._getBoost(lab_4l_p4)
-
-        zcand_4l_com = boost_to_4l*lab_z_p4
-
-        return ROOT.Math.VectorUtil.CosTheta(zcand_4l_com, lab_4l_p4)
+        # THIS DEFINITION IS STRONGLY DEPENDENT ON DEFINTION OF Z1 : SORTING BY pT GIVES VERY ASSYMETRIC DISTRIBUTION
+        
+        zcand_4l_com = self.boost_to_4l*self.Z1_p4 if z=="1" else self.boost_to_4l*self.Z2_p4
+        return ROOT.Math.VectorUtil.CosTheta(zcand_4l_com, self.ZZ_p4)
 
     def delPhiStar(self):
         lab_z1_cand, lab_z2_cand = self.Z["1"], self.Z["2"]
 
+        # l+ p4's in lab frame
         lab_pos_lep_z1 = self._getPosLep(lab_z1_cand)
         lab_pos_lep_z2 = self._getPosLep(lab_z2_cand)
 
-        lab_z1_p4 = self._getLorentzVec(lab_z1_cand.p4)
-        lab_z2_p4 = self._getLorentzVec(lab_z2_cand.p4)
+        # z p4's in lab frame
+        # lab_z1_p4 = self._getLorentzVec(lab_z1_cand.p4)
+        # lab_z2_p4 = self._getLorentzVec(lab_z2_cand.p4)
+        
+        # Boost vectors to Z CM's
+        # boost_to_z1 = self._getBoost(lab_z1_p4)
+        # boost_to_z2 = self._getBoost(lab_z2_p4)
 
-        boost_to_z1 = self._getBoost(lab_z1_p4)
-        boost_to_z2 = self._getBoost(lab_z2_p4)
+        # Boost vector to 4l rest frame
+        # boost_to_4l = self._getBoost(self._getLorentzVec(self.ZZ.p4))
 
-        pos_lep_z1_cm = boost_to_z1*lab_pos_lep_z1
-        pos_lep_z2_cm = boost_to_z2*lab_pos_lep_z2
+        # l+ p4's in their Z's CM frames
+        # pos_lep_z1_cm = boost_to_z1*lab_pos_lep_z1
+        # pos_lep_z2_cm = boost_to_z2*lab_pos_lep_z2
 
-        az_diff = np.abs(pos_lep_z1_cm.Phi() - pos_lep_z2_cm.Phi())
+        pos_lep_z1_cm = self.boost_to_z1*lab_pos_lep_z1
+        pos_lep_z2_cm = self.boost_to_z2*lab_pos_lep_z2
 
-        return min(az_diff, 2*np.pi - az_diff)
+        # Z p4's in the 4l frame
+        # z1_4l_p4 = boost_to_4l*lab_z1_p4
+        # z2_4l_p4 = boost_to_4l*lab_z2_p4
+
+        z1_4l_p4 = self.boost_to_4l*self.Z1_p4
+        z2_4l_p4 = self.boost_to_4l*self.Z2_p4
+
+        # Calculate phi*'s (angle between l+ in its Z's rest frame and the Z's direction of flight in the event CM (4l frame))
+        phiStar_z1 = ROOT.Math.VectorUtil.Angle(z1_4l_p4, pos_lep_z1_cm)
+        phiStar_z2 = ROOT.Math.VectorUtil.Angle(z2_4l_p4, pos_lep_z2_cm)
+
+        delPhiStar = np.abs(phiStar_z1 - phiStar_z2)
+
+        return min(delPhiStar, 2*np.pi - delPhiStar)
+
+    def delPhi(self):
+        lab_z1_cand, lab_z2_cand = self.Z["1"], self.Z["2"]
+
+        # l+(-) p4's in lab frame
+        pos_lep_z1 = self._getPosLep(lab_z1_cand)
+        neg_lep_z2 = self._getNegLep(lab_z2_cand)
+
+        return np.abs(ROOT.Math.VectorUtil.DeltaPhi(pos_lep_z1, neg_lep_z2))
 
     def delRapidity(self):
         z1_p4, z2_p4 = self._getLorentzVec(self.Z["1"].p4), self._getLorentzVec(self.Z["2"].p4)
@@ -121,6 +161,7 @@ class candProps:
             cosTheta3    = lambda cand: cand.cosTheta3,
             cosThetaStar = lambda cand: cand.cosThetaStar,
             delPhiStar   = lambda cand: cand.delPhiStar,
+            delPhi       = lambda cand: cand.delPhi,
             delRapidity  = lambda cand: cand.delRapidity,
             massPreFSR   = lambda cand: cand.massPreFSR(),
             Z1mass       = lambda cand: cand.Z1.M,
@@ -311,7 +352,7 @@ class ZZFiller(Module):
         self.sip_reg   = ("PassSIP", "FailSIP")
         #self.sip_reg   = ("NoSIP")
         
-        self.props = (("mass", "F"), ("pt", "F"), ("eta", "F"), ("phi", "F"), ("cosTheta1", "F"), ("cosTheta3", "F"), ("cosThetaStar", "F"), ("delPhiStar", "F"), ("delRapidity", "F"), ("massPreFSR", "F"),
+        self.props = (("mass", "F"), ("pt", "F"), ("eta", "F"), ("phi", "F"), ("cosTheta1", "F"), ("cosTheta3", "F"), ("cosThetaStar", "F"), ("delPhiStar", "F"), ("delPhi", "F"), ("delRapidity", "F"), ("massPreFSR", "F"),
                           ("Z1mass", "F"), ("Z1pt", "F"), ("Z1eta", "F"), ("Z1phi", "F"), ("Z1flav", "I"),
                           ("Z2mass", "F"), ("Z2pt", "F"), ("Z2eta", "F"), ("Z2phi", "F"), ("Z2flav", "I"),
                           ("KD", "F"), ("Z1l1Idx", "S"), ("Z1l2Idx", "S"), ("Z2l1Idx", "S"), ("Z2l2Idx", "S"))
@@ -330,6 +371,8 @@ class ZZFiller(Module):
         if self.isMC:
             self.out.branch("ZZCand_dataMCWeight", "F", lenVar="nZZCand", title="data/MC efficiency correction weight")
             self.out.branch("ZLLCand_dataMCWeight", "F", lenVar="nZLLCand", title="data/MC efficiency correction weight")
+            self.out.branch("ZZCand_lepSF_err", "F", lenVar="nZZCand", title="data/MC efficiency correction weight")
+            self.out.branch("ZLLCand_lepSF_err", "F", lenVar="nZLLCand", title="data/MC efficiency correction weight")
 
         # CR Filter branches
         #self.cr_regions = ["{}_{}_{}".format(sign, sip, mass) for sign in self.sign_reg for sip in self.sip_reg for mass in self.mass_reg]
@@ -415,7 +458,9 @@ class ZZFiller(Module):
         if reg == "Z1_Cands":
             z_pairs = combinations(cands, 2)
             # Define Z1 as closest mass to mZ, ex [(88, 90), (84, 91)] --> [(90, 88), (91, 84)]
-            z_pairs = [(zp[0], zp[1]) if abs(zp[0].M - self.ZmassValue) < abs(zp[1].M - self.ZmassValue) else (zp[1], zp[0]) for zp in z_pairs]
+            # z_pairs = [(zp[0], zp[1]) if abs(zp[0].M - self.ZmassValue) < abs(zp[1].M - self.ZmassValue) else (zp[1], zp[0]) for zp in z_pairs]
+            # Define Z1 as highest pt
+            z_pairs = [(zp[0], zp[1]) if zp[0].pt > zp[1].pt else (zp[1], zp[0]) for zp in z_pairs]
         else:
             z_pairs = [(z1, ll) for ll in cands]
         
@@ -515,11 +560,16 @@ class ZZFiller(Module):
         reg_idx = [key for key in final_cands][0]
 
         if self.isMC:
-            mcWeight = [self.getDataMCWeight(final_cands[reg_idx].leps())]
+            mc_weight, mc_weight_err = self.getDataMCWeight(final_cands[reg_idx].leps())
+            #mcWeight = [self.getDataMCWeight(final_cands[reg_idx].leps())]
             if cand_props.branches["SR"][0]:
-                self.out.fillBranch("ZZCand_dataMCWeight", mcWeight)
+                #self.out.fillBranch("ZZCand_dataMCWeight", mcWeight)
+                self.out.fillBranch("ZZCand_dataMCWeight", [mc_weight])
+                self.out.fillBranch("ZZCand_lepSF_err", [mc_weight_err])
             else:
-                self.out.fillBranch("ZLLCand_dataMCWeight", mcWeight)
+                # self.out.fillBranch("ZLLCand_dataMCWeight", mcWeight)
+                self.out.fillBranch("ZLLCand_dataMCWeight", [mc_weight])
+                self.out.fillBranch("ZLLCand_lepSF_err", [mc_weight_err])
         
         prep = "ZZCand_" if cand_props.branches["SR"][0] else "ZLLCand_"
 
@@ -619,8 +669,10 @@ class ZZFiller(Module):
             if self.fsr2Idx>=0 : self.l2DressedP4 += fsrPhotons[self.fsr2Idx].p4()
     
             self.p4 = self.l1DressedP4 + self.l2DressedP4
-    
-            self.M = self.p4.M() # cache the mass as it is used often
+
+            # cache mass and pt as both used often
+            self.M = self.p4.M()
+            self.pt = self.p4.Pt()
 
             self.ZmassValue = 91.1876
 
@@ -657,11 +709,12 @@ class ZZFiller(Module):
             self.M = self.p4.M()
 
             angVars = AngularVars(self)
-            self.cosTheta1 = angVars.cosTheta("1")
-            self.cosTheta3 = angVars.cosTheta("2")
+            self.cosTheta1    = angVars.cosTheta("1")
+            self.cosTheta3    = angVars.cosTheta("2")
             self.cosThetaStar = angVars.cosThetaStar()
-            self.delPhiStar = angVars.delPhiStar()
-            self.delRapidity = angVars.delRapidity()
+            self.delPhiStar   = angVars.delPhiStar()
+            self.delPhi       = angVars.delPhi()
+            self.delRapidity  = angVars.delRapidity()
 
             self.HighMass = self.M > 180.
             self.MidMass  = 140. < self.M < 180.
@@ -737,7 +790,7 @@ class ZZFiller(Module):
            mySCeta = max(mySCeta,-2.49)
 
            SF = self.lepSFHelper.getSF(self.year, myLepID, lep.pt, lep.eta, mySCeta, isCrack)
-#           SF_Unc = self.lepSFHelper.getSFError(year, myLepID, lep.pt, lep.eta, mySCeta, isCrack)
+           SF_Unc = self.lepSFHelper.getSFError(self.year, myLepID, lep.pt, lep.eta, mySCeta, isCrack)
            dataMCWeight *= SF
 
-       return dataMCWeight
+       return dataMCWeight, SF_Unc

@@ -20,14 +20,14 @@ if not validateCheckout() :
 #SampleToRun = "ZLZLTo4L_2022CD"
 #SampleToRun = "ZLZTTo4L_2022CD"
 #SampleToRun = "ZTZTTo4L_2022CD"
-SampleToRun = "ZZTo4L_2022CD_LO"
+#SampleToRun = "ZZTo4L_2022CD_LO"
 #SampleToRun  = "ZZTo4L_2022CD_NLO"
 
 #SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
 #SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
 #SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
-#SampleToRun = "ZTZTTo4L_2022EE"
+SampleToRun = "ZTZTTo4L_2022EE"
 
 #SampleToRun = "ZLZLTo4L_2023C"
 #SampleToRun = "ZLZTTo4L_2023C"
@@ -232,7 +232,9 @@ elif SampleToRun == "ZZTo4L_2022CD_NLO":
     setConf("IsMC", True)
     setConf("store", "root://cms-xrd-global.cern.ch/")
     setConf("fileNames", [
-        "/store/mc/Run3Summer22NanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/4d781eeb-a411-4c0b-92a8-e3e2aff000d4.root"
+        #"/store/mc/Run3Summer22NanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/4d781eeb-a411-4c0b-92a8-e3e2aff000d4.root",
+        "/store/mc/Run3Summer22NanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/90ff6c27-8d9b-46e1-8169-808800d5a36a.root",
+        #"/store/mc/Run3Summer22NanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_v5-v2/2520000/1e3b3796-90c7-4c1c-bb45-750dab5bb87f.root"
     ])
 
 elif SampleToRun == "ZLZLTo4L_2022EE":
@@ -339,8 +341,8 @@ elif SampleToRun == "ZLZLTo4L_2023C":
     setConf("SAMPLENAME", "ZLZLTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
+    #setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
+    #setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.003963)
     setConf("XSEC", 0.001753) # noTau # Mean value of LHEWeight_originalXWGTUP
     setConf("LEPTON_SETUP", 2023)
@@ -357,8 +359,6 @@ elif SampleToRun == "ZLZTTo4L_2023C":
     setConf("SAMPLENAME", "ZLZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.01592) # Mean value of LHEWeight_originalXWGTUP
     setConf("XSEC", 0.00711) #noTau ^^ same
     setConf("LEPTON_SETUP", 2023)
@@ -375,8 +375,6 @@ elif SampleToRun == "ZTZTTo4L_2023C":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.045113)
     setConf("XSEC", 0.02032) #noTau mean val...
     setConf("LEPTON_SETUP", 2023)
@@ -393,8 +391,6 @@ elif SampleToRun == "ZZTo4L_2023C_LO":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     setConf("XSEC", 0.02952) #noTau mean val...
     setConf("LEPTON_SETUP", 2023)
     setConf("DATA_TAG", "pre_BPix")
@@ -410,8 +406,6 @@ elif SampleToRun == "ZLZLTo4L_2023D":
     setConf("SAMPLENAME", "ZLZLTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.003963)
     setConf("XSEC", 0.001753) # noTau mean val..
     setConf("LEPTON_SETUP", 2023)
@@ -428,8 +422,6 @@ elif SampleToRun == "ZLZTTo4L_2023D":
     setConf("SAMPLENAME", "ZLZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.01592) # Mean value of LHEWeight_originalXWGTUP
     setConf("XSEC", 0.00711) #noTau
     setConf("LEPTON_SETUP", 2023)
@@ -446,8 +438,6 @@ elif SampleToRun == "ZTZTTo4L_2023D":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.045113)
     setConf("XSEC", 0.02032) #noTau
     setConf("LEPTON_SETUP", 2023)
@@ -464,8 +454,6 @@ elif SampleToRun == "ZZTo4L_2023D_LO":
     setConf("SAMPLENAME", "ZTZTTo4L")
     setConf("APPLY_K_NNLOQCD_ZZQQB", False)
     setConf("APPLY_K_NNLOEW_ZZQQB", True)
-    setConf("APPLYELECORR", False) # TEMPORARY UNTIL THEY ARE READY
-    setConf("APPLYJETCORR", False)
     #setConf("XSEC", 0.0664)
     setConf("XSEC", 0.02952) #noTau
     setConf("LEPTON_SETUP", 2023)

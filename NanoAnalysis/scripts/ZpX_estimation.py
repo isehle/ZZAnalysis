@@ -1,10 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import ROOT
+
 # Note: originally done considering ZpX = DY+TT,
 # should really include also WZto3LNu
 class ZpX:
-    def __init__(self, zpx_procs = ["DY","TT"], max_sip = 4):
+    def __init__(self, zpx_procs = ["DY","TT","WZto3LNu"], max_sip = 4):
         self.zpx_procs = zpx_procs
 
         self.max_sip = max_sip
@@ -51,7 +53,7 @@ class ZpX:
         
         tot_errs = [n_err]
         for proc in all_hists[reg][var][fs]["MC"].keys():
-            
+
             if proc in self.zpx_procs:
                 continue
             
@@ -98,6 +100,7 @@ class ZpX:
 
         for fs in fstates:
             n, n_err = self.get_nZPPSS(fs, all_hists, all_errors)
+            continue
 
             zpx_info["N_ZPP_SS"][fs] = (n, n_err)
 
@@ -119,9 +122,37 @@ class ZpX:
         
         return zpx_info
 
+    def get_yields(self, all_hists, all_errors, fstates):
+        sip_less4_count = lambda sipHist: sipHist[0][1:5].sum() #1st bin is underflow
+        get_err = lambda errArr: np.sqrt(np.sum(np.square(errArr[1:5])))
+
+        sip3d_z2_highMass_SS = all_hists["SS_NoSIP_HighMass"]["Lepton_sip3d_Z2"]
+        err_arrs = all_errors["SS_NoSIP_HighMass"]["Lepton_sip3d_Z2"]
+
+        counts = {}
+        for fs in ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]:
+            data_z2_leps = sip3d_z2_highMass_SS[fs]["Data"]
+            data_err_arr = err_arrs[fs]["Data"]
+
+            # Arbitrary normalization for Z+X which will be fit by combine
+            # Need to divide by 2 to get event counts since these leptons from Z2-->ll, and Data must be integer (CHECK THAT THIS IS OKAY)
+            counts[fs] = {"data_obs": (round(sip_less4_count(data_z2_leps)/2), get_err(data_err_arr)/2),
+                          "ZpX":  (1., 0.)}
+
+            for proc in ["ZZ_NLO", "ggZZ", "H", "VVV"]:
+                hist     = sip3d_z2_highMass_SS[fs]["MC"][proc]
+                err_arr  = err_arrs[fs]["MC"][proc]
+
+                counts[fs][proc] = (sip_less4_count(hist)/2, get_err(err_arr))
+
+        return counts
+
+            
+    
+
     def plot_zpx(self, zpx_info, step, *args):
         r_os_ss_y_lim  = (0, 7)
-        n_zpp_ss_y_lim = (-3, 3)
+        n_zpp_ss_y_lim = (-2, 4)
         fstates = zpx_info[step].keys()
 
         if "N_ZpX" in step:
@@ -166,19 +197,19 @@ class ZpX:
             
             ax.set_title(title)
 
-            fig.savefig(outfile+"_newLepPtReqs_v3.png")
+            fig.savefig(outfile+"_Z1pt.png")
         
         else:
             counts = [zpx_info[step][fs][0] for fs in fstates]
             errs   = [zpx_info[step][fs][1] for fs in fstates]
 
-            if step == "N_ZPP_SS":
-                lumi = 34.6521 if int(args[0]) == 2022 else 27.245
+            # if step == "N_ZPP_SS":
+            #     lumi = 34.6521 if int(args[0]) == 2022 else 27.245
 
-                norm_counts = [cnt/lumi for cnt in counts]
-                norm_errs   = [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts, errs, counts)]
+            #     norm_counts = [cnt/lumi for cnt in counts]
+            #     norm_errs   = [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts, errs, counts)]
 
-                counts, errs = norm_counts, norm_errs
+            #     counts, errs = norm_counts, norm_errs
 
             y_label = self.plot_info[step]["y_label"]
             title   = self.plot_info[step]["title"]
@@ -199,7 +230,36 @@ class ZpX:
             for arg in args:
                 outfile += "_{}".format(arg)
 
-            fig.savefig(outfile+"_newLepPtReqs_v3.png")
+            fig.savefig(outfile+"_Z1pt.png")
         
+    def write_hists(self, zpx_info, hist_info, prop, minBinCount=1e-7):
+        hists = {}
+        for fs in ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]:
+            n_zpx, n_zpx_err = zpx_info["N_ZpX_MidMass"][fs]
 
+            n_zpx_up = n_zpx + n_zpx_err
+            n_zpx_dn = n_zpx - n_zpx_err
 
+            count_per_bin      = max(minBinCount, n_zpx/int(hist_info["nbinsx"]))
+            count_per_bin_up   = max(minBinCount, n_zpx_up/int(hist_info["nbinsx"]))
+            count_per_bin_down = max(minBinCount, n_zpx_dn/int(hist_info["nbinsx"]))
+
+            hist = ROOT.TH1D(prop, prop, int(hist_info["nbinsx"]), int(hist_info["xlow"]), int(hist_info["xhigh"]))
+
+            hist_up = ROOT.TH1D(prop+"_Up", prop+"_Up", int(hist_info["nbinsx"]), int(hist_info["xlow"]), int(hist_info["xhigh"]))
+            hist_dn = ROOT.TH1D(prop+"_Down", prop+"_Down", int(hist_info["nbinsx"]), int(hist_info["xlow"]), int(hist_info["xhigh"]))
+
+            for bin_idx in range(int(hist_info["nbinsx"])):
+                hist.SetBinContent(bin_idx+1, count_per_bin)
+
+                hist_up.SetBinContent(bin_idx+1, count_per_bin_up)
+                hist_dn.SetBinContent(bin_idx+1, count_per_bin_down)
+
+            hists[fs] = dict(
+                Nominal = hist,
+                Up      = hist_up,
+                Down    = hist_dn
+            )
+        
+        return hists
+            
