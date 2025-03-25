@@ -27,7 +27,7 @@ if not validateCheckout() :
 SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
 #SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
-SampleToRun = "ZTZTTo4L_2022EE"
+#SampleToRun = "ZTZTTo4L_2022EE"
 
 #SampleToRun = "ZLZLTo4L_2023C"
 #SampleToRun = "ZLZTTo4L_2023C"

@@ -818,17 +818,17 @@ class ZZFiller(Module):
             # lep_pts = [l.pt for l in self.leps()]
             # lep_pts.sort()
 
-            #return lep_pts[3] > lead and lep_pts[2] > sublead
+            return lep_pts[3] > lead and lep_pts[2] > sublead
 
             # Original / HZZ Requirements
-            if not self.HighMass:
-                # Use this for Low and Mid Mass control regions
-                return lep_pts[3] > lead and lep_pts[2] > sublead
+            # if not self.HighMass:
+            #     # Use this for Low and Mid Mass control regions
+            #     return lep_pts[3] > lead and lep_pts[2] > sublead
 
-            # To kill Z+X background in High Mass (including SR) regions
-            #lep_reqs = [20., 15., 15., 15.] # WAS CHECKING THE WRONG ORDERING!!
-            lep_reqs = [15., 15., 15., 20.]
-            return sum([l_pt > req for l_pt, req in zip(lep_pts, lep_reqs)]) == 4
+            # # To kill Z+X background in High Mass (including SR) regions
+            # #lep_reqs = [20., 15., 15., 15.] # WAS CHECKING THE WRONG ORDERING!!
+            # lep_reqs = [15., 15., 15., 20.]
+            # return sum([l_pt > req for l_pt, req in zip(lep_pts, lep_reqs)]) == 4
 
         def passQCDandDeltaR(self):
             zzleps = self.leps()
