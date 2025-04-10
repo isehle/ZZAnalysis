@@ -15,12 +15,12 @@ if not validateCheckout() :
 #SampleToRun = "MCsync_2018Rereco" # for mini vs nano sync
 #SampleToRun = "MCsync_2017UL" # for mini vs nano sync
 #SampleToRun = "Data2022"
-SampleToRun = "MC2022"
-#SampleToRun = "MC2023postBPix"
+#SampleToRun = "MC2022"
 #SampleToRun = "MELA_Test"
 #SampleToRun = "ggh125_2018UL"
 #SampleToRun = "forNanoDoc" # To prepare variable lists with inspectNanoFile.py
-#SampleToRun = "Data2024"
+SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
+
 
 ### Customize processing variables.
 #setConf("runMELA", False)
@@ -135,20 +135,21 @@ elif SampleToRun == "MC2022" :
         ])
 #    json = {"1": [[1245, 1245],[1306, 1306],[1410, 1410],[1692, 1692],[1903, 1903],[1910, 1910],[1915, 1915],[1927, 1927],[1939, 1939],[1940, 1940],[1944, 1944],[1945, 1945],[1956, 1956],[1960, 1960],[1965, 1965],[1967, 1967],[1968, 1968],[1969, 1969],[2104, 2104]]}
 
-################################################################################
-elif SampleToRun == "MC2023postBPix" :
-    # 2023 MC sample
-    setConf("SAMPLENAME", "ggH125")
-    setConf("DATA_TAG", "post_BPix")
-    setConf("XSEC", 52.23*0.0002745)
-    setConf("LEPTON_SETUP", 2023)
+elif SampleToRun == "ZZTo4L_2022EE":
+    setConf("SAMPLENAME", "ZZTo4L")
+    setConf("APPLY_K_NNLOQCD_ZZQQB", True)
+    setConf("APPLY_K_NNLOEW_ZZQQB", True)
+    setConf("XSEC", 1.39)
+    setConf("LEPTON_SETUP", 2022)
+    setConf("DATA_TAG", "post_EE")
+    setConf("NANOVERSION", 12)
     setConf("IsMC", True)
-    setConf("store","root://cms-xrd-global.cern.ch/")
-    setConf("APPLY_QCD_GGF_UNCERT", True) # for ggH
-    setConf("fileNames",[
-        "/store/mc/Run3Summer23BPixNanoAODv12/GluGluHtoZZto4L_M-125_TuneCP5_13p6TeV_powheg-jhugen-pythia8/NANOAODSIM/130X_mcRun3_2023_realistic_postBPix_v6-v2/50000/4daf03b4-93c9-4d35-bf53-738bb6cba90e.root", # 12 kevts
-        ])
-
+    setConf("runMELA", False)
+    setConf("bestCandByMELA", False)
+    setConf("store", "root://cms-xrd-global.cern.ch/")
+    setConf("fileNames", [
+        "/store/mc/Run3Summer22EENanoAODv12/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/NANOAODSIM/130X_mcRun3_2022_realistic_postEE_v6-v2/50000/dea56a0a-462c-4690-953c-c7db96dd3ab5.root",
+    ])
 
 ################################################################################
 elif SampleToRun == "forNanoDoc" :
