@@ -139,11 +139,13 @@ class ZpX:
             counts[fs] = {"data_obs": (round(sip_less4_count(data_z2_leps)/2), get_err(data_err_arr)/2),
                           "ZpX":  (1., 0.)}
 
-            for proc in ["ZZ_NLO", "ggZZ", "H", "VVV"]:
-                hist     = sip3d_z2_highMass_SS[fs]["MC"][proc]
-                err_arr  = err_arrs[fs]["MC"][proc]
+            mc_hists = sip3d_z2_highMass_SS[fs]["MC"]
+            mc_errs  = err_arrs[fs]["MC"]
 
-                counts[fs][proc] = (sip_less4_count(hist)/2, get_err(err_arr))
+            for proc in ["ZZ_NLO", "ggZZ", "H", "VVV"]:
+                count, err = sip_less4_count(mc_hists[proc])/2, get_err(mc_errs[proc])
+
+                counts[fs][proc] = (count, err)
 
         return counts
 

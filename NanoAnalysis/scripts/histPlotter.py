@@ -37,7 +37,7 @@ class HistPlotter:
         self.labels = dict(
             MC = dict(
                 ggZZ   = r"$gg \rightarrow ZZ$",
-                ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NLO}$",
+                ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
                 DY     = r"$DY$",
                 TT     = r"$t\bar{t}$",
                 WZ     = r"$WZ$",
@@ -63,7 +63,7 @@ class HistPlotter:
         else:
             outdir = os.path.join(self.cfg["output"]["plot_dir"], "Full", reg, fstate)
         Path(outdir).mkdir(parents=True, exist_ok=True)
-        self.outfile = os.path.join(outdir, prop+self.args["tag"]+"_norm.png")
+        self.outfile = os.path.join(outdir, prop+self.args["tag"]+"_goodZZLabel.png")
 
     def set_lumi_tag(self):
         if self.args["lumi_tag"] == 0:
@@ -120,11 +120,14 @@ class HistPlotter:
     def writeFigs(self):
         hep.style.use("CMS")
 
-        if not self.prop_info["Blind"]:
-            self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
-            self.fig.subplots_adjust(hspace=0.07)
-        else:
-            self.fig, self.ax = plt.subplots()
+        self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
+        self.fig.subplots_adjust(hspace=0.07)
+
+        # if not self.prop_info["Blind"]:
+        #     self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
+        #     self.fig.subplots_adjust(hspace=0.07)
+        # else:
+        #     self.fig, self.ax = plt.subplots()
 
     def cms_label(self):
         if self.args["year"] != -1:
@@ -198,6 +201,28 @@ class HistPlotter:
         self.rax.set_xlabel(self.xlabel)
         self.rax.autoscale(axis='x', tight=True)
 
+    # def draw_ratio(self, mc_hists, mc_errors, pol_hists, pol_errors):
+    #     # Ignore under and overflow bins for now
+    #     nlo = mc_hists["ZZ_NLO"][0][1:-1]
+    #     lo  = pol_hists["ZZ_LO"][0][1:-1]
+        
+    #     nlo_err = mc_errors["ZZ_NLO"][1:-1]
+    #     lo_err  = pol_errors["ZZ_LO"][1:-1]
+
+    #     ratio = lo/nlo
+    #     errs  = ratio*np.sqrt((lo_err/lo)**2 + (nlo_err/nlo)**2)
+
+    #     #self.rax.fill_between(x=self.bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='mid', **self.hatch_style)
+    #     #self.rax.errorbar(x=self.bin_centers, y=data_hist[0]/self.total_mc_counts, yerr=np.sqrt(data_hist[0])/self.total_mc_counts, **self.errorbar_style)
+
+    #     self.rax.errorbar(x=self.bin_centers[1:-1], y=ratio, yerr=errs, **self.errorbar_style)
+
+    #     #self.rax.set_ylim(0, 2)
+    #     self.rax.set_ylim(0, 1)
+    #     self.rax.set_ylabel('LO / NNLO')
+    #     self.rax.set_xlabel(self.xlabel)
+    #     self.rax.autoscale(axis='x', tight=True)
+
     def set_stackCountsErrs(self, mc_hists, mc_errors):
         mc_count_arr = np.array([mc_hists[key][0] for key in self.cfg["plot_styling"]["mc_colors"].keys()])
         self.total_mc_counts = np.sum(mc_count_arr, axis=0)
@@ -260,6 +285,8 @@ class HistPlotter:
             self.draw_pol_sum(hists, counts, errors)
             
             max_bin_counts.append(max([max(hist[0]) for hist in pol_hists.values()]))
+
+            #self.draw_ratio(mc_hists, mc_errors, pol_hists, pol_errors)
 
         if self.draw_data:
             data_hist   = hists["Data"]

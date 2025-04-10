@@ -17,39 +17,6 @@ from tqdm import tqdm
 def to_raw_string(s):
     return s.encode('unicode_escape').decode('utf-8')
 
-'''def get_samples(cfg, year, era):
-    central_base = cfg["datasets"]["eos_base"]
-
-    if era == "Full":
-        era = "CD" if year==2022 else "C"
-
-    mc_sub_path  = cfg["datasets"]["year_"+str(year)][era]["MC"]
-
-    central_mc_procs = cfg["datasets"]["MC_Procs"]
-    
-    central_mc_path = os.path.join(central_base, mc_sub_path)
-
-    central_mc_samples = {}
-    for cat, procs in central_mc_procs.items():
-        if isinstance(procs, dict):
-            for key, val in procs.items():
-                central_mc_samples[key] = os.path.join(central_mc_path, val, "ZZ4lAnalysis.root")
-        else:
-            central_mc_samples[cat] = os.path.join(central_mc_path, procs, "ZZ4lAnalysis.root")
-
-    if "Data" in cfg["datasets"]["year_"+str(year)][era]:
-        data_sub_path = cfg["datasets"]["year_"+str(year)][era]["Data"]
-        data_sample = dict(Data = os.path.join(central_base, data_sub_path))
-    else:
-        data_sample = {}
-
-    if "Pol" in cfg["datasets"]["year_"+str(year)][era]:
-        pol_samples = {cat: os.path.join(central_base, pol_file) for cat, pol_file in cfg["datasets"]["year_"+str(year)][era]["Pol"].items()}
-    else:
-        pol_samples = {}
-
-    return central_mc_samples | data_sample | pol_samples'''
-
 def get_samples(cfg, year, era):
     central_base = cfg["datasets"]["eos_base"]
 
