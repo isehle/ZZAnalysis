@@ -75,6 +75,7 @@ class ZZFiller(Module):
 
         self.DEBUG = debug
         self.ZmassValue = 91.1876;
+        self.shell_cond = 10 # on-shell condition for polarization analysis (requires |mll - zmass| < shell_cond)
 
         # Pre-selection of leptons used to reduce combinatorial when building Z and LL candidates.
         # Note that the actual lepton selection cuts for SR and CR are applied later; this preselection only affects what
@@ -167,6 +168,12 @@ class ZZFiller(Module):
             self.out.branch("ZLLbest2P2FIdx", "S", title="best candidate for the 2P2F CR")
             self.out.branch("ZLLbest3P1FIdx", "S", title="best candidate for the 3P1F CR")
             self.out.branch("ZLLbestSIPCRIdx", "S", title="best candidate for the SIP CR")
+            self.out.branch("ZLLbestHighMassOSSIPIdx", "S", title="best candidate for the High Mass OS SIP CR")
+            self.out.branch("ZLLbestMidMassOSSIPIdx", "S", title="best candidate for the Mid Mass OS SIP CR")
+            self.out.branch("ZLLbestLowMassOSSIPIdx", "S", title="best candidate for the Low Mass OS SIP CR")
+            self.out.branch("ZLLbestHighMassSSSIPIdx", "S", title="best candidate for the High Mass OS SIP CR")
+            self.out.branch("ZLLbestMidMassSSSIPIdx", "S", title="best candidate for the Mid Mass OS SIP CR")
+            self.out.branch("ZLLbestLowMassSSSIPIdx", "S", title="best candidate for the Low Mass OS SIP CR")
 
         if self.addZLCR :            
             self.out.branch("ZLCand_lepIdx", "S", title="Index of extra lep for the ZL CR")
@@ -215,6 +222,12 @@ class ZZFiller(Module):
         best2P2FCRIdx = -1
         bestSSCRIdx = -1
         bestSIPCRIdx = -1
+        bestHighMassOSSIPIdx = -1
+        bestMidMassOSSIPIdx = -1
+        bestLowMassOSSIPIdx = -1
+        bestHighMassSSSIPIdx = -1
+        bestMidMassSSSIPIdx = -1
+        bestLowMassSSSIPIdx = -1
         ZLCand_lIdx = -1 #index of the additional lepton for the Z+L CR
 
         ### Z combinatorial over selected leps (after FSR-corrected ISO cut for muons)
@@ -229,18 +242,27 @@ class ZZFiller(Module):
                     is2FCR = False
                     isSSCR = False
                     isSIPCR = False
+                    isOSSIPCR = False
+                    isSSSIPCR = False
                     if self.leptonPresel(l2):
                         if l1.pdgId == -l2.pdgId : #OS,SF: candidate for signal region 
                             isOSSF = True
+                                
                             if l1.ZZRelaxedId and l2.ZZRelaxedId:
                                 nPassLep = int(l1.ZZFullSel) + int(l2.ZZFullSel) # 0,1,2 leptons passing full sel
                                 if nPassLep == 2 : isSR = True # SR (to be used to set the best candidate)
                                 if self.addOSCR :
                                     if nPassLep == 0 : is2FCR = True
                                     elif nPassLep == 1 : is1FCR = True
+
+                            # For OS/SS transfer function using SIP method
+                            elif l1.ZZFullSelNoSIP and l2.ZZFullSelNoSIP:
+                                isOSSIPCR = True
+
                         elif l1.pdgId == l2.pdgId : # SS control regions
                             if self.addSSCR and l1.ZZRelaxedId and l2.ZZRelaxedId : isSSCR = True
                             if self.addSIPCR and l1.ZZFullSelNoSIP and l2.ZZFullSelNoSIP : isSIPCR = True
+                            if l1.ZZFullSelNoSIP and l2.ZZFullSelNoSIP : isSSSIPCR = True
                             if not (isSSCR or isSIPCR) : continue
                         else:
                             continue
@@ -251,15 +273,18 @@ class ZZFiller(Module):
                             idx1, idx2 = idx2, idx1
                         
                         aZ = self.ZCand(idx1, idx2, leps, fsrPhotons)
+                        aZ.on_shell = abs(aZ.M - self.ZmassValue) < self.shell_cond
                         aZ.isOSSF = isOSSF
-                        aZ.isSR   = isSR
+                        aZ.isSR   = isSR and aZ.on_shell # Polarization requirement
                         aZ.is1FCR = is1FCR
                         aZ.is2FCR = is2FCR
                         aZ.isSSCR = isSSCR
                         aZ.isSIPCR = isSIPCR
+                        aZ.isOSSIPCR = isOSSIPCR
+                        aZ.isSSSIPCR = isSSSIPCR
                         
                         zmass = aZ.M
-                        if self.DEBUG: print('Z={:.4g} pt1={:.3g} pt2={:.3g} fsr1={} fsr2={} SR={} 1F={} 2F={} SS={} SSSIP={}'.format(zmass, l1.pt, l2.pt, l1.fsrPhotonIdx,  l2.fsrPhotonIdx, isSR, is1FCR, is2FCR, isSSCR, isSIPCR))
+                        if self.DEBUG: print('Z={:.4g} pt1={:.3g} pt2={:.3g} fsr1={} fsr2={} SR={} 1F={} 2F={} SS={} OSSIP={}'.format(zmass, l1.pt, l2.pt, l1.fsrPhotonIdx,  l2.fsrPhotonIdx, isSR, is1FCR, is2FCR, isSSCR, isSIPCR))
                         if (zmass>12. and zmass<120.):
                             Zs.append(aZ)
                             if self.candsToStore == self.AllWithRelaxedMuId : # For ID studies, store any OS Z made with preselected leptons
@@ -288,7 +313,7 @@ class ZZFiller(Module):
                         if self.DEBUG : print("ZZ:", len(ZZs)-1, ZZ.p4.M(), ZZ.Z1.M, ZZ.Z2.M, ZZ.Z2.sumpt(), ZZ.finalState(), ZZ.p_GG_SIG_ghg2_1_ghz1_1_JHUGen, ZZ.p_QQB_BKG_MCFM, ZZ.KD, (ZZ.Z1.isSR and ZZ.Z2.isSR))
 
                         #Search for the the best cand in the SR (ie among those passing full ID cuts)
-                        if ZZ.Z1.isSR and ZZ.Z2.isSR :
+                        if ZZ.Z1.isSR and ZZ.Z2.isSR and ZZ.HighMass:
                             if bestCandIdx<0 or self.bestCandCmp(ZZ,ZZs[bestCandIdx]) < 0: bestCandIdx = len(ZZs)-1
 
             if self.DEBUG : print("bestCand:", bestCandIdx)
@@ -300,12 +325,21 @@ class ZZFiller(Module):
                 for iZ1,Z1 in enumerate(Zs):
                     if Z1.isSR : 
                         for iZ2,Z2 in enumerate(Zs):
-                            if Z2.is1FCR or Z2.is2FCR or Z2.isSSCR or Z2.isSIPCR :
+                            if Z2.is1FCR or Z2.is2FCR or Z2.isSSCR or Z2.isOSSIPCR or Z2.isSSSIPCR:
                                 ZLL = self.makeCand(Z1, Z2, sortZsByMass=False, fillIDVars=False)
                                 if ZLL == None: continue
                                 if ZLL.Z2.is2FCR  and (best2P2FCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[best2P2FCRIdx]) < 0) : best2P2FCRIdx = len(ZLLsTemp)
                                 if ZLL.Z2.is1FCR  and (best3P1FCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[best3P1FCRIdx]) < 0) : best3P1FCRIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isSSCR  and (bestSSCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[bestSSCRIdx]) < 0) : bestSSCRIdx = len(ZLLsTemp)
+                                if ZLL.Z2.isOSSIPCR:
+                                    if ZLL.HighMass and (bestHighMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassOSSIPIdx]) < 0) : bestHighMassOSSIPIdx = len(ZLLsTemp)
+                                    if ZLL.MidMass and (bestMidMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestMidMassOSSIPIdx]) < 0) : bestMidMassOSSIPIdx = len(ZLLsTemp)
+                                    if ZLL.LowMass and (bestLowMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestLowMassOSSIPIdx]) < 0) : bestLowMassOSSIPIdx = len(ZLLsTemp)
+                                if ZLL.Z2.isSSSIPCR:
+                                    if ZLL.HighMass and (bestHighMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassSSSIPIdx]) < 0) : bestHighMassSSSIPIdx = len(ZLLsTemp)
+                                    if ZLL.MidMass and (bestMidMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestMidMassSSSIPIdx]) < 0) : bestMidMassSSSIPIdx = len(ZLLsTemp)
+                                    if ZLL.LowMass and (bestLowMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestLowMassSSSIPIdx]) < 0) : bestLowMassSSSIPIdx = len(ZLLsTemp)
+                                        
                                 if ZLL.Z2.isSIPCR and (bestSIPCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[bestSIPCRIdx]) < 0) : bestSIPCRIdx = len(ZLLsTemp)
                                 ZLLsTemp.append(ZLL)
                                 
@@ -328,6 +362,24 @@ class ZZFiller(Module):
                         select = True
                     if iZLL == bestSIPCRIdx :
                         bestSIPCRIdx = len(ZLLs)
+                        select = True
+                    if iZLL == bestHighMassOSSIPIdx:
+                        bestHighMassOSSIPIdx = len(ZLLs)
+                        select = True
+                    if iZLL == bestMidMassOSSIPIdx:
+                        bestMidMassOSSIPIdx = len(ZLLs)
+                        select = True
+                    if iZLL == bestLowMassOSSIPIdx:
+                        bestLowMassOSSIPIdx = len(ZLLs)
+                        select = True
+                    if iZLL == bestHighMassSSSIPIdx:
+                        bestHighMassSSSIPIdx = len(ZLLs)
+                        select = True
+                    if iZLL == bestMidMassSSSIPIdx:
+                        bestMidMassSSSIPIdx = len(ZLLs)
+                        select = True
+                    if iZLL == bestLowMassSSSIPIdx:
+                        bestLowMassSSSIPIdx = len(ZLLs)
                         select = True
                     if select : ZLLs.append(ZLL)
                     if self.DEBUG: print("ZLL:", iZLL, ZLL.p4.M(), ZLL.Z1.M, ZLL.Z2.M, ZLL.Z2.sumpt(), ZLL.finalState(), ZLL.p_GG_SIG_ghg2_1_ghz1_1_JHUGen, ZLL.p_QQB_BKG_MCFM, ZLL.KD,
@@ -514,7 +566,12 @@ class ZZFiller(Module):
                 self.out.fillBranch("ZLLbest3P1FIdx", best3P1FCRIdx)
             if self.addSIPCR :
                 self.out.fillBranch("ZLLbestSIPCRIdx", bestSIPCRIdx)
-
+                self.out.fillBranch("ZLLbestHighMassOSSIPIdx", bestHighMassOSSIPIdx)
+                self.out.fillBranch("ZLLbestMidMassOSSIPIdx", bestMidMassOSSIPIdx)
+                self.out.fillBranch("ZLLbestLowMassOSSIPIdx", bestLowMassOSSIPIdx)
+                self.out.fillBranch("ZLLbestHighMassSSSIPIdx", bestHighMassSSSIPIdx)
+                self.out.fillBranch("ZLLbestMidMassSSSIPIdx", bestMidMassSSSIPIdx)
+                self.out.fillBranch("ZLLbestLowMassSSSIPIdx", bestLowMassSSSIPIdx)
         if self.addZLCR :
             self.out.fillBranch("ZLCand_lepIdx", ZLCand_lIdx)
 
@@ -557,6 +614,7 @@ class ZZFiller(Module):
             self.Z1 = Z1
             self.Z2 = Z2
             self.p4 = Z1.p4+Z2.p4
+            self.M  = self.p4.M()
             self.p_GG_SIG_ghg2_1_ghz1_1_JHUGen = p_GG_SIG_ghg2_1_ghz1_1_JHUGen
             self.p_QQB_BKG_MCFM = p_QQB_BKG_MCFM
             self.KD = p_GG_SIG_ghg2_1_ghz1_1_JHUGen/(p_GG_SIG_ghg2_1_ghz1_1_JHUGen+p_QQB_BKG_MCFM) # without c-constants, for candidate sorting
@@ -613,8 +671,9 @@ class ZZFiller(Module):
         if sortZsByMass and abs(Zb.M-self.ZmassValue) < abs(Za.M-self.ZmassValue):
             Z1, Z2 = Z2, Z1
 
-        # Z1 mass cut
+        # Z1 mass cut (regardless of region!)
         if Z1.M <= 40. : return None
+
 
         zzleps = [Z1.l1, Z1.l2, Z2.l1, Z2.l2]
         lepPts = []
@@ -676,4 +735,12 @@ class ZZFiller(Module):
             print ("ERROR", p_GG_SIG_ghg2_1_ghz1_1_JHUGen, p_QQB_BKG_MCFM)
             p_QQB_BKG_MCFM = 1. # FIXME: fix for error with message: "TUtil::CheckPartonMomFraction: At least one of the parton momentum fractions is greater than 1."
         ZZ = self.ZZCand(Z1, Z2, p_GG_SIG_ghg2_1_ghz1_1_JHUGen, p_QQB_BKG_MCFM)
+
+        ZZ.HighMass = ZZ.M > 180
+        ZZ.MidMass  = (ZZ.M > 140) & (ZZ.M < 180)
+        ZZ.LowMass  = (ZZ. M > 105) & (ZZ.M < 140)
+
+        if not (ZZ.HighMass or ZZ.MidMass or ZZ.LowMass):
+            return None
+        
         return ZZ
