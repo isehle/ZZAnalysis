@@ -4,16 +4,17 @@ import sys
 parent_dir = os.path.abspath(__file__ + 3 * "/..")
 sys.path.insert(0, parent_dir)
 
+from NanoAnalysis.scripts.fileHandler import FileHandler
+
 import ROOT
 import uproot as up
 import numpy as np
 from tqdm import tqdm
 
 class HistWriter:
-    def __init__(self, cfg="", args=""):
-        self.cfg  = cfg
-        self.args = args
-
+    def __init__(self, cfg):
+        self.cfg          = cfg
+    
         self.col_tag = "good"
 
         self.lep_idx = lambda z, l: f"{self.col_tag}_{z}{l}Idx"
@@ -26,9 +27,26 @@ class HistWriter:
             fs_2mu2e = (-169, -121)
         )
 
+        self.isData = False
+
+    def get_hist_info(self, reg, prop):
+        hist_info = self.cfg[prop]
+        if "mass" in prop:
+            if reg == "SR" or "HighMass" in reg:
+                hist_info = hist_info["SR"]
+            else:
+                reg = reg.split("_")
+                hist_info = hist_info[reg[-1]]
+
+        return hist_info
+
     def get_df(self, path):
         df = ROOT.RDataFrame("Events", path)
         df = df.Filter("HLT_passZZ4l")
+
+        if "Data" in path:
+            self.isData = True
+            return df
 
         Runs = ROOT.RDataFrame("Runs", path)
         return df.Define("genEventSumw", str(Runs.Sum("genEventSumw").GetValue()))    
@@ -45,7 +63,8 @@ class HistWriter:
             self.cand = "ZLLCand"
             self.reg_idx  = f"ZLLbest{reg}Idx"
 
-        df = df.Define("weight", f"{self.cand}_dataMCWeight[{self.reg_idx}]*overallEventWeight/genEventSumw")
+        if not self.isData:
+            df = df.Define("weight", f"{self.cand}_dataMCWeight[{self.reg_idx}]*overallEventWeight/genEventSumw")
 
         for Z in ["Z1", "Z2"]:
             for L in ["l1", "l2"]:
@@ -67,17 +86,24 @@ class HistWriter:
         return df
 
     def fs_filt(self, df, fs):
+        if "4l" in fs:
+            return df
+        
         z1flav, z2flav = self.pdgs[fs]
 
         return df.Filter(f"{self.cand}_Z1flav[{self.reg_idx}] == {z1flav}").Filter(f"{self.cand}_Z2flav[{self.reg_idx}] == {z2flav}")
 
-    def main(self, path):
-        df = self.get_df(path)
-        df = self.init_defs(df, "SR")
-        df = self.define_cols(df, "Lepton_pt")
-        df = self.fs_filt(df, "fs_4mu")
-        return df
-
+    def write_hist(self, df, col, reg, lumi, weight_col="weight"):
+        hist_info = self.get_hist_info(reg, col)
+        if not self.isData:
+            hist = df.Histo1D((col, col, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), self.col_tag + "_" + col, weight_col)
+            hist.Scale(lumi)
+            hist = hist.GetValue()
+        else:
+            hist = df.Histo1D((col, col, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), self.col_tag + "_" + col, weight_col)
+            hist.SetBinErrorOption(ROOT.TH1.kPoisson)
+        return hist
+    
 if __name__ == "__main__":
     import yaml
     from argparse import ArgumentParser
@@ -87,5 +113,9 @@ if __name__ == "__main__":
     parser.add_argument("--tag", default="")
     args = vars(parser.parse_args())
 
-    histWriter = HistWriter(args=args)
+    cfg_path = os.path.join(parent_dir, "NanoAnalysis/scripts/hist_cfg.yaml")
+    with open(cfg_path) as config:
+        cfg = yaml.safe_load(config)
+
+    histWriter = HistWriter(cfg)
     df = histWriter.main("ZZ4l_NLO_HZZSelection_Skim.root")
