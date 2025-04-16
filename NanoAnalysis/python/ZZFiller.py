@@ -391,18 +391,6 @@ class ZZFiller(Module):
         
         self.filt_regions = ["SR"] + self.cr_regions
 
-    def fill_dict(self, the_dict, lhepart):
-        for i in range(4, 8):
-            lep = lhepart[i]
-            if abs(lep.pdgId) == 11:                    
-                the_dict["el_pt"].append(lep.pt)
-                the_dict["el_eta"].append(lep.eta)
-            elif abs(lep.pdgId) == 13:
-                the_dict["mu_pt"].append(lep.pt)
-                the_dict["mu_eta"].append(lep.eta)
-
-        return the_dict
-
     def buildZs(self, lep_idx_pairs, lep_pairs, fsrPhotons, looseMass=(12.,120.), tightMass=10.):
         """Builds Z candidates from pairs of leptons and their associated indices. Both leptons
         must pass the preselection, be SF and pass a deltaR cut to be considered. Lepton pairs
@@ -467,9 +455,9 @@ class ZZFiller(Module):
         if reg == "Z1_Cands":
             z_pairs = combinations(cands, 2)
             # Define Z1 as closest mass to mZ, ex [(88, 90), (84, 91)] --> [(90, 88), (91, 84)]
-            # z_pairs = [(zp[0], zp[1]) if abs(zp[0].M - self.ZmassValue) < abs(zp[1].M - self.ZmassValue) else (zp[1], zp[0]) for zp in z_pairs]
+            z_pairs = [(zp[0], zp[1]) if abs(zp[0].M - self.ZmassValue) < abs(zp[1].M - self.ZmassValue) else (zp[1], zp[0]) for zp in z_pairs]
             # Define Z1 as highest pt
-            z_pairs = [(zp[0], zp[1]) if zp[0].pt > zp[1].pt else (zp[1], zp[0]) for zp in z_pairs]
+            #z_pairs = [(zp[0], zp[1]) if zp[0].pt > zp[1].pt else (zp[1], zp[0]) for zp in z_pairs]
         else:
             z_pairs = [(z1, ll) for ll in cands]
         
@@ -601,11 +589,6 @@ class ZZFiller(Module):
         leps = list(electrons)+list(muons)
         nlep=len(leps)
 
-        # For Debugging
-        genpart = Collection(event, "GenPart")
-        lhepart = Collection(event, "LHEPart")
-        #lhePart = lheParts(lhepart)
-
         ### Skip events with too few leptons (min 3 if ZL is included, 4 otherwise) 
         if nlep < 3 or (not self.addZLCR and nlep < 4) :
             return False
@@ -636,60 +619,15 @@ class ZZFiller(Module):
         elif len(z1_cands) == 1:
             
             if sum([len(Z_Cands[reg]) for reg in Z_Cands.keys()]) < 2:
-                self.fill_dict(self.failed_lhe_info, lhepart)
-                #print("\nFail: <2 Tot Cands")
-                # lhePart._setInfo()
-                # if not lhePart.has_tau:
-                #     self.non_tau_fails["LHEInfo"]["ZZ"]["mass"].append(lhePart.zz_mass)
-                #     self.non_tau_fails["LHEInfo"]["Z1"]["mass"].append(lhePart.z1_mass)
-                #     self.non_tau_fails["LHEInfo"]["Z1"]["flavor"].append(lhePart.z1_flav)
-                #     self.non_tau_fails["LHEInfo"]["Z2"]["mass"].append(lhePart.z2_mass)
-                #     self.non_tau_fails["LHEInfo"]["Z2"]["flavor"].append(lhePart.z2_flav)
-                #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["pT"].append((lhePart.lep_1_pt, lhePart.lep_2_pt))
-                #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["eta"].append((lhePart.lep_1_eta, lhePart.lep_2_eta))
-                #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["pT"].append((lhePart.lep_3_pt, lhePart.lep_4_pt))
-                #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["eta"].append((lhePart.lep_3_eta, lhePart.lep_4_eta))
                 return False
             else:
                 temp_zlls = self.bestInCR(Z_Cands, z1_cands, temp_zlls)
         
         else:
-            #print("\nFail: No Z Cands")
-            # test = [(gp.pdgId, getParentID(gp, genpart)) for gp in genpart]
-            # test_2 = [(gp.pdgId, Mother(gp, genpart)) for gp in genpart]
-            # lhePart._setInfo()
-            # if not lhePart.has_tau:
-            #     self.non_tau_fails["LHEInfo"]["ZZ"]["mass"].append(lhePart.zz_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["mass"].append(lhePart.z1_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["flavor"].append(lhePart.z1_flav)
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["mass"].append(lhePart.z2_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["flavor"].append(lhePart.z2_flav)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["pT"].append((lhePart.lep_1_pt, lhePart.lep_2_pt))
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["eta"].append((lhePart.lep_1_eta, lhePart.lep_2_eta))
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["pT"].append((lhePart.lep_3_pt, lhePart.lep_4_pt))
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["eta"].append((lhePart.lep_3_eta, lhePart.lep_4_eta))
-            self.fill_dict(self.failed_lhe_info, lhepart)
             return False
-        
-
 
         final_cands = {}
         if (len(sr_cands) == 0) and len(temp_zlls) == 0:
-            #print("\nFail: len(sr)==0 and len(temp_zlls)==0")
-            #test = [(gp.pdgId, getParentID(gp, genpart)) for gp in genpart]
-            #test_2 = [(gp.pdgId, Mother(gp, genpart)) for gp in genpart]
-            # lhePart._setInfo()
-            # if not lhePart.has_tau:
-            #     self.non_tau_fails["LHEInfo"]["ZZ"]["mass"].append(lhePart.zz_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["mass"].append(lhePart.z1_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["flavor"].append(lhePart.z1_flav)
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["mass"].append(lhePart.z2_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["flavor"].append(lhePart.z2_flav)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["pT"].append((lhePart.lep_1_pt, lhePart.lep_2_pt))
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["eta"].append((lhePart.lep_1_eta, lhePart.lep_2_eta))
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["pT"].append((lhePart.lep_3_pt, lhePart.lep_4_pt))
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["eta"].append((lhePart.lep_3_eta, lhePart.lep_4_eta))
-            self.fill_dict(self.failed_lhe_info, lhepart)
             return False
         
         else:
@@ -705,25 +643,9 @@ class ZZFiller(Module):
                 final_cands = self.bestZLLs(temp_zlls, final_cands)
 
         if len(final_cands) == 0:
-            #print("\nFail: len(final_cands)==0")
-            #test = [(gp.pdgId, getParentID(gp, genpart)) for gp in genpart]
-            #test_2 = [(gp.pdgId, Mother(gp, genpart)) for gp in genpart]
-            # lhePart._setInfo()
-            # if not lhePart.has_tau:
-            #     self.non_tau_fails["LHEInfo"]["ZZ"]["mass"].append(lhePart.zz_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["mass"].append(lhePart.z1_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["flavor"].append(lhePart.z1_flav)
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["mass"].append(lhePart.z2_mass)
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["flavor"].append(lhePart.z2_flav)
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["pT"].append((lhePart.lep_1_pt, lhePart.lep_2_pt))
-            #     self.non_tau_fails["LHEInfo"]["Z1"]["Leps"]["eta"].append((lhePart.lep_1_eta, lhePart.lep_2_eta))
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["pT"].append((lhePart.lep_3_pt, lhePart.lep_4_pt))
-            #     self.non_tau_fails["LHEInfo"]["Z2"]["Leps"]["eta"].append((lhePart.lep_3_eta, lhePart.lep_4_eta))
-            self.fill_dict(self.failed_lhe_info, lhepart)
             return False
 
         self.write_branches(final_cands)
-        self.fill_dict(self.passed_lhe_info, lhepart)
             
         return True
     
@@ -815,12 +737,12 @@ class ZZFiller(Module):
 
         def passLepPts(self, lead=20., sublead=10.):
             # Original / HZZ Requirements
-            # lep_pts = [l.pt for l in self.leps()]
-            # lep_pts.sort()
+            lep_pts = [l.pt for l in self.leps()]
+            lep_pts.sort()
 
-            return lep_pts[3] > lead and lep_pts[2] > sublead
 
             # Original / HZZ Requirements
+            return lep_pts[3] > lead and lep_pts[2] > sublead
             # if not self.HighMass:
             #     # Use this for Low and Mid Mass control regions
             #     return lep_pts[3] > lead and lep_pts[2] > sublead
