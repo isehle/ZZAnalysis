@@ -1,17 +1,20 @@
 eos_base: /eos/user/i/iehle/Analysis
 
+store: root:://eosuser.cern.ch/
+
 year_2022:
   CD:
     lumi: !!float 7.9804e3
   EFG:
     lumi: !!float 26.6717e3
-    MC: MC_2022_EraEFG_Z1pt
-    Data: Data_2022_Z1pt/EraEFG/ZZ4lAnalysis.root
-    Pol:
-      ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZL_noTau_hadd_Skim.root
-      ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZT_noTau_hadd_Skim.root
-      ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZTZT_noTau_hadd_Skim.root
-      ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/qqZZ_noTau_hadd_Skim.root
+    #MC: MC_2022_EraEFG_Z1pt
+    MC: MC_2022EE_massReqs_SIPCRs
+    #Data: Data_2022_Z1pt/EraEFG/ZZ4lAnalysis.root
+    # Pol:
+    #   ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZL_noTau_hadd_Skim.root
+    #   ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZT_noTau_hadd_Skim.root
+    #   ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZTZT_noTau_hadd_Skim.root
+    #   ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/qqZZ_noTau_hadd_Skim.root
   Full:
     lumi: !!float 34.6521e3
 year_2023:
@@ -26,12 +29,12 @@ mc_file_name: ZZ4lAnalysis.root
 
 MC_Procs:
   ggZZ:
-    ggTo2e2mu: ggTo2e2mu
-    ggTo2e2tau: ggTo2e2tau
-    ggTo2mu2tau: ggTo2mu2tau
-    ggTo4e: ggTo4e
-    ggTo4mu: ggTo4mu
-    ggTo4tau: ggTo4tau
+    ggTo2e2mu: ggTo2e2mu_Contin_MCFM701
+    ggTo2e2tau: ggTo2e2tau_Contin_MCFM701
+    ggTo2mu2tau: ggTo2mu2tau_Contin_MCFM701
+    ggTo4e: ggTo4e_Contin_MCFM701
+    ggTo4mu: ggTo4mu_Contin_MCFM701
+    ggTo4tau: ggTo4tau_Contin_MCFM701
   ZZ_NLO: ZZTo4l
   DY: DYJetsToLL
   TT: TTto2L2Nu
@@ -41,3 +44,7 @@ MC_Procs:
     WWZ: WWZ
     WZZ: WZZ
     ZZZ: ZZZ
+
+output:
+  histograms: /eos/user/i/iehle/Analysis/histograms
+  plots: /eos/user/i/iehle/php-plots/PolZZTo4l/histograms

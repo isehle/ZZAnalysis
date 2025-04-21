@@ -1,5 +1,7 @@
 writing:
     cfg_file: hist_cfg.yaml
+    col_tag: good
     #regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
-    regions: ["SR", "SIPCR"]
+    #regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP"]
+    regions: ["SR"]
     fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]

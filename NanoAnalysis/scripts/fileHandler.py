@@ -16,6 +16,7 @@ class FileHandler:
         self._set_cfg(cfg_path)
 
         self.central_base = self.cfg["eos_base"]
+        self.store        = self.cfg["store"]
         self.mc_file_name = self.cfg["mc_file_name"]
         self.mc_procs     = self.cfg["MC_Procs"]
         self.era_info     = self.cfg["year_"+str(year)][era]
@@ -30,6 +31,7 @@ class FileHandler:
 
         self._set_file_paths()
 
+
     def _set_cfg(self, cfg_path):
         with open(cfg_path) as config:
             self.cfg = yaml.safe_load(config)
@@ -37,21 +39,23 @@ class FileHandler:
     def _set_file_paths(self):
         
         if "MC" in self.era_info:
-            mc_path = os.path.join(self.central_base, self.era_info["MC"])
+            mc_path = self.store + os.path.join(self.central_base, self.era_info["MC"])
             for cat, procs in self.mc_procs.items():
                 if isinstance(procs, dict):
                     self.mc_samples[cat] = {key: os.path.join(mc_path, val, self.mc_file_name) for key, val in procs.items()}
                 else:
-                    self.mc_samples[cat] = os.path.join(mc_path, procs, self.mc_file_name)
+                    path = os.path.join(mc_path, procs, self.mc_file_name)
+                    self.mc_samples[cat] = path
         
         if "Data" in self.era_info:
             data_path = self.era_info["Data"]
+            path = self.store + os.path.join(self.central_base, data_path)
             self.data_samples = dict(
-                Data = os.path.join(self.central_base, data_path)
+                Data = path
             )
 
         if "Pol" in self.era_info:
-            self.pol_samples = {cat: os.path.join(self.central_base, pol_file) for cat, pol_file in self.era_info["Pol"].items()}
+            self.pol_samples = {cat: self.store + os.path.join(self.central_base, pol_file) for cat, pol_file in self.era_info["Pol"].items()}
 
         self.file_paths = self.mc_samples | self.data_samples | self.pol_samples
 

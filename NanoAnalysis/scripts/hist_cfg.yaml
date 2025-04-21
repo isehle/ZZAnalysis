@@ -89,60 +89,60 @@ Z2mass:
     ylabel: Events
     Blind: !!bool False
 
-cosTheta1:
-  nbinsx: 20
-  xlow: -1
-  xhigh: 1
-  xlabel: "$cos(\theta_1)$"
-  ylabel: Events
-  Blind: !!bool True
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# cosTheta1:
+#   nbinsx: 20
+#   xlow: -1
+#   xhigh: 1
+#   xlabel: "$cos(\theta_1)$"
+#   ylabel: Events
+#   Blind: !!bool True
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
-cosTheta3:
-  nbinsx: 20
-  xlow: -1
-  xhigh: 1
-  xlabel: "$cos(\theta_3)$"
-  ylabel: Events
-  Blind: !!bool True
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# cosTheta3:
+#   nbinsx: 20
+#   xlow: -1
+#   xhigh: 1
+#   xlabel: "$cos(\theta_3)$"
+#   ylabel: Events
+#   Blind: !!bool True
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
-cosThetaStar:
-  nbinsx: 20
-  xlow: -1
-  xhigh: 1
-  xlabel: "$cos(\theta^*)$"
-  ylabel: Events
-  Blind: !!bool True
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# cosThetaStar:
+#   nbinsx: 20
+#   xlow: -1
+#   xhigh: 1
+#   xlabel: "$cos(\theta^*)$"
+#   ylabel: Events
+#   Blind: !!bool True
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
-delRapidity:
-  nbinsx: 40
-  xlow: 0
-  xhigh: 4
-  xlabel: "$Delta(y_{ZZ'})$"
-  ylabel: Events
-  Blind: !!bool True
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# delRapidity:
+#   nbinsx: 40
+#   xlow: 0
+#   xhigh: 4
+#   xlabel: "$Delta(y_{ZZ'})$"
+#   ylabel: Events
+#   Blind: !!bool True
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
-delPhi:
-  nbinsx: 32
-  xlow: 0
-  xhigh: 3.2
-  xlabel: "$|Delta{phi_{l^+ l^{'-}}}|$"
-  ylabel: Events
-  Blind: !!bool True
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# delPhi:
+#   nbinsx: 32
+#   xlow: 0
+#   xhigh: 3.2
+#   xlabel: "$|Delta{phi_{l^+ l^{'-}}}|$"
+#   ylabel: Events
+#   Blind: !!bool True
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
 # delPhiStar:
 #   nbinsx: 32
@@ -156,18 +156,18 @@ delPhi:
 #     procs: [ZLZL, ZLZT, ZTZT]
 #     vars: [LHEScaleWeight, LHEPdfWeight]
 
-Lepton_sip3d_Z2:
-  nbinsx: !!int 40
-  xlow: !!int 0
-  xhigh: !!int 40
-  xlabel: "$SIP_{l_{Z2}}$"
-  ylabel: Events
-  Blind: !!bool False
+# Lepton_sip3d_Z2:
+#   nbinsx: !!int 40
+#   xlow: !!int 0
+#   xhigh: !!int 40
+#   xlabel: "$SIP_{l_{Z2}}$"
+#   ylabel: Events
+#   Blind: !!bool False
 
-Lepton_pt:
-  nbinsx: !!int 50
-  xlow: !!int 0
-  xhigh: !!int 500
-  xlabel: "$p_T^l$"
-  ylabel: Events
-  Blind: !!bool False
+# Lepton_pt:
+#   nbinsx: !!int 50
+#   xlow: !!int 0
+#   xhigh: !!int 500
+#   xlabel: "$p_T^l$"
+#   ylabel: Events
+#   Blind: !!bool False

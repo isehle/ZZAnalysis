@@ -4,15 +4,23 @@ import sys
 parent_dir = os.path.abspath(__file__ + 3 * "/..")
 sys.path.insert(0, parent_dir)
 
-import multiprocessing as mp
-# mp.set_start_method('spawn')
+import ROOT
 
-from multiprocessing.dummy import Pool
-
-from copy import deepcopy
+from tqdm import tqdm
+import uproot as up
 
 from NanoAnalysis.scripts.fileHandler import FileHandler
 from NanoAnalysis.scripts.histWriter import HistWriter
+
+def get_df(path):
+    df = ROOT.RDataFrame("Events", path)
+    df = df.Filter("HLT_passZZ4l")
+
+    if "Data" in path:
+        return df
+
+    Runs = ROOT.RDataFrame("Runs", path)
+    return df.Define("genEventSumw", str(Runs.Sum("genEventSumw").GetValue())) 
 
 class HistManager:
     def __init__(self, cfg, args):
@@ -32,42 +40,23 @@ class HistManager:
         cfg_path = self.get_cfg_path(step)
         with open(cfg_path) as config:
             step_cfg = yaml.safe_load(config)
-        return step_cfg
+        return step_cfg, self.cfg[step]
 
     def write_hists(self):
-        step_cfg = self._get_cfg("writing")
-        histWriter = HistWriter(step_cfg)
+        write_cfg, step_cfg = self._get_cfg("writing")
 
-        regions = self.cfg["writing"]["regions"]
-        fstates = self.cfg["writing"]["fstates"]
-        props   = step_cfg.keys()
+        regions = step_cfg["regions"]
+        fstates = step_cfg["fstates"]
+        col_tag = step_cfg["col_tag"]
 
-        hists = {}
+        props   = write_cfg.keys()
 
-        df = histWriter.get_df("ZZ4l_NLO_HZZSelection_Skim.root")
+        histWriter = HistWriter(write_cfg, self.lumi, col_tag)
 
-        for reg in regions:
-            hists[reg] = {}
-            reg_df = histWriter.init_defs(df, reg)
-            for prop in props:
-                hists[reg][prop] = {}
-                reg_df = histWriter.define_cols(reg_df, prop)
-                for fs in fstates:
-                    fs_df = histWriter.fs_filt(reg_df, fs)
-                    hists[reg][prop][fs] = histWriter.write_hist(fs_df, prop, reg, self.lumi)
+        file_paths = self.file_handler.file_paths
 
-        # Attempt to parallelize —— since the histWriter's class methods are all trying to access the same object at once,
-        # we're currently getting a segfault. Attempt to use deepcopy(df) did not solve the issue.
-        # with mp.Pool(processes=len(regions)) as pool:
-        #     reg_dfs = pool.starmap(histWriter.init_defs, [(df, reg) for reg in regions])
-
-        # Loop over all the processed ntuples (CJLST output) (commented because only have local file atm)
-        # for proc, subprocs in self.file_handler.file_paths.items():
-        #     hists[proc] = {}
-        #     if isinstance(subprocs, dict):
-        #         for path in subprocs.values():
-        #             df = histWriter.get_df(path)
-        #             breakpoint()
+        hists = histWriter.main(file_paths, regions, props, fstates)
+        #hists = histWriter.main(self.file_handler, regions, props, fstates)
 
         return hists
 
@@ -87,4 +76,13 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
     
     hist_manager = HistManager(cfg, args)
-    hist_manager.write_hists()
+    hists = hist_manager.write_hists()
+
+    print("\nWriting...")
+    with up.recreate("hist_output_test_v5.root") as OutFile:
+        for prop in tqdm(hists.keys(), desc = "Properties", position = 0):
+            for reg in tqdm(hists[prop].keys(), desc = "Regions", position = 1, leave = False):
+                for fs in tqdm(hists[prop][reg].keys(), desc = "Final States", position = 2, leave = False):
+                    for proc_type in tqdm(hists[prop][reg][fs].keys(), desc = "Processes", position = 3, leave = False):
+                        hist = hists[prop][reg][fs][proc_type].GetValue() if "Data" not in proc_type else hists[prop][reg][fs][proc_type]
+                        OutFile[f"{prop}/{reg}/{fs}/{proc_type}"] = hist
