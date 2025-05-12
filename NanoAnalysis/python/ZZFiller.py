@@ -135,10 +135,18 @@ class ZZFiller(Module):
         self.out.branch("ZZCand_massPreFSR", "F", lenVar="nZZCand", title="mass without FSR photons")
         self.out.branch("ZZCand_Z1mass", "F", lenVar="nZZCand", title="Z1 mass")
         self.out.branch("ZZCand_Z1flav", "I", lenVar="nZZCand", title="Product of the pdgIds of the 2 Z1 daughters")
+        self.out.branch("ZZCand_Z1pt", "F", lenVar="nZZCand", title="Z1 pt")
+        self.out.branch("ZZCand_Z1eta", "F", lenVar="nZZCand", title="Z1 eta")
+        self.out.branch("ZZCand_Z1phi", "F", lenVar="nZZCand", title="Z1 phi")
+        self.out.branch("ZZCand_Z1rapidity", "F", lenVar="nZZCand", title="Z1 rapidity")
         self.out.branch("ZZCand_Z2mass", "F", lenVar="nZZCand", title="Z2 mass")
         self.out.branch("ZZCand_Z2flav", "I", lenVar="nZZCand", title="Product of the pdgIds of the 2 Z2 daughters")
-        self.out.branch("ZZCand_KD", "F", lenVar="nZZCand", title="Kinematic discriminant for the choice of best candidate", limitedPrecision=12)
-        self.out.branch("ZZCand_Z2sumpt", "F", lenVar="nZZCand", title="sum of Z2 daughter pts (used in the choice of best candidate)", limitedPrecision=10)
+        self.out.branch("ZZCand_Z2pt", "F", lenVar="nZZCand", title="Z2 pt")
+        self.out.branch("ZZCand_Z2eta", "F", lenVar="nZZCand", title="Z2 eta")
+        self.out.branch("ZZCand_Z2phi", "F", lenVar="nZZCand", title="Z2 phi")
+        self.out.branch("ZZCand_Z2rapidity", "F", lenVar="nZZCand", title="Z2 rapidity")
+        self.out.branch("ZZCand_KD", "F", lenVar="nZZCand", title="Kinematic discriminant for the choice of best candidate")
+        self.out.branch("ZZCand_Z2sumpt", "F", lenVar="nZZCand", title="sum of Z2 daughter pts (used in the choice of best candidate)")
         # Note: lepton indices are numbered for leps=list(electrons)+list(muons) and run up to nlep=len(leps);
         # no special ordering of l1, l2 is applied
         self.out.branch("ZZCand_Z1l1Idx", "S", lenVar="nZZCand", title="Index of 1st Z1 daughter in the Electron+Muon merged collection")
@@ -157,8 +165,16 @@ class ZZFiller(Module):
             self.out.branch("ZLLCand_phi", "F", lenVar="nZLLCand", limitedPrecision=16)
             self.out.branch("ZLLCand_Z1mass", "F", lenVar="nZLLCand")
             self.out.branch("ZLLCand_Z1flav", "I", lenVar="nZLLCand")
+            self.out.branch("ZLLCand_Z1pt", "F", lenVar="nZLLCand", title="Z1 pt")
+            self.out.branch("ZLLCand_Z1eta", "F", lenVar="nZLLCand", title="Z1 eta")
+            self.out.branch("ZLLCand_Z1phi", "F", lenVar="nZLLCand", title="Z1 phi")
+            self.out.branch("ZLLCand_Z1rapidity", "F", lenVar="nZLLCand", title="Z1 rapidity")
             self.out.branch("ZLLCand_Z2mass", "F", lenVar="nZLLCand")
-            self.out.branch("ZLLCand_Z2flav", "I", lenVar="nZLLCand")
+            self.out.branch("ZLLCand_Z2flav", "S", lenVar="nZLLCand")
+            self.out.branch("ZLLCand_Z2pt", "F", lenVar="nZLLCand", title="Z2 pt")
+            self.out.branch("ZLLCand_Z2eta", "F", lenVar="nZLLCand", title="Z2 eta")
+            self.out.branch("ZLLCand_Z2phi", "F", lenVar="nZLLCand", title="Z2 phi")
+            self.out.branch("ZLLCand_Z2rapidity", "F", lenVar="nZLLCand", title="Z2 rapidity")
             self.out.branch("ZLLCand_Z1l1Idx", "S", lenVar="nZLLCand") 
             self.out.branch("ZLLCand_Z1l2Idx", "S", lenVar="nZLLCand")
             self.out.branch("ZLLCand_Z2l1Idx", "S", lenVar="nZLLCand")
@@ -256,7 +272,8 @@ class ZZFiller(Module):
                                     elif nPassLep == 1 : is1FCR = True
 
                             # For OS/SS transfer function using SIP method
-                            elif l1.ZZFullSelNoSIP and l2.ZZFullSelNoSIP:
+                            #elif l1.ZZFullSelNoSIP and l2.ZZFullSelNoSIP:
+                            if l1.ZZFullSelNoSIP and l2.ZZFullSelNoSIP:
                                 isOSSIPCR = True
 
                         elif l1.pdgId == l2.pdgId : # SS control regions
@@ -332,11 +349,11 @@ class ZZFiller(Module):
                                 if ZLL.Z2.is1FCR  and (best3P1FCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[best3P1FCRIdx]) < 0) : best3P1FCRIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isSSCR  and (bestSSCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[bestSSCRIdx]) < 0) : bestSSCRIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isOSSIPCR:
-                                    if ZLL.HighMass and (bestHighMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassOSSIPIdx]) < 0) : bestHighMassOSSIPIdx = len(ZLLsTemp)
+                                    if ZLL.HighMass and ZLL.Z2.on_shell and (bestHighMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassOSSIPIdx]) < 0) : bestHighMassOSSIPIdx = len(ZLLsTemp)
                                     if ZLL.MidMass and (bestMidMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestMidMassOSSIPIdx]) < 0) : bestMidMassOSSIPIdx = len(ZLLsTemp)
                                     if ZLL.LowMass and (bestLowMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestLowMassOSSIPIdx]) < 0) : bestLowMassOSSIPIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isSSSIPCR:
-                                    if ZLL.HighMass and (bestHighMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassSSSIPIdx]) < 0) : bestHighMassSSSIPIdx = len(ZLLsTemp)
+                                    if ZLL.HighMass and ZLL.Z2.on_shell and (bestHighMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassSSSIPIdx]) < 0) : bestHighMassSSSIPIdx = len(ZLLsTemp)
                                     if ZLL.MidMass and (bestMidMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestMidMassSSSIPIdx]) < 0) : bestMidMassSSSIPIdx = len(ZLLsTemp)
                                     if ZLL.LowMass and (bestLowMassSSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestLowMassSSSIPIdx]) < 0) : bestLowMassSSSIPIdx = len(ZLLsTemp)
                                         
@@ -464,8 +481,16 @@ class ZZFiller(Module):
         ZZCand_phi = [0.]*len(ZZs)
         ZZCand_Z1mass = [0.]*len(ZZs)
         ZZCand_Z1flav = [0.]*len(ZZs)
+        ZZCand_Z1pt   = [0.]*len(ZZs)
+        ZZCand_Z1eta  = [0.]*len(ZZs)
+        ZZCand_Z1phi  = [0.]*len(ZZs)
+        ZZCand_Z1rapidity = [0.]*len(ZZs)
         ZZCand_Z2mass = [0.]*len(ZZs)
         ZZCand_Z2flav = [0.]*len(ZZs)
+        ZZCand_Z2pt   = [0.]*len(ZZs)
+        ZZCand_Z2eta  = [0.]*len(ZZs)
+        ZZCand_Z2phi  = [0.]*len(ZZs)
+        ZZCand_Z2rapidity = [0.]*len(ZZs)
         ZZCand_Z1l1Idx = [-1]*len(ZZs)
         ZZCand_Z1l2Idx = [-1]*len(ZZs)
         ZZCand_Z2l1Idx = [-1]*len(ZZs)
@@ -482,8 +507,16 @@ class ZZFiller(Module):
             ZZCand_phi[iZZ] = ZZ.p4.Phi()
             ZZCand_Z1mass[iZZ] = ZZ.Z1.M
             ZZCand_Z1flav[iZZ] = ZZ.Z1.finalState()
+            ZZCand_Z1pt[iZZ] = ZZ.Z1.p4.Pt()
+            ZZCand_Z1eta[iZZ] = ZZ.Z1.p4.Eta()
+            ZZCand_Z1phi[iZZ] = ZZ.Z1.p4.Phi()
+            ZZCand_Z1rapidity[iZZ] = ZZ.Z1.p4.Rapidity()
             ZZCand_Z2mass[iZZ] = ZZ.Z2.M
             ZZCand_Z2flav[iZZ] = ZZ.Z2.finalState()
+            ZZCand_Z2pt[iZZ] = ZZ.Z2.p4.Pt()
+            ZZCand_Z2eta[iZZ] = ZZ.Z2.p4.Eta()
+            ZZCand_Z2phi[iZZ] = ZZ.Z2.p4.Phi()
+            ZZCand_Z2rapidity[iZZ] = ZZ.Z2.p4.Rapidity()
             ZZCand_Z1l1Idx[iZZ] = ZZ.Z1.l1Idx
             ZZCand_Z1l2Idx[iZZ] = ZZ.Z1.l2Idx
             ZZCand_Z2l1Idx[iZZ] = ZZ.Z2.l1Idx
@@ -499,8 +532,16 @@ class ZZFiller(Module):
         self.out.fillBranch("ZZCand_phi", ZZCand_phi)
         self.out.fillBranch("ZZCand_Z1mass", ZZCand_Z1mass)
         self.out.fillBranch("ZZCand_Z1flav", ZZCand_Z1flav)
+        self.out.fillBranch("ZZCand_Z1pt", ZZCand_Z1pt)
+        self.out.fillBranch("ZZCand_Z1eta", ZZCand_Z1eta)
+        self.out.fillBranch("ZZCand_Z1phi", ZZCand_Z1phi)
+        self.out.fillBranch("ZZCand_Z1rapidity", ZZCand_Z1rapidity)
         self.out.fillBranch("ZZCand_Z2mass", ZZCand_Z2mass)
         self.out.fillBranch("ZZCand_Z2flav", ZZCand_Z2flav)
+        self.out.fillBranch("ZZCand_Z2pt", ZZCand_Z2pt)
+        self.out.fillBranch("ZZCand_Z2eta", ZZCand_Z2eta)
+        self.out.fillBranch("ZZCand_Z2phi", ZZCand_Z2phi)
+        self.out.fillBranch("ZZCand_Z2rapidity", ZZCand_Z2rapidity)
         self.out.fillBranch("ZZCand_KD", ZZCand_KD)
         self.out.fillBranch("ZZCand_Z2sumpt", ZZCand_Z2sumpt)
         self.out.fillBranch("ZZCand_Z1l1Idx", ZZCand_Z1l1Idx)
@@ -519,8 +560,16 @@ class ZZFiller(Module):
             ZLLCand_phi    = [0.]*len(ZLLs)
             ZLLCand_Z1mass = [0.]*len(ZLLs)
             ZLLCand_Z1flav = [0.]*len(ZLLs)
+            ZLLCand_Z1pt   = [0.]*len(ZLLs)
+            ZLLCand_Z1eta  = [0.]*len(ZLLs)
+            ZLLCand_Z1phi  = [0.]*len(ZLLs)
+            ZLLCand_Z1rapidity = [0.]*len(ZLLs)
             ZLLCand_Z2mass = [0.]*len(ZLLs)
             ZLLCand_Z2flav = [0.]*len(ZLLs)
+            ZLLCand_Z2pt   = [0.]*len(ZLLs)
+            ZLLCand_Z2eta  = [0.]*len(ZLLs)
+            ZLLCand_Z2phi  = [0.]*len(ZLLs)
+            ZLLCand_Z2rapidity = [0.]*len(ZLLs)
             ZLLCand_Z1l1Idx = [-1]*len(ZLLs)
             ZLLCand_Z1l2Idx = [-1]*len(ZLLs)
             ZLLCand_Z2l1Idx = [-1]*len(ZLLs)
@@ -536,8 +585,16 @@ class ZZFiller(Module):
                 ZLLCand_phi[iZLL] = ZLL.p4.Phi()
                 ZLLCand_Z1mass[iZLL] = ZLL.Z1.M
                 ZLLCand_Z1flav[iZLL] = ZLL.Z1.finalState()
+                ZLLCand_Z1pt[iZLL] = ZLL.Z1.p4.Pt()
+                ZLLCand_Z1eta[iZLL] = ZLL.Z1.p4.Eta()
+                ZLLCand_Z1phi[iZLL] = ZLL.Z1.p4.Phi()
+                ZLLCand_Z1rapidity[iZLL] = ZLL.Z1.p4.Rapidity()
                 ZLLCand_Z2mass[iZLL] = ZLL.Z2.M
                 ZLLCand_Z2flav[iZLL] = ZLL.Z2.finalState()
+                ZLLCand_Z2pt[iZLL] = ZLL.Z2.p4.Pt()
+                ZLLCand_Z2eta[iZLL] = ZLL.Z2.p4.Eta()
+                ZLLCand_Z2phi[iZLL] = ZLL.Z2.p4.Phi()
+                ZLLCand_Z2rapidity[iZLL] = ZLL.Z2.p4.Rapidity()
                 ZLLCand_Z1l1Idx[iZLL] = ZLL.Z1.l1Idx
                 ZLLCand_Z1l2Idx[iZLL] = ZLL.Z1.l2Idx
                 ZLLCand_Z2l1Idx[iZLL] = ZLL.Z2.l1Idx
@@ -552,8 +609,16 @@ class ZZFiller(Module):
             self.out.fillBranch("ZLLCand_phi",    ZLLCand_phi)
             self.out.fillBranch("ZLLCand_Z1mass", ZLLCand_Z1mass)
             self.out.fillBranch("ZLLCand_Z1flav", ZLLCand_Z1flav)
+            self.out.fillBranch("ZLLCand_Z1pt", ZLLCand_Z1pt)
+            self.out.fillBranch("ZLLCand_Z1eta", ZLLCand_Z1eta)
+            self.out.fillBranch("ZLLCand_Z1phi", ZLLCand_Z1phi)
+            self.out.fillBranch("ZLLCand_Z1rapidity", ZLLCand_Z1rapidity)
             self.out.fillBranch("ZLLCand_Z2mass", ZLLCand_Z2mass)
             self.out.fillBranch("ZLLCand_Z2flav", ZLLCand_Z2flav)
+            self.out.fillBranch("ZLLCand_Z2pt", ZLLCand_Z2pt)
+            self.out.fillBranch("ZLLCand_Z2eta", ZLLCand_Z2eta)
+            self.out.fillBranch("ZLLCand_Z2phi", ZLLCand_Z2phi)
+            self.out.fillBranch("ZLLCand_Z2rapidity", ZLLCand_Z2rapidity)
             self.out.fillBranch("ZLLCand_Z1l1Idx", ZLLCand_Z1l1Idx)
             self.out.fillBranch("ZLLCand_Z1l2Idx", ZLLCand_Z1l2Idx)
             self.out.fillBranch("ZLLCand_Z2l1Idx", ZLLCand_Z2l1Idx)

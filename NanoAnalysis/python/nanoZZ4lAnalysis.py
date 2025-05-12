@@ -39,7 +39,7 @@ SYNCMODE = getConf("SYNCMODE", False) # fake smearing in Run2 correction modules
 runMELA = getConf("runMELA", False)
 bestCandByMELA = getConf("bestCandByMELA", False) # requires also runMELA=True
 TRIGPASSTHROUGH = getConf("TRIGPASSTHROUGH", False) # Do not filter events that do not pass triggers (HLT_passZZ4l records if they did)
-PROCESS_CR = getConf("PROCESS_CR", False) # fill control regions
+PROCESS_CR = getConf("PROCESS_CR", True) # fill control regions
 PROCESS_ZL = getConf("PROCESS_ZL", False) # fill ZL control region
 APPLYMUCORR = getConf("APPLYMUCORR", True) # apply muon momentum scale/resolution corrections
 APPLYELECORR = getConf("APPLYELECORR", True) # apply electron momentum scale/resolution corrections

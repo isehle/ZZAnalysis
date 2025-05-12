@@ -25,9 +25,10 @@ eta:
   nbinsx: !!int 10
   xlow: -5
   xhigh: 5
-  xlabel: "$\eta_{ZZ}$"
+  #xlabel: "$\eta_{ZZ}$"
+  xlabel: "$eta_{ZZ}$"
   ylabel: Events
-  Blinde: !!bool False
+  Blind: !!bool False
   systematics:
     procs: [ZLZL, ZLZT, ZTZT]
     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
@@ -156,18 +157,18 @@ Z2mass:
 #     procs: [ZLZL, ZLZT, ZTZT]
 #     vars: [LHEScaleWeight, LHEPdfWeight]
 
-# Lepton_sip3d_Z2:
-#   nbinsx: !!int 40
-#   xlow: !!int 0
-#   xhigh: !!int 40
-#   xlabel: "$SIP_{l_{Z2}}$"
-#   ylabel: Events
-#   Blind: !!bool False
+Lepton_sip3d_Z2:
+  nbinsx: !!int 40
+  xlow: !!int 0
+  xhigh: !!int 40
+  xlabel: "$SIP_{l_{Z2}}$"
+  ylabel: Events
+  Blind: !!bool False
 
-# Lepton_pt:
-#   nbinsx: !!int 50
-#   xlow: !!int 0
-#   xhigh: !!int 500
-#   xlabel: "$p_T^l$"
-#   ylabel: Events
-#   Blind: !!bool False
+Lepton_pt:
+  nbinsx: !!int 50
+  xlow: !!int 0
+  xhigh: !!int 500
+  xlabel: "$p_T^l$"
+  ylabel: Events
+  Blind: !!bool False
