@@ -46,8 +46,8 @@ class ZpX:
         return count, err          
 
     def nZPP(self, reg, fs, all_hists, all_errors, var = "mass", max_edges = 4):
-        data_hist = all_hists[var][reg][fs]["Data"]["Data"]
-        data_err  = all_errors[var][reg][fs]["Data"]["Data"]
+        data_hist = all_hists[var][reg][fs]["Data"]
+        data_err  = all_errors[var][reg][fs]["Data"]
         
         n, n_err = self.get_count(data_hist, data_err, var)
         

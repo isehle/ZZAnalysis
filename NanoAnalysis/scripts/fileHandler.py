@@ -58,24 +58,51 @@ class FileHandler:
         if "Data" in self.era_info:
             data_path = self.era_info["Data"]
             path = self.store + os.path.join(self.central_base, data_path)
-            self.data_samples = dict(
-                Data = path
-            )
+            self.data_samples = path
 
         if "Pol" in self.era_info:
             self.pol_samples = {cat: self.store + os.path.join(self.central_base, pol_file) for cat, pol_file in self.era_info["Pol"].items()}
+        
+        self.file_paths = dict(
+            MC   = self.mc_samples,
+            Data = self.data_samples,
+            Pol  = self.pol_samples
+        )
 
-        self.file_paths = self.mc_samples | self.data_samples | self.pol_samples
+        self.all_procs = list(self.mc_samples.keys()) + list(self.pol_samples.keys())
+        if len(self.data_samples) != 0:
+            self.all_procs += ["Data"]
 
     def write_hists(self, hists):
         print(f"\nWriting to {self.hist_path}... ")
+        ex_proc = self.all_procs[0]
+        regions = hists.keys()
+
         with up.recreate(self.hist_path) as OutFile:
-            for prop in hists.keys():
-                for reg in hists[prop].keys():
-                    for fs in hists[prop][reg].keys():
-                        for proc_type in hists[prop][reg][fs].keys():
-                            #hist = hists[prop][reg][fs][proc_type].GetValue() if "Data" not in proc_type else hists[prop][reg][fs][proc_type]
-                            OutFile[f"{prop}/{reg}/{fs}/{proc_type}"] = hists[prop][reg][fs][proc_type].GetValue()
+            for proc in hists.keys():
+                for prop in hists[proc].keys():
+                    for reg in hists[proc][prop].keys():
+                        for fs in hists[proc][prop][reg].keys():
+                            try:
+                                OutFile[f"{prop}/{reg}/{fs}/{proc}"] = hists[proc][prop][reg][fs]
+                            except TypeError:
+                                breakpoint()
+
+            # for proc in hists.keys():
+            #     for reg in hists[proc].keys():
+            #         for prop in hists[proc][reg].keys():
+            #             for fs in hists[proc][reg][prop].keys():
+            #                 #OutFile[f"{reg}/{prop}/{fs}/{proc}"] = hists[proc][reg][prop][fs].GetValue()
+            #                 breakpoint()
+            #                 OutFile[f"{reg}/{prop}/{fs}/{proc}"] = hists[proc][reg][prop][fs]
+                            
+
+            # for prop in hists.keys():
+            #     for reg in hists[prop].keys():
+            #         for fs in hists[prop][reg].keys():
+            #             for proc_type in hists[prop][reg][fs].keys():
+            #                 #hist = hists[prop][reg][fs][proc_type].GetValue() if "Data" not in proc_type else hists[prop][reg][fs][proc_type]
+            #                 OutFile[f"{prop}/{reg}/{fs}/{proc_type}"] = hists[prop][reg][fs][proc_type].GetValue()
 
     def write_plots(self, figs):
         base_dir = os.path.join(self.output["plots"], str(self.year), self.era)

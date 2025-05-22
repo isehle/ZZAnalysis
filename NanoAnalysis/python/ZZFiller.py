@@ -349,7 +349,7 @@ class ZZFiller(Module):
                                 if ZLL.Z2.is1FCR  and (best3P1FCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[best3P1FCRIdx]) < 0) : best3P1FCRIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isSSCR  and (bestSSCRIdx<0 or self.bestCandCmp(ZLL,ZLLsTemp[bestSSCRIdx]) < 0) : bestSSCRIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isOSSIPCR:
-                                    if ZLL.HighMass and ZLL.Z2.on_shell and (bestHighMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassOSSIPIdx]) < 0) : bestHighMassOSSIPIdx = len(ZLLsTemp)
+                                    # if ZLL.HighMass and ZLL.Z2.on_shell and (bestHighMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestHighMassOSSIPIdx]) < 0) : bestHighMassOSSIPIdx = len(ZLLsTemp)
                                     if ZLL.MidMass and (bestMidMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestMidMassOSSIPIdx]) < 0) : bestMidMassOSSIPIdx = len(ZLLsTemp)
                                     if ZLL.LowMass and (bestLowMassOSSIPIdx < 0 or self.bestCandCmp(ZLL, ZLLsTemp[bestLowMassOSSIPIdx]) < 0) : bestLowMassOSSIPIdx = len(ZLLsTemp)
                                 if ZLL.Z2.isSSSIPCR:
@@ -364,6 +364,29 @@ class ZZFiller(Module):
                 # Actually not needed, at the overlap is accounted for in the method
 #                if best2P2FCRIdx >= 0 and best3P1FCRIdx >= 0 :
 #                    print ('WARNING: event {}:{}:{} has CR candidates in both 2P2F and 3P1F regions'.format(event.run,event.luminosityBlock,event.event))
+
+                # Different SIP CRs can contain overlapping candidates, choose the best among them
+                sip_crs = [bestMidMassOSSIPIdx, bestLowMassOSSIPIdx, bestHighMassSSSIPIdx, bestMidMassSSSIPIdx, bestLowMassSSSIPIdx]
+                n_crs = len(sip_crs)
+                if sum([idx >= 0 for idx in sip_crs]) > 1:
+                    for i, za_idx in enumerate(sip_crs):
+                        for j in range(i+1, n_crs):
+                            zb_idx = sip_crs[j]
+                            if zb_idx == -1: continue
+                            za, zb = ZLLsTemp[za_idx], ZLLsTemp[zb_idx]
+
+                            # Check if leps overlap
+                            if bool(set(za.leps()) & set(zb.leps())):
+                                if self.bestCandCmp(za, zb) < 0:
+                                    if   j == 1: bestLowMassOSSIPIdx  = -1
+                                    elif j == 2: bestHighMassSSSIPIdx = -1
+                                    elif j == 3: bestMidMassSSSIPIdx  = -1
+                                    elif j == 4: bestLowMassSSIPIdx   = -1
+                                else:
+                                    if   i == 0: bestMidMassOSSIPIdx  = -1
+                                    elif i == 1: bestLowMassOSSIPIdx  = -1
+                                    elif i == 2: bestHighMassSSSIPIdx = -1
+                                    elif i == 3: bestMidMassSSSIPIdx  = -1
 
                 # Store only ZLL candidates that belong to at least 1 CR
                 for iZLL, ZLL in enumerate(ZLLsTemp) :

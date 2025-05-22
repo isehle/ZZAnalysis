@@ -1,94 +1,94 @@
-mass:
-  SR:
-    nbinsx: !!int 82
-    xlow: !!int 180
-    xhigh: !!int 1000
-    xlabel: "$m_{4l}$ GeV"
-    ylabel: Events / 10 GeV
-    Blind: !!bool False
-  MidMass:
-    nbinsx: !!int 40
-    xlow: !!int 140
-    xhigh: !!int 180
-    xlabel: "$m_{4l}$ GeV"
-    ylabel: Events
-    Blind: !!bool False
-  LowMass:
-    nbinsx: !!int 35
-    xlow: !!int 105
-    xhigh: !!int 140
-    xlabel: "$m_{4l}$ GeV"
-    ylabel: Events
-    Blind: !!bool False
+# mass:
+#   SR:
+#     nbinsx: !!int 82
+#     xlow: !!int 180
+#     xhigh: !!int 1000
+#     xlabel: "$m_{4l}$ GeV"
+#     ylabel: Events / 10 GeV
+#     Blind: !!bool False
+#   MidMass:
+#     nbinsx: !!int 40
+#     xlow: !!int 140
+#     xhigh: !!int 180
+#     xlabel: "$m_{4l}$ GeV"
+#     ylabel: Events
+#     Blind: !!bool False
+#   LowMass:
+#     nbinsx: !!int 35
+#     xlow: !!int 105
+#     xhigh: !!int 140
+#     xlabel: "$m_{4l}$ GeV"
+#     ylabel: Events
+#     Blind: !!bool False
 
-eta:
-  nbinsx: !!int 10
-  xlow: -5
-  xhigh: 5
-  #xlabel: "$\eta_{ZZ}$"
-  xlabel: "$eta_{ZZ}$"
-  ylabel: Events
-  Blind: !!bool False
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# eta:
+#   nbinsx: !!int 10
+#   xlow: -5
+#   xhigh: 5
+#   #xlabel: "$\eta_{ZZ}$"
+#   xlabel: "$eta_{ZZ}$"
+#   ylabel: Events
+#   Blind: !!bool False
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
-pt:
-  nbinsx: !!int 100
-  xlow: !!int 0
-  xhigh: !!int 500
-  xlabel: "${p_T}^{4l}$ GeV"
-  ylabel: Events / 5 GeV
-  Blind: !!bool False
-  systematics:
-    procs: [ZLZL, ZLZT, ZTZT]
-    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+# pt:
+#   nbinsx: !!int 100
+#   xlow: !!int 0
+#   xhigh: !!int 500
+#   xlabel: "${p_T}^{4l}$ GeV"
+#   ylabel: Events / 5 GeV
+#   Blind: !!bool False
+#   systematics:
+#     procs: [ZLZL, ZLZT, ZTZT]
+#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
-Z1mass:
-  SR:
-    nbinsx: 21
-    xlow: 81
-    xhigh: 102
-    xlabel: "$m_{Z_1}$ GeV"
-    ylabel: Events
-    Blind: !!bool False
-  MidMass:
-    nbinsx: 80
-    xlow: 40
-    xhigh: 120
-    xlabel: "$m_{Z_1}$ GeV"
-    ylabel: Events
-    Blind: !!bool False
-  LowMass:
-    nbinsx: 80
-    xlow: 40
-    xhigh: 120
-    xlabel: "$m_{Z_1}$ GeV"
-    ylabel: Events
-    Blind: !!bool False
+# Z1mass:
+#   SR:
+#     nbinsx: 21
+#     xlow: 81
+#     xhigh: 102
+#     xlabel: "$m_{Z_1}$ GeV"
+#     ylabel: Events
+#     Blind: !!bool False
+#   MidMass:
+#     nbinsx: 80
+#     xlow: 40
+#     xhigh: 120
+#     xlabel: "$m_{Z_1}$ GeV"
+#     ylabel: Events
+#     Blind: !!bool False
+#   LowMass:
+#     nbinsx: 80
+#     xlow: 40
+#     xhigh: 120
+#     xlabel: "$m_{Z_1}$ GeV"
+#     ylabel: Events
+#     Blind: !!bool False
 
-Z2mass:
-  SR:
-    nbinsx: 21
-    xlow: 81
-    xhigh: 102
-    xlabel: "$m_{ll}$"
-    ylabel: Events
-    Blind: !!bool False
-  MidMass:
-    nbinsx: 80
-    xlow: 40
-    xhigh: 120
-    xlabel: "$m_{ll}$"
-    ylabel: Events
-    Blind: !!bool False
-  LowMass:
-    nbinsx: 80
-    xlow: 40
-    xhigh: 120
-    xlabel: "$m_{ll}$"
-    ylabel: Events
-    Blind: !!bool False
+# Z2mass:
+#   SR:
+#     nbinsx: 21
+#     xlow: 81
+#     xhigh: 102
+#     xlabel: "$m_{ll}$"
+#     ylabel: Events
+#     Blind: !!bool False
+#   MidMass:
+#     nbinsx: 80
+#     xlow: 40
+#     xhigh: 120
+#     xlabel: "$m_{ll}$"
+#     ylabel: Events
+#     Blind: !!bool False
+#   LowMass:
+#     nbinsx: 80
+#     xlow: 40
+#     xhigh: 120
+#     xlabel: "$m_{ll}$"
+#     ylabel: Events
+#     Blind: !!bool False
 
 # cosTheta1:
 #   nbinsx: 20
@@ -165,10 +165,10 @@ Lepton_sip3d_Z2:
   ylabel: Events
   Blind: !!bool False
 
-Lepton_pt:
-  nbinsx: !!int 50
-  xlow: !!int 0
-  xhigh: !!int 500
-  xlabel: "$p_T^l$"
-  ylabel: Events
-  Blind: !!bool False
+# Lepton_pt:
+#   nbinsx: !!int 50
+#   xlow: !!int 0
+#   xhigh: !!int 500
+#   xlabel: "$p_T^l$"
+#   ylabel: Events
+#   Blind: !!bool False

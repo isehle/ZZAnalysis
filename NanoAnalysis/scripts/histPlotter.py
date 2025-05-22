@@ -271,8 +271,8 @@ class HistPlotter:
             max_bin_counts.append(max([max(hist[0]) for hist in pol_hists.values()]))
 
         if self.draw_data:
-            data_hist   = hists["Data"]["Data"]
-            data_counts = counts["Data"]["Data"]
+            data_hist   = hists["Data"]
+            data_counts = counts["Data"]
             
 
             data_label = f"{self.labels['Data']}: {data_counts} " + r"$\pm$" + str(round(np.sqrt(data_counts), 2))

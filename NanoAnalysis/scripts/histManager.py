@@ -108,19 +108,22 @@ class HistManager:
                             proc = proc.replace(";1","")
 
                             if proc in self.file_handler.mc_samples.keys():
-                                hists[prop][reg][fs]["MC"][proc]  = hist.to_numpy(flow=True)
-                                counts[prop][reg][fs]["MC"][proc] = np.sum(hist.values(flow=True))
-                                errors[prop][reg][fs]["MC"][proc] = hist.errors(flow=True)
+                                hists[prop][reg][fs]["MC"][proc]  = hist.to_numpy(flow=False)
+                                counts[prop][reg][fs]["MC"][proc] = np.sum(hist.values(flow=False))
+                                errors[prop][reg][fs]["MC"][proc] = hist.errors(flow=False)
 
-                            elif proc in self.file_handler.data_samples.keys():
-                                hists[prop][reg][fs]["Data"][proc]  = hist.to_numpy(flow=True)
-                                counts[prop][reg][fs]["Data"][proc] = np.sum(hist.values(flow=True))
-                                errors[prop][reg][fs]["Data"][proc] = hist.errors(flow=True)
+                            #elif proc in self.file_handler.data_samples.keys():
+                            elif proc == "Data":
+                                hists[prop][reg][fs]["Data"]  = hist.to_numpy(flow=False)
+                                counts[prop][reg][fs]["Data"] = np.sum(hist.values(flow=False))
+                                errors[prop][reg][fs]["Data"] = hist.errors(flow=False)
+                                # if reg == "HighMassSSSIP":
+                                #     breakpoint()
 
                             elif proc in self.file_handler.pol_samples.keys():
-                                hists[prop][reg][fs]["Pol"][proc]  = hist.to_numpy(flow=True)
-                                counts[prop][reg][fs]["Pol"][proc] = np.sum(hist.values(flow=True))
-                                errors[prop][reg][fs]["Pol"][proc] = hist.errors(flow=True)
+                                hists[prop][reg][fs]["Pol"][proc]  = hist.to_numpy(flow=False)
+                                counts[prop][reg][fs]["Pol"][proc] = np.sum(hist.values(flow=False))
+                                errors[prop][reg][fs]["Pol"][proc] = hist.errors(flow=False)
             
         return hists, counts, errors
     
@@ -133,7 +136,6 @@ class HistManager:
 
         hist_plotter = HistPlotter(self.year, self.era, self.tag, self.lumi, hists, counts, errors)
         figs = hist_plotter.main()
-        breakpoint()
 
         self.file_handler.write_plots(figs)
         #fig = hist_plotter.plotter("mass", "SR", "fs_4mu")
@@ -216,7 +218,7 @@ class HistManager:
                 #era, year = eras[0], years[0]
                 era, year = "EFG", 2022
                 fig = self.zpx.plot_zpx(zpx_info_1, step, year, era)
-                fig.savefig(f"zpx_test_{step}_{year}_{era}.png")
+                fig.savefig(f"zpx_test_{step}_{year}_{era}_fixCROverlap.png")
 
 if __name__ == "__main__":
     import yaml
@@ -236,4 +238,6 @@ if __name__ == "__main__":
     #hist_manager.plot_hists()
     #hist_manager.plot_hists("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists.root")
     #hist_manager.write_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
-    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
+
+    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_fixCROverlap_wData.root")
