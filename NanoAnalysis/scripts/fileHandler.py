@@ -82,27 +82,15 @@ class FileHandler:
             for proc in hists.keys():
                 for prop in hists[proc].keys():
                     for reg in hists[proc][prop].keys():
-                        for fs in hists[proc][prop][reg].keys():
-                            try:
-                                OutFile[f"{prop}/{reg}/{fs}/{proc}"] = hists[proc][prop][reg][fs]
-                            except TypeError:
-                                breakpoint()
-
-            # for proc in hists.keys():
-            #     for reg in hists[proc].keys():
-            #         for prop in hists[proc][reg].keys():
-            #             for fs in hists[proc][reg][prop].keys():
-            #                 #OutFile[f"{reg}/{prop}/{fs}/{proc}"] = hists[proc][reg][prop][fs].GetValue()
-            #                 breakpoint()
-            #                 OutFile[f"{reg}/{prop}/{fs}/{proc}"] = hists[proc][reg][prop][fs]
+                        for fs, hist in hists[proc][prop][reg].items():
                             
-
-            # for prop in hists.keys():
-            #     for reg in hists[prop].keys():
-            #         for fs in hists[prop][reg].keys():
-            #             for proc_type in hists[prop][reg][fs].keys():
-            #                 #hist = hists[prop][reg][fs][proc_type].GetValue() if "Data" not in proc_type else hists[prop][reg][fs][proc_type]
-            #                 OutFile[f"{prop}/{reg}/{fs}/{proc_type}"] = hists[prop][reg][fs][proc_type].GetValue()
+                            if ("Up" in fs) or ("Down" in fs):
+                                split = fs.split("_")
+                                fs, proc_var = "_".join(split[:2]), "_".join([proc, split[-1]])
+                                OutFile[f"{prop}/{reg}/{fs}/{proc_var}"] = hist
+                            
+                            else:
+                                OutFile[f"{prop}/{reg}/{fs}/{proc}"] = hist
 
     def write_plots(self, figs):
         base_dir = os.path.join(self.output["plots"], str(self.year), self.era)

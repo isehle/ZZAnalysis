@@ -107,23 +107,31 @@ class HistManager:
                         for proc, hist in Hists[prop][reg][fs].items():
                             proc = proc.replace(";1","")
 
+                            # We want to keep overflow but not underflow bin
+                            this_hist = hist.to_numpy(flow=True)
+                            this_hist = (this_hist[0][1:], this_hist[1][1:])
+                            count     = np.sum(hist.values(flow=True)[1:])
+                            err       = hist.errors(flow=True)[1:]
+
                             if proc in self.file_handler.mc_samples.keys():
-                                hists[prop][reg][fs]["MC"][proc]  = hist.to_numpy(flow=True)
-                                counts[prop][reg][fs]["MC"][proc] = np.sum(hist.values(flow=True))
-                                errors[prop][reg][fs]["MC"][proc] = hist.errors(flow=True)
+
+                                hists[prop][reg][fs]["MC"][proc]  = this_hist
+                                counts[prop][reg][fs]["MC"][proc] = count
+                                errors[prop][reg][fs]["MC"][proc] = err
+
 
                             #elif proc in self.file_handler.data_samples.keys():
                             elif proc == "Data":
-                                hists[prop][reg][fs]["Data"]  = hist.to_numpy(flow=True)
-                                counts[prop][reg][fs]["Data"] = np.sum(hist.values(flow=True))
-                                errors[prop][reg][fs]["Data"] = hist.errors(flow=True)
+                                hists[prop][reg][fs]["Data"]  = this_hist
+                                counts[prop][reg][fs]["Data"] = count
+                                errors[prop][reg][fs]["Data"] = err
                                 # if reg == "HighMassSSSIP":
                                 #     breakpoint()
 
                             elif proc in self.file_handler.pol_samples.keys():
-                                hists[prop][reg][fs]["Pol"][proc]  = hist.to_numpy(flow=True)
-                                counts[prop][reg][fs]["Pol"][proc] = np.sum(hist.values(flow=True))
-                                errors[prop][reg][fs]["Pol"][proc] = hist.errors(flow=True)
+                                hists[prop][reg][fs]["Pol"][proc]  = this_hist
+                                counts[prop][reg][fs]["Pol"][proc] = count
+                                errors[prop][reg][fs]["Pol"][proc] = err
             
         return hists, counts, errors
     
@@ -159,6 +167,12 @@ class HistManager:
         hists_1, counts_1, errors_1 = self.read_hists(infile_1)
 
         zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"])
+
+        import json
+        with open("ZpX_info_2022_EFG_newAlg.json", "w") as myfile:
+            json.dump(zpx_info_1, myfile, indent=4)
+
+        exit()
         if infile_2 != "":
             hists_2, counts_2, errors_2 = self.histReader.read_hists_and_counts(infile_2)
             hists_2, counts_2, errors_2 = self.combine_processes(hists_2, counts_2, errors_2)
@@ -234,10 +248,10 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
     
     hist_manager = HistManager(cfg, args)
-    #hist_manager.write_hists()
+    hist_manager.write_hists()
     #hist_manager.plot_hists()
     #hist_manager.plot_hists("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists.root")
     #hist_manager.write_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
     #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
 
-    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_fixCROverlap_wData.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_fixCROverlap_wData.root")

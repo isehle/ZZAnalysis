@@ -9,14 +9,21 @@ year_2022:
     #lumi: !!float 26.6717e3
     lumi: !!float 26.6728e3
     #MC: MC_2022EE_massReqs_SIPCRs
-    MC: MC_2022EE_fixCROverlap
+    #MC: MC_2022EE_fixCROverlap
     #Data: Data_2022_massReqs_SIPCRs/EraEFG/ZZ4lAnalysis.root
-    Data: Data_2022_fixCROverlap_filterCandsOnly/EraEFG/ZZ4lAnalysis.root
+    #Data: Data_2022_fixCROverlap_filterCandsOnly/EraEFG/ZZ4lAnalysis.root
+    #MC: MC_2022EE_fixCROverlap_wAngVars
+    #Data: Data_2022_fixCROverlap_wAngVars/EraEFG/ZZ4lAnalysis.root
     # Pol:
     #   ZLZL: rootFiles/PrivateProduction/2022/EraEFG/MassReqsSIPCRs/qqZLZL_noTau_hadd_Skim.root
     #   ZLZT: rootFiles/PrivateProduction/2022/EraEFG/MassReqsSIPCRs/qqZLZT_noTau_hadd_Skim.root
     #   ZTZT: rootFiles/PrivateProduction/2022/EraEFG/MassReqsSIPCRs/qqZTZT_noTau_hadd_Skim.root
     #   ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/MassReqsSIPCRs/qqZZ_noTau_hadd_Skim.root
+    Pol:
+      ZLZL: rootFiles/PrivateProduction/2022/EraEFG/fixCROverlap/wAngVars/qqZLZL_noTau_hadd_Skim.root
+      ZLZT: rootFiles/PrivateProduction/2022/EraEFG/fixCROverlap/wAngVars/qqZLZT_noTau_hadd_Skim.root
+      ZTZT: rootFiles/PrivateProduction/2022/EraEFG/fixCROverlap/wAngVars/qqZTZT_noTau_hadd_Skim.root
+      ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/fixCROverlap/wAngVars/qqZZ_noTau_hadd_Skim.root
   Full:
     lumi: !!float 34.6532e3
 year_2023:
