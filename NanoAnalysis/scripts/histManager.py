@@ -108,22 +108,22 @@ class HistManager:
                             proc = proc.replace(";1","")
 
                             if proc in self.file_handler.mc_samples.keys():
-                                hists[prop][reg][fs]["MC"][proc]  = hist.to_numpy(flow=False)
-                                counts[prop][reg][fs]["MC"][proc] = np.sum(hist.values(flow=False))
-                                errors[prop][reg][fs]["MC"][proc] = hist.errors(flow=False)
+                                hists[prop][reg][fs]["MC"][proc]  = hist.to_numpy(flow=True)
+                                counts[prop][reg][fs]["MC"][proc] = np.sum(hist.values(flow=True))
+                                errors[prop][reg][fs]["MC"][proc] = hist.errors(flow=True)
 
                             #elif proc in self.file_handler.data_samples.keys():
                             elif proc == "Data":
-                                hists[prop][reg][fs]["Data"]  = hist.to_numpy(flow=False)
-                                counts[prop][reg][fs]["Data"] = np.sum(hist.values(flow=False))
-                                errors[prop][reg][fs]["Data"] = hist.errors(flow=False)
+                                hists[prop][reg][fs]["Data"]  = hist.to_numpy(flow=True)
+                                counts[prop][reg][fs]["Data"] = np.sum(hist.values(flow=True))
+                                errors[prop][reg][fs]["Data"] = hist.errors(flow=True)
                                 # if reg == "HighMassSSSIP":
                                 #     breakpoint()
 
                             elif proc in self.file_handler.pol_samples.keys():
-                                hists[prop][reg][fs]["Pol"][proc]  = hist.to_numpy(flow=False)
-                                counts[prop][reg][fs]["Pol"][proc] = np.sum(hist.values(flow=False))
-                                errors[prop][reg][fs]["Pol"][proc] = hist.errors(flow=False)
+                                hists[prop][reg][fs]["Pol"][proc]  = hist.to_numpy(flow=True)
+                                counts[prop][reg][fs]["Pol"][proc] = np.sum(hist.values(flow=True))
+                                errors[prop][reg][fs]["Pol"][proc] = hist.errors(flow=True)
             
         return hists, counts, errors
     

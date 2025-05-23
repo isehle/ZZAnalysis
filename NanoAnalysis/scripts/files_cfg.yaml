@@ -6,9 +6,10 @@ year_2022:
   CD:
     lumi: !!float 7.9804e3
   EFG:
-    lumi: !!float 26.6717e3
+    #lumi: !!float 26.6717e3
+    lumi: !!float 26.6728e3
     #MC: MC_2022EE_massReqs_SIPCRs
-    #MC: MC_2022EE_fixCROverlap
+    MC: MC_2022EE_fixCROverlap
     #Data: Data_2022_massReqs_SIPCRs/EraEFG/ZZ4lAnalysis.root
     Data: Data_2022_fixCROverlap_filterCandsOnly/EraEFG/ZZ4lAnalysis.root
     # Pol:
@@ -17,7 +18,7 @@ year_2022:
     #   ZTZT: rootFiles/PrivateProduction/2022/EraEFG/MassReqsSIPCRs/qqZTZT_noTau_hadd_Skim.root
     #   ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/MassReqsSIPCRs/qqZZ_noTau_hadd_Skim.root
   Full:
-    lumi: !!float 34.6521e3
+    lumi: !!float 34.6532e3
 year_2023:
   C:
     lumi: !!float 17.794e3

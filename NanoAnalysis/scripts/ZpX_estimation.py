@@ -39,9 +39,13 @@ class ZpX:
 
     def get_count(self, hist, err, var):
         counts, edges = hist
-        max_idx = len(counts) if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
-        count = counts[:max_idx].sum()
-        err   = np.sqrt(np.square(err[:max_idx]).sum())
+        max_idx = len(counts) - 1 if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
+
+        # count = counts[:max_idx].sum()
+        # err   = np.sqrt(np.square(err[:max_idx]).sum())
+
+        count = counts[1:max_idx].sum()
+        err   = np.sqrt(np.square(err[1:max_idx]).sum())
 
         return count, err          
 
@@ -84,8 +88,8 @@ class ZpX:
         os_count, os_err = self.nZPP(os_reg, fs, all_hists, all_errors)
         ss_count, ss_err = self.nZPP(ss_reg, fs, all_hists, all_errors)
 
-        if os_count < 0: os_count = 1e-10
-        if ss_count < 0: ss_count = 1e-10
+        # if os_count < 0: os_count = 1e-10
+        # if ss_count < 0: ss_count = 1e-10
 
         ratio = os_count/ss_count
         ratio_err = ratio*np.sqrt((os_err/os_count)**2 + (ss_err/ss_count)**2)
