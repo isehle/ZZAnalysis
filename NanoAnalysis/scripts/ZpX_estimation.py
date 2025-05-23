@@ -99,8 +99,8 @@ class ZpX:
         )
 
         for fs in fstates:
+            if "4l" in fs: continue
             n, n_err = self.get_nZPPSS(fs, all_hists, all_errors)
-            continue
 
             zpx_info["N_ZPP_SS"][fs] = (n, n_err)
 
@@ -149,9 +149,6 @@ class ZpX:
 
         return counts
 
-            
-    
-
     def plot_zpx(self, zpx_info, step, *args):
         r_os_ss_y_lim  = (0, 7)
         n_zpp_ss_y_lim = (-2, 4)
@@ -199,7 +196,7 @@ class ZpX:
             
             ax.set_title(title)
 
-            fig.savefig(outfile+"_Z1pt.png")
+            fig.savefig(outfile+"_oldAlg_no4l.png")
         
         else:
             counts = [zpx_info[step][fs][0] for fs in fstates]
@@ -220,11 +217,11 @@ class ZpX:
             ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
             ax.set_ylabel(y_label)
 
-            if "r_OS" in step:
-                ax.set_ylim(*r_os_ss_y_lim)
-            else:
-                ax.set_ylim(*n_zpp_ss_y_lim)
-                #ax.set_ylim(-0.1, 0.1)
+            # if "r_OS" in step:
+            #     ax.set_ylim(*r_os_ss_y_lim)
+            # else:
+            #     ax.set_ylim(*n_zpp_ss_y_lim)
+            #     #ax.set_ylim(-0.1, 0.1)
 
             ax.set_title(title)
 
@@ -232,7 +229,7 @@ class ZpX:
             for arg in args:
                 outfile += "_{}".format(arg)
 
-            fig.savefig(outfile+"_Z1pt.png")
+            fig.savefig(outfile+"_oldAlg_no4l.png")
         
     def write_hists(self, zpx_info, hist_info, prop, minBinCount=1e-7):
         hists = {}

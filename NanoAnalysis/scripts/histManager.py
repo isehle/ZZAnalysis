@@ -197,6 +197,13 @@ class HistManager:
         hists_1, counts_1, errors_1 = self.histReader.read_hists_and_counts(infile_1)
         hists_1, counts_1, errors_1 = self.combine_processes(hists_1, counts_1, errors_1)
         zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, self.fstates)
+
+        import json
+        with open("ZpX_info_2022_EFG_oldAlg.json", "w") as myfile:
+            json.dump(zpx_info_1, myfile, indent=4)
+
+        exit()
+
         if infile_2 != "":
             hists_2, counts_2, errors_2 = self.histReader.read_hists_and_counts(infile_2)
             hists_2, counts_2, errors_2 = self.combine_processes(hists_2, counts_2, errors_2)
@@ -252,8 +259,8 @@ class HistManager:
             fig.savefig(outfile+".png")
         
         else:
+            era, year = eras[0], years[0]
             for step in zpx_info_1.keys():
-                era, year = eras[0], years[0]
                 self.zpx.plot_zpx(zpx_info_1, step, year, era)
 
     def plot_hists(self):
@@ -436,17 +443,17 @@ if __name__ == "__main__":
     parser.add_argument("--lumi_tag", default=0, type=int)
     args = vars(parser.parse_args())
 
-    with open("/afs/cern.ch/user/i/iehle/cmssw/CMSSW_14_1_6/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
+    with open("/afs/cern.ch/user/i/iehle/cmssw_test/CMSSW_14_1_6/src/ZZAnalysis/NanoAnalysis/scripts/hist_config.yaml") as config:
         cfg = yaml.safe_load(config)
   
     histManager = HistManager(cfg, args)
 
-    base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds_v2.root") # Copy of original for testing insert
-    # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_noTau.root")
-    # histManager.insert_hists(infile_1, infile_2)
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds_v2.root") # Copy of original for testing insert
+    # # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_noTau.root")
+    # # histManager.insert_hists(infile_1, infile_2)
 
-    histManager.plot_hists()
+    # histManager.plot_hists()
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_Z1pt.root") # Both with no Tau pols
@@ -468,10 +475,10 @@ if __name__ == "__main__":
     # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_Z1pt_polOnly_puAndLepIDRecoVars_v2.root") # Both with no Tau pols
     # histManager.insert_hists(infile_1, infile_2)
 
-    base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/delPhi_hists_NormZpX_wAsimov.root") # Both with no Tau pols
-    infile_2 = "/afs/cern.ch/user/i/iehle/CMSSW_14_1_0_pre4/src/HiggsAnalysis/CombinedLimit/asimov_data_delPhi_test.root" # Both with no Tau pols
-    histManager.insert_hists(infile_1, infile_2)
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/delPhi_hists_NormZpX_wAsimov.root") # Both with no Tau pols
+    # infile_2 = "/afs/cern.ch/user/i/iehle/CMSSW_14_1_0_pre4/src/HiggsAnalysis/CombinedLimit/asimov_data_delPhi_test.root" # Both with no Tau pols
+    # histManager.insert_hists(infile_1, infile_2)
 
     #histManager.write_hists()
 
@@ -488,6 +495,11 @@ if __name__ == "__main__":
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_goodSeeds.root")
     # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_17Jan.root")
     # histManager.plot_zpx(infile_2, years=(2023, 2023), eras=("Full", "Full"))
+
+    base_dir = "/eos/user/i/iehle/Analysis"
+    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds.root")
+    infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_17Jan.root")
+    histManager.plot_zpx(infile_1, years=(2022, 2022), eras=("EFG", "EFG"))    
 
     # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
     # histManager.plot_hists()
