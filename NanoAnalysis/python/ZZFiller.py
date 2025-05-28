@@ -558,13 +558,10 @@ class ZZFiller(Module):
 
         if self.isMC:
             mc_weight, mc_weight_err = self.getDataMCWeight(final_cands[reg_idx].leps())
-            #mcWeight = [self.getDataMCWeight(final_cands[reg_idx].leps())]
             if cand_props.branches["SR"][0]:
-                #self.out.fillBranch("ZZCand_dataMCWeight", mcWeight)
                 self.out.fillBranch("ZZCand_dataMCWeight", [mc_weight])
                 self.out.fillBranch("ZZCand_lepSF_err", [mc_weight_err])
             else:
-                # self.out.fillBranch("ZLLCand_dataMCWeight", mcWeight)
                 self.out.fillBranch("ZLLCand_dataMCWeight", [mc_weight])
                 self.out.fillBranch("ZLLCand_lepSF_err", [mc_weight_err])
         
@@ -575,8 +572,6 @@ class ZZFiller(Module):
                 branch = prep + branch
             self.out.fillBranch(branch, vals)
         
-
-
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 

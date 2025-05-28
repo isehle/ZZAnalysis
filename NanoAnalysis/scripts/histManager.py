@@ -271,7 +271,6 @@ class HistManager:
         all_hists, all_counts, all_errors = self.histReader.read_hists_and_counts(self.infile)
         all_hists, all_counts, all_errors = self.combine_processes(all_hists, all_counts, all_errors)
 
-
         for reg in self.regions:
             for prop in self.props:
                 for fs in self.fstates:
@@ -372,6 +371,8 @@ class HistManager:
                     dir_list = key.split("/")
                     dir_name, hist_name = "/".join(dir_list[:-1]), dir_list[-1]
 
+                    breakpoint()
+
                     File1.cd(dir_name)
                     hist.SetDirectory(File1)
                     hist.Write(hist_name, ROOT.TObject.kOverwrite)
@@ -447,13 +448,19 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
   
     histManager = HistManager(cfg, args)
+    #histManager.write_hists()
+
+    # base_dir = "/eos/user/i/iehle/Analysis/rootFiles/2022/EFG/"
+    # infile_1 = os.path.join(base_dir, "hists_oldAlg_newNTuples.root")
+    # infile_2 = os.path.join(base_dir, "hists_oldAlg_newNTuples_polsAndData.root")
+    # histManager.insert_hists(infile_1, infile_2)
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds_v2.root") # Copy of original for testing insert
     # # infile_2 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_noTau.root")
     # # histManager.insert_hists(infile_1, infile_2)
 
-    # histManager.plot_hists()
+    histManager.plot_hists()
 
     # base_dir = "/eos/user/i/iehle/Analysis"
     # infile_1 = os.path.join(base_dir, "rootFiles/2022/Full/hists_Z1pt.root") # Both with no Tau pols
@@ -496,10 +503,10 @@ if __name__ == "__main__":
     # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_17Jan.root")
     # histManager.plot_zpx(infile_2, years=(2023, 2023), eras=("Full", "Full"))
 
-    base_dir = "/eos/user/i/iehle/Analysis"
-    infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds.root")
-    infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_17Jan.root")
-    histManager.plot_zpx(infile_1, years=(2022, 2022), eras=("EFG", "EFG"))    
+    # base_dir = "/eos/user/i/iehle/Analysis"
+    # infile_1 = os.path.join(base_dir, "rootFiles/2022/EFG/hists_goodSeeds.root")
+    # infile_2 = os.path.join(base_dir, "rootFiles/2023/Full/hists_17Jan.root")
+    # histManager.plot_zpx(infile_1, years=(2022, 2022), eras=("EFG", "EFG"))    
 
     # histManager.combine_eras(infile_1, infile_2, years=[2023, 2023], eras=["C", "D"])
     # histManager.plot_hists()

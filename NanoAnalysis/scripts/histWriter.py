@@ -12,6 +12,19 @@ from tqdm import tqdm
 from NanoAnalysis.scripts.histSystematics import HistSystematics
 from NanoAnalysis.scripts.helper_functions import *
 
+ROOT.gInterpreter.Declare("""
+using ROOT::RVecB;
+int getRegIdx(RVecB &regMask){
+    int good_idx = -1;
+    for (int i=0; i<regMask.size(); i++){
+        if (regMask.at(i) == true){
+            good_idx = i;
+        }
+    }
+    return good_idx;
+}
+""")
+
 class HistWriter:
     def __init__(self, cfg, args):
         self.cfg     = cfg
@@ -33,13 +46,15 @@ class HistWriter:
 
         self.cand     = lambda reg: "ZZCand" if reg=="SR" else "ZLLCand"
         self.reg_filt = lambda reg: "{}.at(0) == 1".format(reg)
-        self.lep_idx  = lambda reg, z, l: "{}_Z{}l{}Idx.at(0)".format(self.cand(reg), z, l)
+        #self.lep_idx  = lambda reg, z, l: "{}_Z{}l{}Idx.at(0)".format(self.cand(reg), z, l)
+        self.lep_idx  = lambda reg, z, l: "{}_Z{}l{}Idx".format(self.cand(reg), z, l)
 
     def z_flav(self, reg, fs, z):
         pid = self.fstates[fs][z-1]
         if "SS" in reg and z==2:
             pid *= -1
-        return "{}_Z{}flav.at(0)=={}".format(self.cand(reg), z, pid)
+        return f"{self.cand(reg)}_Z{z}flav[reg_idx] == {pid}"
+        #return "{}_Z{}flav.at(0)=={}".format(self.cand(reg), z, pid)
 
     def _get_samples(self, year, era):
         central_base = self.cfg["datasets"]["eos_base"]
@@ -75,6 +90,10 @@ class HistWriter:
         df = ROOT.RDataFrame("Events", path)
         df = df.Filter("HLT_passZZ4l")
 
+        # Necessary due to bug introduced in CJLST
+        df = df.Define("zz_size", "ZZCand_mass.size()")
+        df = df.Define("zll_size", "ZLLCand_mass.size()")
+
         if self.isData:
             return df
 
@@ -83,12 +102,9 @@ class HistWriter:
         return df.Define("genEventSumw",str(Runs.Sum("genEventSumw").GetValue()))
 
     def write_weight(self, df, reg):
-        # dataMCWeight stored as RVec but only ever has one entry
-        cand_weight = "{}_dataMCWeight.at(0)*".format(self.cand(reg))
+        df = df.Define("weight", f"{self.cand(reg)}_dataMCWeight[reg_idx]*overallEventWeight/genEventSumw")
 
-        df = df.Define("weight", "{}overallEventWeight/genEventSumw".format(cand_weight))
-
-        return df.Filter(self.reg_filt(reg))
+        return df
 
     def fs_df(self, df, fs, reg):
         return df.Filter(self.z_flav(reg, fs, 1)).Filter(self.z_flav(reg, fs, 2))
@@ -103,7 +119,10 @@ class HistWriter:
         for Z in [1, 2]:
             for L in [1, 2]:
                 col = lep_col + "_Z{}l{}".format(Z, L)
-                df = df.Define(col, "{}.at({})".format(lep_col, self.lep_idx(reg, Z, L)))
+                #df = df.Define(col, "{}.at({})".format(lep_col, self.lep_idx(reg, Z, L)))
+                reg_lep_idx = "lepidx_Z{}l{}".format(Z, L)
+                df = df.Define(reg_lep_idx, f"{self.lep_idx(reg, Z, L)}[reg_idx]")
+                df = df.Define(col, f"{lep_col}[{reg_lep_idx}]")
                 
         def_by_z = lambda z: "ROOT::VecOps::RVec<float> {" + lep_col +"_Z{}l1, ".format(z) + lep_col + "_Z{}l2".format(z) + "}"
 
@@ -144,13 +163,17 @@ class HistWriter:
 
     def write_hist(self, df, reg, prop, hist_info, weight_col="weight"):
         column = self.get_column_name(reg, prop)
+        if prop not in df.GetColumnNames():
+            df = df.Define(prop, f"{column}[reg_idx]")
 
         if not self.isData:
-            hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), column, weight_col)
+            #hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), column, weight_col)
+            hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), prop, weight_col)
             hist.Scale(self.lumi)
             hist = hist.GetValue()
         else:
-            hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), column).GetValue()
+            #hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), column).GetValue()
+            hist = df.Histo1D((prop, column, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), prop).GetValue()
             hist.SetBinErrorOption(ROOT.TH1.kPoisson)
 
         return hist
@@ -159,8 +182,7 @@ class HistWriter:
         with up.recreate(self.outfile) as OutFile:
             hists = {}
             for sample, sample_path in tqdm(self.samples.items(), desc = "Processes", position = 0):
-                # print("\n===================\n")
-                # print(sample)
+
                 if "Data" in sample_path: self.isData = True
                 else: self.isData = False
 
@@ -168,13 +190,18 @@ class HistWriter:
 
                 hists[sample] = {}
                 for reg in tqdm(self.regions, desc = "Regions", position = 1, leave = False):
-                    if not self.isData:
-                        df_reg = self.write_weight(df, reg)
-                    else: 
-                        df_reg = df.Filter(self.reg_filt(reg))
+                    df_reg = df.Define("reg_idx", f"getRegIdx({reg})").Filter("reg_idx >= 0")
+                    
+                    if reg == "SR":
+                        df_reg = df_reg.Filter("zz_size == 1")
+                    else:
+                        df_reg = df_reg.Filter("zll_size == 1")
 
-                    # df_4l = self.lep_df(df_reg, reg, "Lepton_pt")
-                    # df_4l = self.filter_lep_reqs(df_4l, lep_reqs)
+                    if not self.isData:
+                        df_reg = self.write_weight(df_reg, reg)
+
+                    # else: 
+                    #     df_reg = df.Filter(self.reg_filt(reg))
                     
                     hists[sample][reg] = {}               
                     for prop in tqdm(self.props, desc = "Properties", position = 2, leave = False):
@@ -182,7 +209,6 @@ class HistWriter:
 
                         if "Lepton" in prop:
                             df_4l = self.lep_df(df_reg, reg, prop)
-                            #df_4l = self.lep_df(df_4l, reg, prop)
                         else:
                             df_4l = df_reg
 

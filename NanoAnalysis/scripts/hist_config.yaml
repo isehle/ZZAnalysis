@@ -13,17 +13,29 @@ datasets:
         ZZ_LO: rootFiles/PrivateProduction/2022/EraCD/noTau/newLepPtReqs/Z1pt/qqZZ_noTau_hadd_Skim.root
       Lumi: !!float 7.9804e3 # Lumi info from https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis
     EFG:
-      # MC: MC_2022_EraEFG_FixedSR
-      # Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
+      #MC: MC_2022_EraEFG_FixedSR
+      #Data: Data_2022_FixedSR/EraEFG/ZZ4lAnalysis.root
       # MC: MC_2022_EraEFG_newLepPtReqs_v3
       # Data: Data_2022_newLepPtReqs_v3/EraEFG/ZZ4lAnalysis.root
-      MC: MC_2022_EraEFG_Z1pt
-      Data: Data_2022_Z1pt/EraEFG/ZZ4lAnalysis.root
+      # MC: MC_2022_EraEFG_Z1pt
+      # Data: Data_2022_Z1pt/EraEFG/ZZ4lAnalysis.root
+      MC: MC_2022EE_oldAlg_ggZZProcessCR
+      Data: Data_2022_oldAlg/EraEFG/ZZ4lAnalysis.root
+      # Pol:
+      #   ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZL_noTau_hadd_Skim.root
+      #   ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZT_noTau_hadd_Skim.root
+      #   ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZTZT_noTau_hadd_Skim.root
+      #   ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/qqZZ_noTau_hadd_Skim.root
+      # Pol:
+      #   ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZL_noTau_hadd_Skim.root
+      #   ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZLZT_noTau_hadd_Skim.root
+      #   ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZTZT_noTau_hadd_Skim.root
+      #   ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/qqZZ_noTau_hadd_Skim.root
       Pol:
-        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZL_noTau_hadd_Skim.root
-        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZLZT_noTau_hadd_Skim.root
-        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/lepSFErrs/qqZTZT_noTau_hadd_Skim.root
-        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/newLepPtReqs/Z1pt/qqZZ_noTau_hadd_Skim.root
+        ZLZL: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZLZL_noTau_hadd_Skim.root
+        ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZLZT_noTau_hadd_Skim.root
+        ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZTZT_noTau_hadd_Skim.root
+        ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZZ_noTau_hadd_Skim.root
       Lumi: !!float 26.6717e3
     Full:
       Lumi: !!float 34.6521e3
@@ -71,39 +83,14 @@ datasets:
     TT: TTto2L2Nu
     WZ: WZto3LNu
     H: ggH125
-    VVV:
-      WWZ: WWZ
-      WZZ: WZZ
-      ZZZ: ZZZ
-
-# systematics:
-#   run: !!bool False
-#   props: ["cosTheta1", "cosTheta3", "cosThetaStar"]
-#   procs:
-#     ZLZL:
-#       Envelope:
-#         LHEScaleWeight: [0, 1, 2] # Indices for (muR, muF) = (0.5, 0.5), (0.5, 1), (0.5, 2), from https://cms-nanoaod-integration.web.cern.ch/integration/master/mc94X_doc.html#LHE
-#       RMS:
-#         LHEPdfWeight: [0, 100] # Start and endpoint of variations
-#     ZLZT:
-#       Envelope:
-#         LHEScaleWeight: [0, 1, 2] # Indices for (muR, muF) = (0.5, 0.5), (0.5, 1), (0.5, 2), from https://cms-nanoaod-integration.web.cern.ch/integration/master/mc94X_doc.html#LHE
-#       RMS:
-#         LHEPdfWeight: [0, 100] # Start and endpoint of variations
-#     ZTZT:
-#       Envelope:
-#         LHEScaleWeight: [0, 1, 2] # Indices for (muR, muF) = (0.5, 0.5), (0.5, 1), (0.5, 2), from https://cms-nanoaod-integration.web.cern.ch/integration/master/mc94X_doc.html#LHE
-#       RMS:
-#         LHEPdfWeight: [0, 100] # Start and endpoint of variations
+    # VVV:
+    #   WWZ: WWZ
+    #   WZZ: WZZ
+    #   ZZZ: ZZZ
 
 regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
-#regions: ["SR"]
 
 fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
-#fstates: ["fs_4l"]
-
-# Needed to extract lepton hists but we don't make hists of these variables
-# extra_props: ["Z1flav", "Z2flav"]
 
 lep_reqs: [20, 15, 15, 10]
 
@@ -157,52 +144,52 @@ hist_info:
   #     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
   #     #vars: [LHEScaleWeight, LHEPdfWeight, puWeight]
 
-  # Z1mass:
-  #   SR:
-  #     nbinsx: 21
-  #     xlow: 81
-  #     xhigh: 102
-  #     xlabel: "$m_{Z_1}$ GeV"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   MidMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{Z_1}$ GeV"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   LowMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{Z_1}$ GeV"
-  #     ylabel: Events
-  #     Blind: !!bool False
+  Z1mass:
+    SR:
+      nbinsx: 21
+      xlow: 81
+      xhigh: 102
+      xlabel: "$m_{Z_1}$ GeV"
+      ylabel: Events
+      Blind: !!bool False
+    MidMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{Z_1}$ GeV"
+      ylabel: Events
+      Blind: !!bool False
+    LowMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{Z_1}$ GeV"
+      ylabel: Events
+      Blind: !!bool False
 
 
-  # Z2mass:
-  #   SR:
-  #     nbinsx: 21
-  #     xlow: 81
-  #     xhigh: 102
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   MidMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
-  #   LowMass:
-  #     nbinsx: 80
-  #     xlow: 40
-  #     xhigh: 120
-  #     xlabel: "$m_{ll}$"
-  #     ylabel: Events
-  #     Blind: !!bool False
+  Z2mass:
+    SR:
+      nbinsx: 21
+      xlow: 81
+      xhigh: 102
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
+    MidMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
+    LowMass:
+      nbinsx: 80
+      xlow: 40
+      xhigh: 120
+      xlabel: "$m_{ll}$"
+      ylabel: Events
+      Blind: !!bool False
 
   # cosTheta1:
   #   nbinsx: 20
@@ -346,9 +333,9 @@ plot_styling:
     H:
       line: "#cc0000"
       fill: "#ff9b9b"
-    VVV:
-      line: "#000099"
-      fill: "#ffd700"
+    # VVV:
+    #   line: "#000099"
+    #   fill: "#ffd700"
 
   proc_styling:
     ggZZ:
@@ -375,10 +362,10 @@ plot_styling:
       line_color: "#cc0000"
       fill_color: "#ff9b9b"
       label: "$H$"
-    VVV:
-      line_color: "#000099"
-      fill_color: "#ffd700"
-      label: "$VVV$"
+    # VVV:
+    #   line_color: "#000099"
+    #   fill_color: "#ffd700"
+    #   label: "$VVV$"
       
 
 output:

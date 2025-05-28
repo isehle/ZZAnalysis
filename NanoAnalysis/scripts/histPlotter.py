@@ -42,7 +42,7 @@ class HistPlotter:
                 TT     = r"$t\bar{t}$",
                 WZ     = r"$WZ$",
                 H      = r"$H$",
-                VVV    = r"$VVV$"
+                #VVV    = r"$VVV$"
         ),
             Pol = dict(
                 ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
