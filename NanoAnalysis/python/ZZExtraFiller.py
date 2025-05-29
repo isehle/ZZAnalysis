@@ -35,6 +35,7 @@ class ZZExtraFiller(Module):
         self.out.branch(collName+"_nExtraZ", "I", lenVar=theLenVar, title="number of extra Zs passing H4l full sel")
         if self.isMC:
             self.out.branch(collName+"_dataMCWeight", "F", lenVar=theLenVar, title="data/MC efficiency correction weight", limitedPrecision=12)
+            self.out.branch(collName+"_dataMCWeight_err", "F", lenVar=theLenVar, title="uncertainty of data/MC efficiency correction weight", limitedPrecision=12)
 
         # Book MELA angle branches
         self.out.branch(collName + "_costheta1", "F", lenVar=theLenVar, limitedPrecision=12)
@@ -62,6 +63,7 @@ class ZZExtraFiller(Module):
         nExtraLeps = [-1]*len(cands)
         nExtraZs = [-1]*len(cands)
         wDataMC = [-1]*len(cands)
+        wDataMC_err = [-1]*len(cands)
 
         # MELA angle arrays
         helcosthetaZ1s = [-999.] * len(cands)
@@ -91,7 +93,9 @@ class ZZExtraFiller(Module):
 
             theCandLeps = [self.leps[i] for i in theCandLepIdxs] 
             if self.isMC:
-                wDataMC[iCand] = self.getDataMCWeight(theCandLeps)
+                wgt, wgt_err   = self.getDataMCWeight(theCandLeps)
+                wDataMC[iCand] = wgt
+                wDataMC_err[iCand] = wgt_err
 
             # Kinematic angles 
             
@@ -128,7 +132,8 @@ class ZZExtraFiller(Module):
         self.out.fillBranch(collName+"_nExtraLep", nExtraLeps)
         self.out.fillBranch(collName+"_nExtraZ", nExtraZs)
         if self.isMC:
-            self.out.fillBranch(collName+"_dataMCWeight", wDataMC)    
+            self.out.fillBranch(collName+"_dataMCWeight", wDataMC)
+            self.out.fillBranch(collName+"_dataMCWeight_err", wDataMC_err)    
 
         # Fill MELA angle branches
         self.out.fillBranch(collName + "_costheta1", helcosthetaZ1s)
@@ -149,8 +154,10 @@ class ZZExtraFiller(Module):
 
         dataMCWeight = 1.
         for lep in leps:
-            dataMCWeight *= lep.dataMC        
+            dataMCWeight *= lep.dataMC  
+
+        dataMCWeight_err = dataMCWeight*(sum([(lep.dataMC_err/lep.dataMC)**2 for lep in leps]))**0.5      
             
-        return dataMCWeight
+        return dataMCWeight, dataMCWeight_err
 
         
