@@ -991,20 +991,6 @@ class ZZFiller(Module):
         lepPts.sort()
         if not (lepPts[3]>20. and lepPts[2]>10.) : return None
 
-        #"Smart cut" on alternate pairings for same-sign candidates
-        if abs(Z1.l1.pdgId) == abs(Z2.l1.pdgId):
-            mZa, mZb = 0., 0.
-            if Z1.l1.pdgId == -Z2.l1.pdgId:
-                mZa=(Z1.l1DressedP4+Z2.l1DressedP4).M()
-                mZb=(Z1.l2DressedP4+Z2.l2DressedP4).M()
-            elif Z1.l1.pdgId == -Z2.l2.pdgId:
-                mZa=(Z1.l1DressedP4+Z2.l2DressedP4).M()
-                mZb=(Z1.l2DressedP4+Z2.l1DressedP4).M()
-            if (abs(mZa-self.ZmassValue)>abs(mZb-self.ZmassValue)) : mZa, mZb = mZb, mZa
-            if (abs(mZa-self.ZmassValue)<abs(Z1.M-self.ZmassValue)) and mZb < 12.:
-                if self.DEBUG : print(f"  fails smart cut: {mZa}, {mZb}")
-                return None
-
         #Compute D_bkg^kin
         p_GG_SIG_ghg2_1_ghz1_1_JHUGen = 0.
         p_QQB_BKG_MCFM = 1.

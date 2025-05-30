@@ -250,7 +250,7 @@ class HistWriter:
                     hists[reg][prop][fs] = hist
 
                     if self.run_systs(hist_info, reg):
-                        systWriter = HistSystematics(hist_info, self.lumi, good_branch, weight_col)
+                        systWriter = HistSystematics(hist_info, self.lumi, good_branch, weight_col, self.good_reg_idx)
                         for var in hist_info["systematics"]["vars"]:
                             up, down = systWriter.get_vars(df_fs, var)
                             

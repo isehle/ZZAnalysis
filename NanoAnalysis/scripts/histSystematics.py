@@ -10,17 +10,14 @@ import numpy as np
 from tqdm import tqdm
 
 class HistSystematics:
-    #def __init__(self, hist_info, lumi, prop, column, pdf_prescription="hessian"):
-    def __init__(self, hist_info, lumi, column, weight, pdf_prescription="hessian"):
+    def __init__(self, hist_info, lumi, column, weight, reg_idx, pdf_prescription="hessian"):
         self.hist_info        = hist_info
 
         self.lumi             = lumi
 
-        # self.prop             = prop
-        # self.column           = column
-
         self.column           = column
         self.weight           = weight
+        self.reg_idx          = reg_idx
 
         self.pdf_prescription = pdf_prescription
         
@@ -101,11 +98,11 @@ class HistSystematics:
         return up_hist, dn_hist
 
     def lepIDReco(self, df):
-        df = df.Define("weight_lepIDRecUp", "(ZZCand_dataMCWeight.at(0) + ZZCand_lepSF_err.at(0))*(overallEventWeight/genEventSumw)")
-        df = df.Define("weight_lepIDRecDn", "(ZZCand_dataMCWeight.at(0) - ZZCand_lepSF_err.at(0))*(overallEventWeight/genEventSumw)")
+        df = df.Define(f"{self.weight}_lepIDRecUp", f"(ZZCand_dataMCWeight[{self.reg_idx}] + ZZCand_dataMCWeight_err[{self.reg_idx}])*(overallEventWeight/genEventSumw)")
+        df = df.Define(f"{self.weight}_lepIDRecDn", f"(ZZCand_dataMCWeight[{self.reg_idx}] - ZZCand_dataMCWeight_err[{self.reg_idx}])*(overallEventWeight/genEventSumw)")
 
-        up_hist = df.Histo1D(self.th1_model, self.column, "weight_lepIDRecUp").GetValue()
-        dn_hist = df.Histo1D(self.th1_model, self.column, "weight_lepIDRecDn").GetValue()
+        up_hist = df.Histo1D(self.th1_model, self.column, f"{self.weight}_lepIDRecUp").GetValue()
+        dn_hist = df.Histo1D(self.th1_model, self.column, f"{self.weight}_lepIDRecDn").GetValue()
 
         up_hist.Scale(self.lumi)
         dn_hist.Scale(self.lumi)
