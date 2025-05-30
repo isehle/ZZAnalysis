@@ -36,9 +36,11 @@ datasets:
         ZLZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZLZT_noTau_hadd_Skim.root
         ZTZT: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZTZT_noTau_hadd_Skim.root
         ZZ_LO: rootFiles/PrivateProduction/2022/EraEFG/noTau/oldAlg/qqZZ_noTau_hadd_Skim.root
-      Lumi: !!float 26.6717e3
+      #Lumi: !!float 26.6717e3
+      Lumi: !!float 26.6728e3
     Full:
-      Lumi: !!float 34.6521e3
+      #Lumi: !!float 34.6521e3
+      Lumi: !!float 34.6532e3
 
   year_2023:
     C:
