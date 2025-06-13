@@ -273,12 +273,8 @@ class HistPlotter:
         if self.draw_data:
             data_hist   = hists["Data"]
             data_counts = counts["Data"]
-            
 
             data_label = f"{self.labels['Data']}: {data_counts} " + r"$\pm$" + str(round(np.sqrt(data_counts), 2))
-
-            #data_label = self.addCounts(self.labels["Data"], data_counts, data_errors)
-            #data_label = self.addCounts(self.labels, data_counts, data_errors)
 
             self._setBins(data_hist)
 

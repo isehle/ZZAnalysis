@@ -4,6 +4,8 @@ import sys
 parent_dir = os.path.abspath(__file__ + 3 * "/..")
 sys.path.insert(0, parent_dir)
 
+from pathlib import Path
+
 import ROOT
 
 from tqdm import tqdm
@@ -14,6 +16,8 @@ from NanoAnalysis.scripts.fileHandler import FileHandler
 from NanoAnalysis.scripts.histWriter import HistWriter
 from NanoAnalysis.scripts.histPlotter import HistPlotter
 from NanoAnalysis.scripts.ZpX_estimation import ZpX
+
+import matplotlib.pyplot as plt
 
 class HistManager:
     def __init__(self, cfg, args):
@@ -110,8 +114,16 @@ class HistManager:
                             # We want to keep overflow but not underflow bin
                             this_hist = hist.to_numpy(flow=True)
                             this_hist = (this_hist[0][1:], this_hist[1][1:])
-                            count     = np.sum(hist.values(flow=True)[1:])
+                            count     = this_hist[0].sum()
                             err       = hist.errors(flow=True)[1:]
+
+                            # this_hist = hist.to_numpy(flow=True)
+                            # count     = np.sum(hist.values(flow=True))
+                            # err       = hist.errors(flow=True)
+
+                            # this_hist = hist.to_numpy(flow=False)
+                            # count     = np.sum(hist.values(flow=False))
+                            # err       = hist.errors(flow=False)
 
                             if proc in self.file_handler.mc_samples.keys():
 
@@ -119,14 +131,10 @@ class HistManager:
                                 counts[prop][reg][fs]["MC"][proc] = count
                                 errors[prop][reg][fs]["MC"][proc] = err
 
-
-                            #elif proc in self.file_handler.data_samples.keys():
                             elif proc == "Data":
                                 hists[prop][reg][fs]["Data"]  = this_hist
                                 counts[prop][reg][fs]["Data"] = count
                                 errors[prop][reg][fs]["Data"] = err
-                                # if reg == "HighMassSSSIP":
-                                #     breakpoint()
 
                             elif proc in self.file_handler.pol_samples.keys():
                                 hists[prop][reg][fs]["Pol"][proc]  = this_hist
@@ -149,6 +157,24 @@ class HistManager:
         #fig = hist_plotter.plotter("mass", "SR", "fs_4mu")
         print("Yay!")
 
+    def combine_eras(self, infile_1, infile_2, years, eras):
+
+        if years[0]==years[1]:
+            base_dir, filename = os.path.split(infile_1)
+            outdir = base_dir.replace(eras[0], "Full")
+            Path(outdir).mkdir(parents=True, exist_ok=True)
+            outfile = os.path.join(outdir, filename)
+        else:
+            # NEED TO CHANGE THIS
+            outfile = "/eos/user/i/iehle/Analysis/rootFiles/hists_full.root"
+
+        with up.open(infile_1) as Hists_1, up.open(infile_2) as Hists_2, up.recreate(outfile) as NewHists:
+            for key in tqdm(Hists_1.keys()):
+                if key.count("/")==3 and key in Hists_2.keys():
+                    hist_1, hist_2 = Hists_1[key], Hists_2[key]
+                    NewHists[key.replace(";1", "")] = hist_1.to_pyroot() + hist_2.to_pyroot()
+            print("yay!")
+
     def write_zpx(self, path=""):
         if path=="": path = self.file_handler.hist_path
         if not os.path.exists(path):
@@ -166,42 +192,47 @@ class HistManager:
         
         hists_1, counts_1, errors_1 = self.read_hists(infile_1)
 
-        zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"])
+        #fstates = ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
+        fstates = ["fs_2x2e", "fs_2x2mu"]
+
+        zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, fstates)
 
         import json
-        with open("ZpX_info_2022_EFG_newAlg.json", "w") as myfile:
-            json.dump(zpx_info_1, myfile, indent=4)
+        # with open("ZpX_info_2022_Full_2x2e_2x2mu.json", "w") as myfile:
+        #     json.dump(zpx_info_1, myfile, indent=4)
 
-        exit()
         if infile_2 != "":
-            hists_2, counts_2, errors_2 = self.histReader.read_hists_and_counts(infile_2)
-            hists_2, counts_2, errors_2 = self.combine_processes(hists_2, counts_2, errors_2)
-            zpx_info_2 = self.zpx.get_zpx(hists_2, errors_2, self.fstates)
+            hists_2, counts_2, errors_2 = self.read_hists(infile_2)
 
-            categories = self.fstates
+            zpx_info_2 = self.zpx.get_zpx(hists_2, errors_2, fstates)
+
+            categories = fstates
             counts = {
-                "2022": [zpx_info_1["N_ZpX_MidMass"][fs][0] for fs in self.fstates],
-                "2023": [zpx_info_2["N_ZpX_MidMass"][fs][0] for fs in self.fstates],
+                "2022": [zpx_info_1["N_ZpX_MidMass"][fs][0] for fs in fstates],
+                "2023": [zpx_info_2["N_ZpX_MidMass"][fs][0] for fs in fstates],
             }
             errs = {
-                "2022": [zpx_info_1["N_ZpX_MidMass"][fs][1] for fs in self.fstates],
-                "2023": [zpx_info_2["N_ZpX_MidMass"][fs][1] for fs in self.fstates],
+                "2022": [zpx_info_1["N_ZpX_MidMass"][fs][1] for fs in fstates],
+                "2023": [zpx_info_2["N_ZpX_MidMass"][fs][1] for fs in fstates],
             }
             
-            lumi_2022 = self.cfg["datasets"]["year_2022"]["Full"]["Lumi"]
-            lumi_2023 = self.cfg["datasets"]["year_2023"]["Full"]["Lumi"]
+            #lumi_2022 = self.cfg["datasets"]["year_2022"]["Full"]["Lumi"]
+            #lumi_2023 = self.cfg["datasets"]["year_2023"]["Full"]["Lumi"]
+
+            lumi_2022 = 34.6532e3
+            lumi_2023 = 27.245e3
 
             norm_counts = {
                 "2022": [cnt/(lumi_2022*1e-3) for cnt in counts["2022"]],
                 "2023": [cnt/(lumi_2023*1e-3) for cnt in counts["2023"]]
             }
-            # Assuming a 1.5% lumi err for full 2022 and 2023
+
             norm_errs = {
-                "2022": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts["2022"], errs["2022"], counts["2022"])],
-                "2023": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts["2023"], errs["2023"], counts["2023"])]
+                "2022": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.014)**2) for nm_cnt, err, cnt in zip(norm_counts["2022"], errs["2022"], counts["2022"])],
+                "2023": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.013)**2) for nm_cnt, err, cnt in zip(norm_counts["2023"], errs["2023"], counts["2023"])]
             }
 
-            x = np.arange(len(self.fstates))
+            x = np.arange(len(fstates))
             group_width = 0.5
             offset_step = group_width/len(counts)
 
@@ -219,20 +250,25 @@ class HistManager:
             ax.legend()
 
             ax.set_xticks(x)
-            ax.set_xticklabels(self.fstates)
+            ax.set_xticklabels(fstates)
 
             ax.set_ylabel(r"$N_{Z+X}/{fb^{-1}}$")
             title = "N_ZpX/fb^-1 Full 2022, 2023"
-            outfile = "N_ZpX_Full_2022_2023_perInvFb_Z1pt"
+            outfile = "N_ZpX_Full_2022_2023_perInvFb_noSmartCut_2x2l"
             ax.set_title(title)
             fig.savefig(outfile+".png")
         
         else:
             for step in zpx_info_1.keys():
                 #era, year = eras[0], years[0]
-                era, year = "EFG", 2022
+                #era, year = "CD", 2022
+                #era, year = "EFG", 2022
+                era, year = "Full", 2022
+                #era, year = "C", 2023
+                #era, year = "D", 2023
+                #era, year = "Full", 2023
                 fig = self.zpx.plot_zpx(zpx_info_1, step, year, era)
-                fig.savefig(f"zpx_test_{step}_{year}_{era}_fixCROverlap.png")
+                fig.savefig(f"zpx_test_{step}_{year}_{era}_noSmartCut_2x2e_2x2mu.png")
 
 if __name__ == "__main__":
     import yaml
@@ -248,10 +284,72 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
     
     hist_manager = HistManager(cfg, args)
-    hist_manager.write_hists()
+    #hist_manager.write_hists()
     #hist_manager.plot_hists()
     #hist_manager.plot_hists("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists.root")
     #hist_manager.write_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
     #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
 
     #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_fixCROverlap_wData.root")
+    
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_NewAlg_noSmartCut.root")
+
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_sipShape.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_sipShape.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sipShape.root")
+
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/C/hists_sipShape.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/D/hists_sipShape.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_sipShape.root")
+
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sipShape.root", "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_sipShape.root")
+
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sipShape.root", "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_sipShape.root")
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_newAlg_dropDuplicates.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_newAlg_dropDuplicates.root",
+    #     years    = (2022, 2022),
+    #     eras     = ("CD", "EFG")
+    # )
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_2x2e_2x2mu.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_2x2e_2x2mu.root",
+    #     years    = (2022, 2022),
+    #     eras     = ("CD", "EFG")
+    # )
+
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root"
+    # )
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root")
+
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_2x2e_2x2mu.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_2x2e_2x2mu.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root"
+    # )
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
+
+    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root", "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
+
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_newAlg_dropDuplicates.root"
+    # )
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_newAlg_dropDuplicates_v2.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_newAlg_dropDuplicates_v2.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newAlg_dropDuplicates_v2.root"
+    # )

@@ -6,7 +6,7 @@ import ROOT
 # Note: originally done considering ZpX = DY+TT,
 # should really include also WZto3LNu
 class ZpX:
-    def __init__(self, zpx_procs = ["DY","TT","WZto3LNu"], max_sip = 4):
+    def __init__(self, zpx_procs = ["DY","TT","WZ"], max_sip = 4):
         self.zpx_procs = zpx_procs
 
         self.max_sip = max_sip
@@ -37,15 +37,16 @@ class ZpX:
             )
         )
 
-    def get_count(self, hist, err, var):
+    def get_count(self, hist, errs, var):
         counts, edges = hist
-        max_idx = len(counts) - 1 if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
 
-        # count = counts[:max_idx].sum()
-        # err   = np.sqrt(np.square(err[:max_idx]).sum())
+        max_idx = len(counts) if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
+        count = counts[:max_idx].sum()
+        err   = np.sqrt(np.square(errs[:max_idx]).sum())
 
-        count = counts[1:max_idx].sum()
-        err   = np.sqrt(np.square(err[1:max_idx]).sum())
+        #max_idx = len(counts) - 1 if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
+        # count = counts[1:max_idx].sum()
+        # err   = np.sqrt(np.square(errs[1:max_idx]).sum())
 
         return count, err          
 
@@ -53,7 +54,8 @@ class ZpX:
         data_hist = all_hists[var][reg][fs]["Data"]
         data_err  = all_errors[var][reg][fs]["Data"]
         
-        n, n_err = self.get_count(data_hist, data_err, var)
+        #n, n_err = self.get_count(data_hist, data_err, var)
+        count, n_err = self.get_count(data_hist, data_err, var)
         
         tot_errs = [n_err]
         for proc in all_hists[var][reg][fs]["MC"].keys():
@@ -66,12 +68,12 @@ class ZpX:
 
             mc_count, mc_err = self.get_count(mc_hist, mc_err, var)
 
-            n -= mc_count
+            count -= mc_count
             tot_errs.append(mc_err)
 
         tot_err = np.sqrt(np.square(tot_errs).sum())
         
-        return n, tot_err
+        return count, tot_err
 
     def get_nZPPSS(self, fs, all_hists, all_errors):
         #lep_count, lep_err = self.nZPP("SS_NoSIP_HighMass", fs, all_hists, all_errors, var = "Lepton_sip3d_Z2")
@@ -92,7 +94,11 @@ class ZpX:
         # if ss_count < 0: ss_count = 1e-10
 
         ratio = os_count/ss_count
+        
         ratio_err = ratio*np.sqrt((os_err/os_count)**2 + (ss_err/ss_count)**2)
+        if ratio < 0:
+            ratio = 0
+            ratio_err *= -1
 
         return ratio, ratio_err
 
@@ -222,7 +228,10 @@ class ZpX:
             title   = self.plot_info[step]["title"]
 
             fig, ax = plt.subplots()
-            ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
+            try:
+                ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
+            except ValueError:
+                breakpoint()
             ax.set_ylabel(y_label)
 
             # if "r_OS" in step:

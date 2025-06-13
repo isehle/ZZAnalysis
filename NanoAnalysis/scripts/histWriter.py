@@ -13,6 +13,48 @@ import uproot as up
 import numpy as np
 from tqdm import tqdm
 
+ROOT.gInterpreter.Declare("""
+
+#include <string>
+
+string get_event_idx(int run, int lumi, long event) {
+
+    string run_string = to_string(run);
+    string lumi_string = to_string(lumi);
+    string event_string = to_string(event);
+
+    string event_idx = run_string + "_" + lumi_string + "_" + event_string;
+
+    return event_idx;
+}
+
+""")
+
+# See: https://gist.github.com/eguiraud/77a0ca3566e66bc6b8cd0f9e156c983b
+# and https://root-forum.cern.ch/t/select-unique-candidates-based-on-their-id-and-variable/59668/3
+ROOT.gInterpreter.Declare("""
+// A thread-safe stateful filter that lets only one event pass for each value of
+// "category" (where "category" is a random character).
+// It is using gCoreMutex, which is a read-write lock, to have a bit less contention between threads.
+
+class FilterOnePerKind {
+  std::unordered_set<string> _seenCategories;
+  
+public:
+  bool operator()(string category) {
+    {
+      R__READ_LOCKGUARD(ROOT::gCoreMutex); // many threads can take a read lock concurrently
+      if (_seenCategories.count(category) == 1)
+        return false;
+    }
+    // if we are here, `category` was not already in _seenCategories
+    R__WRITE_LOCKGUARD(ROOT::gCoreMutex); // only one thread at a time can take the write lock
+    _seenCategories.insert(category);
+    return true;
+  }
+};
+""")
+
 class HistWriter:
     def __init__(self, cfg, lumi, col_tag):
         self.cfg  = cfg
@@ -61,10 +103,9 @@ class HistWriter:
     def _get_df(self, process, filepath):
 
         df = ROOT.RDataFrame("Events", filepath)
-        try:
-            ROOT.RDF.Experimental.AddProgressBar(df)
-        except TypeError:
-            breakpoint()
+
+        ROOT.RDF.Experimental.AddProgressBar(df)
+
         df = df.Filter("HLT_passZZ4l")
 
         # Only needed temporarily, filter events that belong to at least one reg
@@ -77,7 +118,14 @@ class HistWriter:
 
         Runs = ROOT.RDataFrame("Runs", filepath)
 
-        return df.Define("genEventSumw",str(Runs.Sum("genEventSumw").GetValue()))
+        df = df.Define("genEventSumw",str(Runs.Sum("genEventSumw").GetValue()))
+
+        # Temporarily needed to handle duplicate events!
+        df = df.Define("event_idx", "get_event_idx(run, luminosityBlock, event)")
+        
+        event_idx = ROOT.std.vector['string'](["event_idx"])
+        
+        return df.Filter(ROOT.FilterOnePerKind(), event_idx)
 
     def _combine_procs(self, category, sub_hists):
         processes = list(sub_hists.keys())
@@ -88,12 +136,10 @@ class HistWriter:
             for reg in self.regions:
                 combined_hists[prop][reg] = {}
                 for fs in self.final_states:
-                    try:
-                        new_hist = sub_hists[processes[0]][prop][reg][fs].Clone(category)
-                        for proc in processes[1:]:
-                            new_hist.Add(sub_hists[proc][prop][reg][fs])
-                    except KeyError:
-                        breakpoint()    
+
+                    new_hist = sub_hists[processes[0]][prop][reg][fs].Clone(category)
+                    for proc in processes[1:]:
+                        new_hist.Add(sub_hists[proc][prop][reg][fs])   
 
                     combined_hists[prop][reg][fs] = new_hist
         
@@ -199,13 +245,17 @@ class HistWriter:
     def fs_filt(self, df, reg, fs):
 
         if "4l" in fs:
-            return df
+            return df.Filter(f"({self.good_z1_flav} == -121) || ({self.good_z1_flav} == -169)")
+
+        elif "2x2e" in fs:
+            pdg2 = -121
+        elif "2x2mu" in fs:
+            pdg2 = -169
         
-        pdg1, pdg2 = self.pdgs[fs]
-        if "SSSIP" in reg:
+        if ("SSSIP" in reg) or ("SSRelaxed" in reg):
             pdg2 *= -1
         
-        return df.Filter(f"{self.good_z1_flav}=={pdg1}").Filter(f"{self.good_z2_flav}=={pdg2}")
+        return df.Filter(f"{self.good_z2_flav}=={pdg2}")
 
     def write_hists(self, df):
         hists = {}
@@ -214,7 +264,7 @@ class HistWriter:
         
         for reg in tqdm(self.regions, desc = "Regions", position = 0):
             
-            df             = self.define_reg_cols(df, reg) # Define Z1flav, Z2flav, and dataMCWeight columns by region
+            df = self.define_reg_cols(df, reg) # Define Z1flav, Z2flav, and dataMCWeight columns by region
             
             if not self.data:
                 weight_col     = f"weight_{reg}"
