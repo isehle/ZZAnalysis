@@ -9,8 +9,8 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 ###,,,,,,,,,,,These samples correspond to the E-F-G data taking periods - after the ECAL leak (called Run3EE)
 
 ###,,,,,,,,,,,Higgs bkg
-# ggH125  ,,52.23,0.0002745,,/GluGluHtoZZto4L_M-125_TuneCP5_13p6TeV_powheg2-JHUGenV752-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM  ,dbs,root://cms-xrd-global.cern.ch/,2,GENXSEC=1.;GENBR=1.;PROCESS_CR=True;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;APPLY_QCD_GGF_UNCERT=True;LEPTON_SETUP=2022;ADD_ALLEVENTS=True,, # Replaced by sample below
-ggH125  ,,52.23,0.0002745,,/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/nanoAOD/post_EE/GluGluHToZZ_M125_EE  ,local,,2,GENXSEC=1.;GENBR=1.;PROCESS_CR=True;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;APPLY_QCD_GGF_UNCERT=True;LEPTON_SETUP=2022;ADD_ALLEVENTS=True,, # Reprocessed to include genparticle iso
+ggH125  ,,52.23,0.0002745,,/GluGluHtoZZto4L_M-125_TuneCP5_13p6TeV_powheg2-JHUGenV752-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM  ,dbs,root://cms-xrd-global.cern.ch/,2,GENXSEC=1.;GENBR=1.;PROCESS_CR=True;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;APPLY_QCD_GGF_UNCERT=True;LEPTON_SETUP=2022;ADD_ALLEVENTS=True,, # Replaced by sample below
+# ggH125  ,,52.23,0.0002745,,/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/nanoAOD/post_EE/GluGluHToZZ_M125_EE  ,local,,2,GENXSEC=1.;GENBR=1.;PROCESS_CR=True;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;APPLY_QCD_GGF_UNCERT=True;LEPTON_SETUP=2022;ADD_ALLEVENTS=True,, # Reprocessed to include genparticle iso
 
 ###,,,,,,,,,,,qq->ZZ unpolarized signal - xsec taken from powheg gridpack
 ZZTo4l,,1.39,,,/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/Run3Summer22EENanoAODv12-130X_mcRun3_2022_realistic_postEE_v6-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,3,GENXSEC=1.39;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2022,,

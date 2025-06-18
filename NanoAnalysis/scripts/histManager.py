@@ -193,13 +193,13 @@ class HistManager:
         hists_1, counts_1, errors_1 = self.read_hists(infile_1)
 
         #fstates = ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
-        fstates = ["fs_2x2e", "fs_2x2mu"]
+        fstates = ["fs_4l", "fs_2x2e", "fs_2x2mu"]
 
         zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, fstates)
 
         import json
-        # with open("ZpX_info_2022_Full_2x2e_2x2mu.json", "w") as myfile:
-        #     json.dump(zpx_info_1, myfile, indent=4)
+        with open("ZpX_info_2023_Full_2x2e_2x2mu_4l.json", "w") as myfile:
+            json.dump(zpx_info_1, myfile, indent=4)
 
         if infile_2 != "":
             hists_2, counts_2, errors_2 = self.read_hists(infile_2)
@@ -263,12 +263,12 @@ class HistManager:
                 #era, year = eras[0], years[0]
                 #era, year = "CD", 2022
                 #era, year = "EFG", 2022
-                era, year = "Full", 2022
+                #era, year = "Full", 2022
                 #era, year = "C", 2023
                 #era, year = "D", 2023
-                #era, year = "Full", 2023
+                era, year = "Full", 2023
                 fig = self.zpx.plot_zpx(zpx_info_1, step, year, era)
-                fig.savefig(f"zpx_test_{step}_{year}_{era}_noSmartCut_2x2e_2x2mu.png")
+                fig.savefig(f"zpx_test_{step}_{year}_{era}_noSmartCut_2x2e_2x2mu_4l.png")
 
 if __name__ == "__main__":
     import yaml
@@ -320,11 +320,34 @@ if __name__ == "__main__":
     #     eras     = ("CD", "EFG")
     # )
 
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_2x2e_2x2mu_4l.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_2x2e_2x2mu_4l.root",
+    #     years    = (2022, 2022),
+    #     eras     = ("CD", "EFG")
+    # )
+
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu_4l.root"
+    # )
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu_4l.root")
+
     # hist_manager.plot_hists(
     #     path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root"
     # )
-    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root")
+    # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root")
 
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_newAlg_lepPts_20_10x3.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_newAlg_lepPts_20_10x3.root",
+    #     years    = (2022, 2022),
+    #     eras     = ("CD", "EFG")
+    # )
+
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_newAlg_lepPts_20_10x3.root"
+    # )
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_newAlg_lepPts_20_10x3.root")
 
     # hist_manager.combine_eras(
     #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_2x2e_2x2mu.root",
@@ -337,7 +360,34 @@ if __name__ == "__main__":
     # )
     #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
 
-    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root", "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root", "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_newNanos.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_newNanos.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root"
+    # )
+    #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
+
+    hist_manager.plot_hists(
+        path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newNanos.root"
+    )
+    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newNanos.root")
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_newAlg_lepPts_20_10x3.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_newAlg_lepPts_20_10x3.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newAlg_lepPts_20_10x3.root"
+    # )
+    # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newAlg_lepPts_20_10x3.root")
 
     # hist_manager.plot_hists(
     #     path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_newAlg_dropDuplicates.root"
@@ -352,4 +402,12 @@ if __name__ == "__main__":
 
     # hist_manager.plot_hists(
     #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newAlg_dropDuplicates_v2.root"
+    # )
+
+    # hist_manager.plot_hists(
+    #     path = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root"
+    # )
+
+    # hist_manager.plot_hists(
+    #     path = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root"
     # )

@@ -40,9 +40,9 @@ pt:
   xlabel: "${p_T}^{4l}$ GeV"
   ylabel: Events / 5 GeV
   Blind: !!bool False
-#   systematics:
-#     procs: [ZLZL, ZLZT, ZTZT]
-#     vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
+  systematics:
+    procs: [ZLZL, ZLZT, ZTZT]
+    vars: [LHEScaleWeight, LHEPdfWeight, puWeight, lepIDRec]
 
 Z1mass:
   SR:
@@ -171,10 +171,10 @@ Lepton_sip3d_Z2:
   ylabel: Events
   Blind: !!bool False
 
-# Lepton_pt:
-#   nbinsx: !!int 50
-#   xlow: !!int 0
-#   xhigh: !!int 500
-#   xlabel: "$p_T^l$"
-#   ylabel: Events
-#   Blind: !!bool False
+Lepton_pt:
+  nbinsx: !!int 50
+  xlow: !!int 0
+  xhigh: !!int 500
+  xlabel: "$p_T^l$"
+  ylabel: Events
+  Blind: !!bool False

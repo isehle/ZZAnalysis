@@ -1,0 +1,42 @@
+ratio_fig_style:
+  figsize: [10, 10]
+  gridspec_kw:
+    height_ratios: [3, 1]
+
+hatch_style:
+  facecolor: 'none'
+  edgecolor: [0, 0, 0, 0.5]
+  linewidth: 0
+  hatch: '///'
+
+errorbar_style:
+  linestyle: 'none'
+  marker: '.'
+  elinewidth: 1
+  capsize: 1
+  color: 'k'
+
+proc_info:
+  ggZZ:
+    line: "#000099"
+    fill: "#4b78ff"
+  ZZ_NLO:
+    line: "#000099"
+    fill: "#99ccff"
+  DY:
+    line: "#000099"
+    fill: "#00ff00"
+  TT:
+    line: "#000099"
+    fill: "#ff0000"
+  WZ:
+    line: "#003300"
+    fill: "#669966"
+  H:
+    line: "#cc0000"
+    fill: "#ff9b9b"
+  VVV:
+    line: "#000099"
+    fill: "#ffd700"
+
+pol_colors: ["magenta", "lime", "red", "black"]

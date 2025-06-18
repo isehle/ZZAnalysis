@@ -1002,6 +1002,8 @@ class ZZFiller(Module):
         # trigger acceptance cuts (20,10 GeV)
         lepPts.sort()
         if not (lepPts[3]>20. and lepPts[2]>10.) : return None
+        # Kill Z+X Studies: require 20_10_10_10
+        #if not (lepPts[3]>20. and lepPts[0]>10.) : return None
 
         #Compute D_bkg^kin
         p_GG_SIG_ghg2_1_ghz1_1_JHUGen = 0.
