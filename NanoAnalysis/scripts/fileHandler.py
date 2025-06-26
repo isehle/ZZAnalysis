@@ -9,6 +9,8 @@ from pathlib import Path
 import yaml
 import uproot as up
 
+import ROOT
+
 default_cfg_path = os.path.join(parent_dir, "NanoAnalysis/scripts/files_cfg.yaml")
 
 class FileHandler:
@@ -87,11 +89,16 @@ class FileHandler:
                             if ("Up" in fs) or ("Down" in fs):
                                 split = fs.split("_")
                                 fs, proc_var = "_".join(split[:2]), "_".join([proc, split[-1]])
-                                OutFile[f"{prop}/{reg}/{fs}/{proc_var}"] = hist
-                            
+                                try:
+                                    OutFile[f"{prop}/{reg}/{fs}/{proc_var}"] = hist
+                                except:
+                                    OutFile[f"{prop}/{reg}/{fs}/{proc_var}"] = hist.GetValue()
                             else:
-                                OutFile[f"{prop}/{reg}/{fs}/{proc}"] = hist
-
+                                try:
+                                    OutFile[f"{prop}/{reg}/{fs}/{proc}"] = hist
+                                except:
+                                    OutFile[f"{prop}/{reg}/{fs}/{proc}"] = hist.GetValue()
+                                    
     def write_plots(self, figs):
         base_dir = os.path.join(self.output["plots"], str(self.year), self.era)
         for prop in figs.keys():

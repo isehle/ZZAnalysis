@@ -18,6 +18,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mplhep as hep
 
+from copy import deepcopy
+
 plot_cfg_path = os.path.join(parent_dir, "NanoAnalysis/scripts/plot_cfg.yaml")
 
 class HistPlotter:
@@ -40,15 +42,31 @@ class HistPlotter:
         self.hatch_style     = self.cfg["hatch_style"]
         self.errorbar_style  = self.cfg["errorbar_style"]
 
-        self.fill_colors = [self.cfg["proc_info"][proc]["fill"] for proc in self.cfg["proc_info"].keys()]
-        self.line_colors = [self.cfg["proc_info"][proc]["line"] for proc in self.cfg["proc_info"].keys()]
+        # self.fill_colors = [self.cfg["proc_info"][proc]["fill"] for proc in self.cfg["proc_info"].keys()]
+        # self.line_colors = [self.cfg["proc_info"][proc]["line"] for proc in self.cfg["proc_info"].keys()]
 
         self.bin_edges   = []
         self.bin_centers = []
 
         self.is_empty = lambda a_dict, key: a_dict[key] == {}
 
-        self.labels = dict(
+        self.sr_labels = dict(
+            MC = dict(
+                ggZZ   = r"$gg \rightarrow ZZ$",
+                ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
+                ZpX    = r"$Z+X$",
+                VVV    = r"$VVV$"
+        ),
+            Pol = dict(
+                ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
+                ZLZT  = r"$q\bar{q} \rightarrow Z_L Z_T$",
+                ZTZT  = r"$q\bar{q} \rightarrow Z_T Z_T$",
+                ZZ_LO = r"$(q\bar{q} \rightarrow ZZ)_{LO}$"                
+        ),
+            Data = "Data"
+        )
+
+        self.lm_labels = dict(
             MC = dict(
                 ggZZ   = r"$gg \rightarrow ZZ$",
                 ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
@@ -67,6 +85,35 @@ class HistPlotter:
             Data = "Data"
         )
 
+        self.cr_labels = dict(
+            MC = dict(
+                ggZZ   = r"$gg \rightarrow ZZ$",
+                ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
+                DY     = r"$DY$",
+                TT     = r"$t\bar{t}$",
+                WZ     = r"$WZ$",
+                VVV    = r"$VVV$"
+        ),
+            Pol = dict(
+                ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
+                ZLZT  = r"$q\bar{q} \rightarrow Z_L Z_T$",
+                ZTZT  = r"$q\bar{q} \rightarrow Z_T Z_T$",
+                ZZ_LO = r"$(q\bar{q} \rightarrow ZZ)_{LO}$"                
+        ),
+            Data = "Data"
+        )
+
+    def _set_procs(self, reg):
+        if reg == "SR":
+            self.labels = self.sr_labels
+        elif "LowMass" in reg:
+            self.labels = self.lm_labels
+        else:
+            self.labels = self.cr_labels
+
+        self.fill_colors = [self.cfg["proc_info"][proc]["fill"] for proc in self.labels["MC"].keys()]
+        self.line_colors = [self.cfg["proc_info"][proc]["line"] for proc in self.labels["MC"].keys()]
+
     def _set_cfg(self, cfg_path):
         with open(cfg_path) as config:
             self.cfg = yaml.safe_load(config)
@@ -82,7 +129,6 @@ class HistPlotter:
         self.prop_info = hist_cfg[prop]
         if "mass" in prop:
             mass_reg = "SR" if reg == "SR" or "HighMass" in reg else reg.replace("OSSIP","").replace("SSSIP", "") 
-            #mass_reg = reg.split("_")[-1] if reg != "SR" or "HighMass" in reg else reg.replace("OSSIP","").replace("SSSIP", "")
             self.prop_info = self.prop_info[mass_reg]
 
         self.xlabel = self._to_raw_string(self.prop_info["xlabel"])
@@ -96,11 +142,11 @@ class HistPlotter:
             self.bin_edges = hists[key][1]
         else:
             self.bin_edges = hists[1]
+
         self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:])/2
-        # if self.bin_edges == []:
-        #     key = list(hists.keys())[0]
-        #     self.bin_edges = hists[key][1]
-        #     self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:])/2
+        if self.bin_centers[-1] == np.inf:
+            self.adjusted_bin_centers = deepcopy(self.bin_centers)
+            self.adjusted_bin_centers[-1] = self.bin_centers[-2] + (self.bin_centers[-2] - self.bin_centers[-3])
 
     def adjustBinEdges(self, hist_list):
         new_list = []
@@ -135,17 +181,27 @@ class HistPlotter:
         hep.cms.label(label="Work in Progress", year=self.year, lumi = round(self.lumi*1e-3), com=13.6, data=True, ax=self.ax)
 
     def draw_mc_hists(self, hists, labels):
+
         ordered_hists = [hists[proc] for proc in self.labels["MC"].keys()]
-        adjusted_hists = self.adjustBinEdges(ordered_hists)
+        # breakpoint()
+        # adjusted_hists = self.adjustBinEdges(ordered_hists)
+
+        new_hists = []
+        for hist in ordered_hists:
+            hist[1][hist[1] == -np.inf] = 0.
+            hist[1][hist[1] == np.inf]  = hist[1][-2] + (hist[1][-2] - hist[1][-3])
+            new_hists.append(hist)
 
         hep.histplot(
-            adjusted_hists,
+            new_hists,
+            #ordered_hists,
             stack=True,
             histtype='fill',
             label = labels,
             ax = self.ax,
             color = self.fill_colors,
-            edgecolor = self.line_colors
+            edgecolor = self.line_colors,
+            flow = "sum"
         )
 
     def add_pols(self, hists, counts, errors):
@@ -194,13 +250,22 @@ class HistPlotter:
 
     def set_stackCountsErrs(self, mc_hists, mc_errors):
         #mc_count_arr = np.array([mc_hists[key][0] for key in self.cfg["plot_styling"]["mc_colors"].keys()])
-        mc_count_arr = np.array([mc_hists[key][0] for key in mc_hists.keys()])
+        #mc_count_arr = np.array([mc_hists[key][0] for key in mc_hists.keys()])
+        mc_count_arr = np.array([mc_hists[key][0] for key in self.labels["MC"].keys()])
+        mc_errors = np.array([mc_errors[key] for key in self.labels["MC"].keys()])
+
         self.total_mc_counts = np.sum(mc_count_arr, axis=0)
         self.total_mc_counts[ self.total_mc_counts < 0] = 0
-        self.total_mc_errors = np.sqrt(np.sum([err**2 for err in mc_errors.values()], axis=0))
+
+        self.total_mc_errors = np.sqrt(np.sum([err**2 for err in mc_errors], axis=0))
 
     def draw_ratio(self, data_hist):
-        self.rax.fill_between(x=self.bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='mid', **self.hatch_style)
+        #self.rax.fill_between(x=self.bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='mid', **self.hatch_style)
+        # if np.inf in self.bin_centers:
+        #     self.rax.fill_between(x=self.adjusted_bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, **self.hatch_style)
+        # else:
+        #     self.rax.fill_between(x=self.bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, **self.hatch_style)
+        self.rax.fill_between(x=self.bin_edges[:-1], y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='post', **self.hatch_style)
         self.rax.errorbar(x=self.bin_centers, y=data_hist[0]/self.total_mc_counts, yerr=np.sqrt(data_hist[0])/self.total_mc_counts, **self.errorbar_style)
 
         self.rax.set_ylim(0, 2)
@@ -210,6 +275,7 @@ class HistPlotter:
 
     def plotter(self, prop, reg, fs, norm=False):
         # Set up figures, styling, names etc
+        self._set_procs(reg)
         self._set_prop_info(prop, reg)
         #if not norm: self.set_lumi_tag()    
         self.writeFigs()
@@ -222,6 +288,8 @@ class HistPlotter:
         self.draw_mc   = not self.is_empty(hists, "MC")
         self.draw_pol  = not self.is_empty(hists, "Pol")
         self.draw_data = not self.is_empty(hists, "Data") and not self.blind
+
+        self.draw_pol = False
 
         max_bin_counts = []
 
@@ -240,10 +308,20 @@ class HistPlotter:
 
             # Draw MC Err
             self.set_stackCountsErrs(mc_hists, mc_errors)
-            try:
-                self.ax.fill_between(x=self.bin_centers[1:-1], y1 = self.total_mc_counts[1:-1] - self.total_mc_errors[1:-1], y2 = self.total_mc_counts[1:-1] + self.total_mc_errors[1:-1], label = "Stat. Unc.", step='mid', **self.hatch_style)
-            except:
-                breakpoint()
+
+            #self.ax.fill_between(x=self.bin_centers[1:-1], y1 = self.total_mc_counts[1:-1] - self.total_mc_errors[1:-1], y2 = self.total_mc_counts[1:-1] + self.total_mc_errors[1:-1], label = "Stat. Unc.", step='mid', **self.hatch_style)
+            #self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
+
+            self.ax.fill_between(x=self.bin_edges[:-1], y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step="post", **self.hatch_style)
+
+            # if np.inf in self.bin_centers:
+            #     #self.ax.fill_between(x=self.adjusted_bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
+            #     self.ax.fill_between(x=self.adjusted_bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", **self.hatch_style)
+            # else:
+            #     #self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
+            #     self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", **self.hatch_style)
+
+            #self.ax.fill_between(x=self.bin_edges[:-1], y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='post', **self.hatch_style)
 
             max_bin_counts.append(max([max(hist[0]) for hist in mc_hists.values()]))
 
@@ -295,6 +373,8 @@ class HistPlotter:
         else:
             self.ax.set_xlabel(self.xlabel)
 
+        # self.ax.set_xlabel(self.xlabel)
+
         hep.rescale_to_axessize(self.ax, 10, 10/1.62)
 
         return self.fig
@@ -306,6 +386,5 @@ class HistPlotter:
             for reg in self.all_hists[prop].keys():
                 figs[prop][reg] = {}
                 for fs in self.all_hists[prop][reg].keys():
-                    #if fs != "fs_4l": continue
                     figs[prop][reg][fs] = self.plotter(prop, reg, fs)
         return figs

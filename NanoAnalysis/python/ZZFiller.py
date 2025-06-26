@@ -463,7 +463,7 @@ class ZZFiller(Module):
                         aZ.isOSSIPCR = isOSSIPCR
                         aZ.isSSSIPCR = isSSSIPCR
                         aZ.isSSRelaxedCR = isSSRelaxedCR
-                        
+
                         zmass = aZ.M
                         if self.DEBUG: print('Z={:.4g} pt1={:.3g} pt2={:.3g} fsr1={} fsr2={} SR={} 1F={} 2F={} SS={} OSSIP={}'.format(zmass, l1.pt, l2.pt, l1.fsrPhotonIdx,  l2.fsrPhotonIdx, isSR, is1FCR, is2FCR, isSSCR, isSIPCR))
                         if (zmass>12. and zmass<120.):

@@ -19,6 +19,8 @@ from NanoAnalysis.scripts.ZpX_estimation import ZpX
 
 import matplotlib.pyplot as plt
 
+from copy import deepcopy
+
 class HistManager:
     def __init__(self, cfg, args):
         self.cfg          = cfg
@@ -76,7 +78,66 @@ class HistManager:
 
         return hists
 
-    def read_hists(self, path):
+    def rebin_hist(self, hist, new_bins, overflow, name=""):
+        pyhist = hist.to_pyroot()
+
+        nbins = len(new_bins) - 1 
+        
+        rebinned = pyhist.Rebin(nbins, name, np.array(new_bins))
+
+        max_bin = nbins + 2 if overflow else nbins+1
+        #count   = rebinned.Integral(0, max_bin)
+
+        bin_contents = np.array([rebinned.GetBinContent(i) for i in range(1, max_bin)])
+        bin_errors   = np.array([rebinned.GetBinError(i) for i in range(1, max_bin)])
+        
+        new_bins = np.array(new_bins)
+        if overflow:
+            new_bins = np.append(new_bins, np.inf)
+
+        count = bin_contents.sum()
+
+        return (bin_contents, new_bins), count, bin_errors
+
+    def combine_procs(self, hists, counts, errors, **kwargs):
+        for prop in hists.keys():
+            for reg in hists[prop].keys():
+                for fs in hists[prop][reg].keys():
+                    mc_hists  = hists[prop][reg][fs]["MC"]
+                    mc_counts = counts[prop][reg][fs]["MC"]
+                    mc_errors = errors[prop][reg][fs]["MC"]
+
+                    for group, procs in kwargs.items():
+                        group_count = np.array([mc_counts[proc] for proc in procs]).sum()
+
+                        group_hist, edges = mc_hists[procs[0]]
+
+                        group_error = np.square(mc_errors[procs[0]])
+
+                        # del mc_hists[procs[0]]
+                        # del mc_counts[procs[0]]
+                        # del mc_errors[procs[0]]
+
+                        for proc in procs[1:]:
+                            group_hist += mc_hists[proc][0]
+                            
+                            group_error += np.square(mc_errors[proc])
+
+                            # del mc_hists[proc]
+                            # del mc_counts[proc]
+                            # del mc_errors[proc]
+
+                        group_hist = (group_hist, edges)
+                        group_error = np.sqrt(group_error)
+
+                        hists[prop][reg][fs]["MC"][group] = group_hist
+                        counts[prop][reg][fs]["MC"][group] = group_count
+                        errors[prop][reg][fs]["MC"][group] = group_error
+
+        return hists, counts, errors
+                    
+
+    def read_hists(self, path, **kwargs):
         props   = []
         regions = []
         fstates = []
@@ -85,6 +146,7 @@ class HistManager:
         with up.open(path) as Hists:
             props, regions, fstates = self._get_hist_structure(Hists)
             for prop in props:
+                if prop not in ["mass", "Z1mass", "Z2mass", "Lepton_sip3d_Z2"]: continue
                 hists[prop] = {}
                 counts[prop] = {}
                 errors[prop] = {}
@@ -111,11 +173,27 @@ class HistManager:
                         for proc, hist in Hists[prop][reg][fs].items():
                             proc = proc.replace(";1","")
 
+                            if "LowMass" not in reg and proc == "H": continue
+
                             # We want to keep overflow but not underflow bin
-                            this_hist = hist.to_numpy(flow=True)
-                            this_hist = (this_hist[0][1:], this_hist[1][1:])
-                            count     = this_hist[0].sum()
-                            err       = hist.errors(flow=True)[1:]
+                            if kwargs["rebin"] and prop in kwargs:
+                                if prop == "mass":
+                                    if reg == "SR" or "HighMass" in reg:
+                                        bin_info = kwargs[prop]["HighMass"]
+                                    elif "MidMass" in reg:
+                                        bin_info = kwargs[prop]["MidMass"]
+                                    elif "LowMass" in reg:
+                                        bin_info = kwargs[prop]["LowMass"]
+                                else:
+                                    bin_info = kwargs[prop]
+
+                                this_hist, count, err = self.rebin_hist(hist, bin_info["bins"], bin_info["overflow"])
+
+                            else:
+                                this_hist = hist.to_numpy(flow=True)
+                                this_hist = (this_hist[0][1:], this_hist[1][1:])
+                                count     = this_hist[0].sum()
+                                err       = hist.errors(flow=True)[1:]
 
                             # this_hist = hist.to_numpy(flow=True)
                             # count     = np.sum(hist.values(flow=True))
@@ -140,15 +218,18 @@ class HistManager:
                                 hists[prop][reg][fs]["Pol"][proc]  = this_hist
                                 counts[prop][reg][fs]["Pol"][proc] = count
                                 errors[prop][reg][fs]["Pol"][proc] = err
+
+        if kwargs["group"]:
+            hists, counts, errors = self.combine_procs(hists, counts, errors, **kwargs["groups"])
             
         return hists, counts, errors
     
-    def plot_hists(self, path=""):
+    def plot_hists(self, path="", **kwargs):
         if path=="": path = self.file_handler.hist_path
         if not os.path.exists(path):
             self.write_hists()
 
-        hists, counts, errors = self.read_hists(path)
+        hists, counts, errors = self.read_hists(path, **kwargs)
 
         hist_plotter = HistPlotter(self.year, self.era, self.tag, self.lumi, hists, counts, errors)
         figs = hist_plotter.main()
@@ -198,7 +279,7 @@ class HistManager:
         zpx_info_1 = self.zpx.get_zpx(hists_1, errors_1, fstates)
 
         import json
-        with open("ZpX_info_2023_Full_2x2e_2x2mu_4l.json", "w") as myfile:
+        with open("ZpX_info_2022_Full_24_06_25.json", "w") as myfile:
             json.dump(zpx_info_1, myfile, indent=4)
 
         if infile_2 != "":
@@ -263,12 +344,12 @@ class HistManager:
                 #era, year = eras[0], years[0]
                 #era, year = "CD", 2022
                 #era, year = "EFG", 2022
-                #era, year = "Full", 2022
+                era, year = "Full", 2022
                 #era, year = "C", 2023
                 #era, year = "D", 2023
-                era, year = "Full", 2023
+                #era, year = "Full", 2023
                 fig = self.zpx.plot_zpx(zpx_info_1, step, year, era)
-                fig.savefig(f"zpx_test_{step}_{year}_{era}_noSmartCut_2x2e_2x2mu_4l.png")
+                fig.savefig(f"zpx_test_{step}_{year}_{era}_24_06_25.png")
 
 if __name__ == "__main__":
     import yaml
@@ -319,6 +400,14 @@ if __name__ == "__main__":
     #     years    = (2022, 2022),
     #     eras     = ("CD", "EFG")
     # )
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_allShapeVar_24_06_25.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_allShapeVar_24_06_25.root",
+    #     years    = (2022, 2022),
+    #     eras     = ("CD", "EFG")
+    # )
+    # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_allShapeVar_24_06_25.root")
 
     # hist_manager.combine_eras(
     #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_2x2e_2x2mu_4l.root",
@@ -373,10 +462,10 @@ if __name__ == "__main__":
     # )
     #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root")
 
-    hist_manager.plot_hists(
-        path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newNanos.root"
-    )
-    hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newNanos.root")
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newNanos.root"
+    # )
+    # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newNanos.root")
 
     # hist_manager.combine_eras(
     #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_newAlg_lepPts_20_10x3.root",
@@ -411,3 +500,57 @@ if __name__ == "__main__":
     # hist_manager.plot_hists(
     #     path = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_2x2e_2x2mu.root"
     # )
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_MuonSF_ScaleSmear_noSysts_noPols.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_MuonSF_ScaleSmear_noSysts_noPols.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+    # hist_manager.plot_hists(
+    #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_ScaleSmear_noSysts_noPols.root"
+    # )
+    # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_ScaleSmear_noSysts_noPols.root")
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_MuonSF_24_06_25.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_MuonSF_24_06_25.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+    hist_manager.plot_hists(
+        #path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root",
+        path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root",
+        rebin=True,
+        mass = dict(
+            HighMass = dict(
+                bins     = [180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 420.],
+                overflow = True,          
+            ),
+            MidMass = dict(
+                bins     = [140., 150., 160., 170., 180.],
+                overflow = False,          
+            ), 
+            LowMass = dict(
+                bins     = [105., 115., 125., 135., 140.],
+                overflow = False,          
+            ), 
+        ),
+        Lepton_sip3d_Z2 = dict(
+            bins = [0., 4., 20.],
+            overflow = True,
+        ),
+        # Z1mass = dict(
+        #     bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
+        #     overflow = False
+        # ),
+        # Z2mass = dict(
+        #     bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
+        #     overflow = False
+        # ),
+        group = True,
+        groups = dict(
+            ZpX = ["DY", "TT", "WZ"]
+        )
+    )
+    # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root")

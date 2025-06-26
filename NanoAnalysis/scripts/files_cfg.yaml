@@ -7,13 +7,6 @@ year_2022:
     lumi: !!float 7.9804e3
     MC: MC_2022_sipShape
     Data: Data_2022_sipShape/EraCD/ZZ4lAnalysis.root
-    # MC: MC_2022_newAlg_lepPt_20_10x3
-    # Data: Data_2022_newAlg_lepPt_20_10x3/EraCD/ZZ4lAnalysis.root
-    # Pol:
-    #   ZLZL: rootFiles/PrivateProduction/2022/EraCD/fixCROverlap/wAngVars/noSmartCut/sipShape/lepPts_20_10x3/qqZLZL_noTau_hadd_Skim.root
-    #   ZLZT: rootFiles/PrivateProduction/2022/EraCD/fixCROverlap/wAngVars/noSmartCut/sipShape/lepPts_20_10x3/qqZLZT_noTau_hadd_Skim.root
-    #   ZTZT: rootFiles/PrivateProduction/2022/EraCD/fixCROverlap/wAngVars/noSmartCut/sipShape/lepPts_20_10x3/qqZTZT_noTau_hadd_Skim.root
-    #   ZZ_LO: rootFiles/PrivateProduction/2022/EraCD/fixCROverlap/wAngVars/noSmartCut/sipShape/lepPts_20_10x3/qqZZ_noTau_hadd_Skim.root
     Pol:
       ZLZL: rootFiles/PrivateProduction/2022/EraCD/fixCROverlap/wAngVars/noSmartCut/sipShape/qqZLZL_noTau_hadd_Skim.root
       ZLZT: rootFiles/PrivateProduction/2022/EraCD/fixCROverlap/wAngVars/noSmartCut/sipShape/qqZLZT_noTau_hadd_Skim.root
@@ -25,6 +18,7 @@ year_2022:
     Data: Data_2022_sipShape/EraEFG/ZZ4lAnalysis.root
     # MC: MC_2022EE_newAlg_lepPt_20_10x3
     # Data: Data_2022_newAlg_lepPt_20_10x3/EraEFG/ZZ4lAnalysis.root
+    # MC: MC_2022EE_qqZZ_midMassTest
     Pol:
       ZLZL: rootFiles/PrivateProduction/2022/EraEFG/fixCROverlap/wAngVars/noSmartCut/sipShape/qqZLZL_noTau_hadd_Skim.root
       ZLZT: rootFiles/PrivateProduction/2022/EraEFG/fixCROverlap/wAngVars/noSmartCut/sipShape/qqZLZT_noTau_hadd_Skim.root
@@ -49,45 +43,36 @@ year_2022:
 year_2023:
   C:
     lumi: !!float 17.794e3
-    # MC: MC_2023_EraC_sipShape_wSSCRs
-    # Data: Data_2023_sipShape_wSSCRs/EraC/ZZ4lAnalysis.root
+    MC: MC_2023_EraC_MuonSF_ScaleSmear
+    Data: Data_2023_ScaleSmear/EraC/ZZ4lAnalysis.root
     # Pol:
     #   ZLZL: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZL_noTau_hadd_Skim.root
     #   ZLZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZT_noTau_hadd_Skim.root
     #   ZTZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZTZT_noTau_hadd_Skim.root
     #   ZZ_LO: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZZ_noTau_hadd_Skim.root
-    #MC: MC_2023_EraC_sipShape_wSSCRs
-    MC: MC_2023_EraC_newNanos
-    Data: Data_2023_sipShape_wSSCRs/EraC/ZZ4lAnalysis.root
-    Pol:
-      ZLZL: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZL_noTau_hadd_Skim.root
-      ZLZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZT_noTau_hadd_Skim.root
-      ZTZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZTZT_noTau_hadd_Skim.root
-      ZZ_LO: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZZ_noTau_hadd_Skim.root
     # MC: MC_2023_EraC_newAlg_lepPt_20_10x3
     # Data: Data_2023_newAlg_lepPt_20_10x3/EraC/ZZ4lAnalysis.root
-    # Pol:
-    #   ZLZL: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZLZL_noTau_hadd_Skim.root
-    #   ZLZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZLZT_noTau_hadd_Skim.root
-    #   ZTZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZTZT_noTau_hadd_Skim.root
-    #   ZZ_LO: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZZ_noTau_hadd_Skim.root
+    Pol:
+      ZLZL: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZLZL_noTau_hadd_Skim.root
+      ZLZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZLZT_noTau_hadd_Skim.root
+      ZTZT: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZTZT_noTau_hadd_Skim.root
+      ZZ_LO: rootFiles/PrivateProduction/2023/EraC/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZZ_noTau_hadd_Skim.root
   D:
     lumi: !!float 9.451e3
-    #MC: MC_2023_EraD_sipShape_wSSCRs
-    MC: MC_2023_EraD_newNanos
-    Data: Data_2023_sipShape_wSSCRs/EraD/ZZ4lAnalysis.root
-    Pol:
-      ZLZL: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZL_noTau_hadd_Skim.root
-      ZLZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZT_noTau_hadd_Skim.root
-      ZTZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZTZT_noTau_hadd_Skim.root
-      ZZ_LO: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZZ_noTau_hadd_Skim.root
+    MC: MC_2023_EraD_MuonSF_ScaleSmear
+    Data: Data_2023_ScaleSmear/EraD/ZZ4lAnalysis.root
+    # Pol:
+    #   ZLZL: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZL_noTau_hadd_Skim.root
+    #   ZLZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZLZT_noTau_hadd_Skim.root
+    #   ZTZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZTZT_noTau_hadd_Skim.root
+    #   ZZ_LO: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZZ_noTau_hadd_Skim.root
     # MC: MC_2023_EraD_newAlg_lepPt_20_10x3
     # Data: Data_2023_newAlg_lepPt_20_10x3/EraD/ZZ4lAnalysis.root
-    # Pol:
-    #   ZLZL: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZLZL_noTau_hadd_Skim.root
-    #   ZLZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZLZT_noTau_hadd_Skim.root
-    #   ZTZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZTZT_noTau_hadd_Skim.root
-    #   ZZ_LO: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/lepPts_20_10x3/qqZZ_noTau_hadd_Skim.root
+    Pol:
+      ZLZL: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZLZL_noTau_hadd_Skim.root
+      ZLZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZLZT_noTau_hadd_Skim.root
+      ZTZT: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZTZT_noTau_hadd_Skim.root
+      ZZ_LO: rootFiles/PrivateProduction/2023/EraD/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/MuonSFSmear/qqZZ_noTau_hadd_Skim.root
   Full:
     lumi: !!float 27.245e3
     MC: MC_2023_Full_sipShape_wSSCRs

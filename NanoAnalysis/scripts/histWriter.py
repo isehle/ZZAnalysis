@@ -68,9 +68,9 @@ class HistWriter:
         self.lep_idx = lambda z, l, reg: f"{self.col_tag}_{z}{l}Idx_{reg}"
         self.lep_col = lambda lep_prop, z, l, reg: f"{self.col_tag}_{lep_prop}_{z}{l}_{reg}"
 
-        self.syst_procs = ["ZLZL", "ZLZT", "ZTZT"]
+        self.zpx     = ["DY", "TT", "WZ"]
 
-        self.run_systematics = False
+        self.syst_variables = ["cosTheta1", "cosTheta3", "cosThetaStar", "delRapidity", "delPhi", "delPhiStar"]
 
         self.pdgs = dict(
             fs_4e    = (-121, -121),
@@ -98,7 +98,7 @@ class HistWriter:
         return hist_info
 
     def run_systs(self, hist_info, reg):
-        return ("systematics" in hist_info) and (reg=="SR") and (self.run_systematics)
+        return ("systematics" in hist_info) and (reg=="SR") and (self.category not in self.zpx) and (not self.data)
 
     def _get_df(self, process, filepath):
 
@@ -135,11 +135,16 @@ class HistWriter:
             combined_hists[prop] = {}
             for reg in self.regions:
                 combined_hists[prop][reg] = {}
-                for fs in self.final_states:
+
+                for fs in sub_hists[processes[0]][prop][reg].keys():
+                # for fs in self.final_states:
 
                     new_hist = sub_hists[processes[0]][prop][reg][fs].Clone(category)
                     for proc in processes[1:]:
-                        new_hist.Add(sub_hists[proc][prop][reg][fs])   
+                        if isinstance(sub_hists[proc][prop][reg][fs], ROOT.TH1D):
+                            new_hist.Add(sub_hists[proc][prop][reg][fs])
+                        else:
+                            new_hist.Add(sub_hists[proc][prop][reg][fs].GetValue())
 
                     combined_hists[prop][reg][fs] = new_hist
         
@@ -168,7 +173,8 @@ class HistWriter:
 
                         cat_paths = key_paths[category]
 
-                        self.run_systematics = category in self.syst_procs
+                        # Save to use for systematics
+                        self.category = category
                         
                         if isinstance(cat_paths, dict):
                             sub_hists = {}    
@@ -177,7 +183,7 @@ class HistWriter:
                                 df = self._get_df(process, filepath)
 
                                 sub_hists[process] = self.write_hists(df)
-
+                            
                             self.hists[category] = self._combine_procs(category, sub_hists)
 
                         else:
@@ -185,6 +191,7 @@ class HistWriter:
                             df = self._get_df(category, key_paths[category])
 
                             self.hists[category] = self.write_hists(df)
+                            print("Wow!")
 
     def def_lep_id_cols(self, df, reg):
         for Z in ["Z1", "Z2"]:
@@ -284,30 +291,61 @@ class HistWriter:
 
                     good_branch_def = f"{branch_name}[{self.good_reg_idx}]"
                     df              = df.Define(good_branch, good_branch_def)
+
                 else:
                     good_branch = f"{prop}_{reg}"
                     df = self.lep_cols(df, reg, prop)
 
                 for fs in tqdm(self.final_states, desc = "Final States", position = 2, leave = False):
                     df_fs = self.fs_filt(df, reg, fs)
+
                     if not self.data:
-                        hist = df_fs.Histo1D((good_branch, good_branch, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), good_branch, weight_col) 
+                        hist = df_fs.Histo1D((good_branch+"_nom", good_branch, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), good_branch, weight_col) 
                     else:
-                        hist = df_fs.Histo1D((good_branch, good_branch, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), good_branch)
+                        hist = df_fs.Histo1D((good_branch+"_nom", good_branch, int(hist_info["nbinsx"]), float(hist_info["xlow"]), float(hist_info["xhigh"])), good_branch)
 
                     hist_list.append(hist)
 
                     hists[reg][prop][fs] = hist
 
+                    # if not self.data and (self.category not in self.zpx) and reg == "SR":
                     if self.run_systs(hist_info, reg):
-                        systWriter = HistSystematics(hist_info, self.lumi, good_branch, weight_col, self.good_reg_idx)
-                        for var in hist_info["systematics"]["vars"]:
-                            up, down = systWriter.get_vars(df_fs, var)
-                            
-                            hists[reg][prop][f"{fs}_{var}Up"]   = up
-                            hists[reg][prop][f"{fs}_{var}Down"] = down
 
-        ROOT.RDF.RunGraphs(hist_list)
+                        systWriter = HistSystematics(hist_info, self.lumi, good_branch, weight_col, self.good_reg_idx)
+
+                        # if self.category == "ggZZ":
+                        #     variations = ["puWeight", "lepIDRec"]
+                        # elif self.category == "VVV":
+                        #     variations = ["puWeight", "lepIDRec", "LHEScaleWeight"]
+
+                        if self.category == "ggZZ" or self.category == "VVV":
+                            variations = ["puWeight", "lepIDRec"]
+                        else:
+                            variations = ["puWeight", "lepIDRec", "LHEScaleWeight", "LHEPdfWeight"]
+
+                        for var in variations:
+                            syst_vars = systWriter.get_vars(df_fs, var)
+                            if "LHE" not in var:
+                                up_hist, down_hist = syst_vars
+                                
+                                hists[reg][prop][f"{fs}_{var}Up"]   = up_hist
+                                hists[reg][prop][f"{fs}_{var}Down"] = down_hist
+                            else:
+                                hists[reg][prop][f"{fs}_{var}"] = syst_vars # contains all (booked) variations, need to calculate Up/Down after event loop
+
+                                # qcd_up, qcd_down = lhe_vars["QCD"]
+                                # pdf_up, pdf_down = lhe_vars["PDF"]
+
+                                # hists[reg][prop][f"{fs}_LHEScaleWeightUp"]   = qcd_up
+                                # hists[reg][prop][f"{fs}_LHEScaleWeightDown"] = qcd_down
+
+                                # hists[reg][prop][f"{fs}_LHEPdfWeightUp"]   = pdf_up
+                                # hists[reg][prop][f"{fs}_LHEPdfWeightDown"] = pdf_down
+
+        try:
+            ROOT.RDF.RunGraphs(hist_list)
+        except:
+            breakpoint()
         
         final_hists = {}
         for prop in self.properties:
@@ -317,20 +355,55 @@ class HistWriter:
                 
                 hist_info = self.get_hist_info(reg, prop)
 
-                for fs in self.final_states:
-                    hist = hists[reg][prop][fs]
+                # for fs in self.final_states:
+                #     hist = hists[reg][prop][fs]
                     
-                    if not self.data:
-                        hist.Scale(self.lumi)
-                    else:
-                        hist.SetBinErrorOption(ROOT.TH1.kPoisson)       
+                #     if not self.data:
+                #         hist.Scale(self.lumi)
+                #     else:
+                #         hist.SetBinErrorOption(ROOT.TH1.kPoisson)       
                     
-                    final_hists[prop][reg][fs] = hist.GetValue()
+                #     final_hists[prop][reg][fs] = hist.GetValue()
 
-                    if self.run_systs(hist_info, reg):
-                        for var in hist_info["systematics"]["vars"]:
-                            final_hists[prop][reg][f"{fs}_{var}Up"] = hists[reg][prop][f"{fs}_{var}Up"]
-                            final_hists[prop][reg][f"{fs}_{var}Down"] = hists[reg][prop][f"{fs}_{var}Down"]
+                #     if self.run_systs(hist_info, reg):
+                #         for var in hist_info["systematics"]["vars"]:
+                #             final_hists[prop][reg][f"{fs}_{var}Up"] = hists[reg][prop][f"{fs}_{var}Up"]
+                #             final_hists[prop][reg][f"{fs}_{var}Down"] = hists[reg][prop][f"{fs}_{var}Down"]
+
+                for key, val in hists[reg][prop].items():
+                    
+                    if "LHEScaleWeight" in key:
+                        up_hist, down_hist = systWriter.qcd_up_down(val, hist_info)
+
+                        up_hist.Scale(self.lumi)
+                        down_hist.Scale(self.lumi)
+
+                        final_hists[prop][reg][key+"Up"]   = up_hist
+                        final_hists[prop][reg][key+"Down"] = down_hist
+                    
+                    elif "LHEPdfWeight" in key:
+                        up_hist, down_hist = systWriter.pdf_up_down(val, hist_info)
+
+                        up_hist.Scale(self.lumi)
+                        down_hist.Scale(self.lumi)
+
+                        final_hists[prop][reg][key+"Up"]   = up_hist
+                        final_hists[prop][reg][key+"Down"] = down_hist
+                    
+                    else:
+                        hist = val
+                    
+                        if not self.data:
+                            hist.Scale(self.lumi)
+                        else:
+                            hist.SetBinErrorOption(ROOT.TH1.kPoisson)  
+
+                        final_hists[prop][reg][key] = hist     
+                    
+                    # if key in self.final_states:
+                    #     final_hists[prop][reg][key] = hist.GetValue()
+                    # else:
+                    #     final_hists[prop][reg][key] = hist
         
         return final_hists
 

@@ -32,6 +32,9 @@ proc_info:
   WZ:
     line: "#003300"
     fill: "#669966"
+  ZpX:
+    line: "#003300"
+    fill: "#669966"
   H:
     line: "#cc0000"
     fill: "#ff9b9b"

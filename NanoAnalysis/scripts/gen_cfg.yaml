@@ -3,9 +3,11 @@ writing:
     col_tag: good
     #regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
     #regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP"]
-    regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP", "HighMassSSRelaxed"]
+    #regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP", "HighMassSSRelaxed"]
     #regions: ["HighMassSSSIP", "MidMassSSSIP", "MidMassOSSIP", "LowMassSSSIP", "LowMassOSSIP"]
     #regions: ["SR"]
+    regions: ["SR", "HighMassSSSIP", "MidMassSSSIP", "MidMassOSSIP", "LowMassSSSIP", "LowMassOSSIP"]
     #fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
     fstates: ["fs_4l", "fs_2x2e", "fs_2x2mu"]
+    #fstates: ["fs_2x2e", "fs_2x2mu"]
     #fstates: ["fs"]
