@@ -83,6 +83,9 @@ year_2023:
       ZTZT: rootFiles/PrivateProduction/2023/Full/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZTZT_noTau_hadd_Skim.root
       ZZ_LO: rootFiles/PrivateProduction/2023/Full/noTau/fixCROverlap/wAngVars/noSmartCut/sipShape/wSSCRs/qqZZ_noTau_hadd_Skim.root
 
+Full:
+  lumi: !!float 61.8982e3
+
 mc_file_name: ZZ4lAnalysis.root
 
 MC_Procs:
@@ -108,6 +111,8 @@ MC_Procs:
     WWZ: WWZ
     WZZ: WZZ
     ZZZ: ZZZ
+
+Pol_Procs: [ZLZL, ZLZT, ZTZT, ZZ_LO]
 
 output:
   histograms: /eos/user/i/iehle/Analysis/histograms

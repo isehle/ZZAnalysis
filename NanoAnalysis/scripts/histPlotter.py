@@ -42,8 +42,10 @@ class HistPlotter:
         self.hatch_style     = self.cfg["hatch_style"]
         self.errorbar_style  = self.cfg["errorbar_style"]
 
-        # self.fill_colors = [self.cfg["proc_info"][proc]["fill"] for proc in self.cfg["proc_info"].keys()]
-        # self.line_colors = [self.cfg["proc_info"][proc]["line"] for proc in self.cfg["proc_info"].keys()]
+        self.pol_ratio_style = deepcopy(self.errorbar_style)
+        del self.pol_ratio_style["color"]
+
+        self.ang_vars = ["cosTheta1", "cosTheta3", "cosThetaStar", "delRapidity", "delPhi", "delPhiStar"]
 
         self.bin_edges   = []
         self.bin_centers = []
@@ -52,10 +54,10 @@ class HistPlotter:
 
         self.sr_labels = dict(
             MC = dict(
+                ZpX    = r"$Z+X$",
+                VVV    = r"$VVV$",
                 ggZZ   = r"$gg \rightarrow ZZ$",
                 ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
-                ZpX    = r"$Z+X$",
-                VVV    = r"$VVV$"
         ),
             Pol = dict(
                 ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
@@ -68,13 +70,13 @@ class HistPlotter:
 
         self.lm_labels = dict(
             MC = dict(
+                # DY     = r"$DY$",
+                # TT     = r"$t\bar{t}$",
+                # WZ     = r"$WZ$",
+                H      = r"$H$",
+                VVV    = r"$VVV$",
                 ggZZ   = r"$gg \rightarrow ZZ$",
                 ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
-                DY     = r"$DY$",
-                TT     = r"$t\bar{t}$",
-                WZ     = r"$WZ$",
-                H      = r"$H$",
-                VVV    = r"$VVV$"
         ),
             Pol = dict(
                 ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
@@ -87,12 +89,12 @@ class HistPlotter:
 
         self.cr_labels = dict(
             MC = dict(
+                # DY     = r"$DY$",
+                # TT     = r"$t\bar{t}$",
+                # WZ     = r"$WZ$",
+                VVV    = r"$VVV$",
                 ggZZ   = r"$gg \rightarrow ZZ$",
                 ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
-                DY     = r"$DY$",
-                TT     = r"$t\bar{t}$",
-                WZ     = r"$WZ$",
-                VVV    = r"$VVV$"
         ),
             Pol = dict(
                 ZLZL  = r"$q\bar{q} \rightarrow Z_L Z_L$",
@@ -134,7 +136,8 @@ class HistPlotter:
         self.xlabel = self._to_raw_string(self.prop_info["xlabel"])
         self.ylabel = self._to_raw_string(self.prop_info["ylabel"])
         
-        self.blind  = self.prop_info["Blind"]
+        #self.blind  = self.prop_info["Blind"]
+        self.blind  = self.prop_info["Blind"] and reg not in ["SS", "HighMassSSRelaxed"]
 
     def _setBins(self, hists):
         if isinstance(hists, dict):
@@ -144,8 +147,10 @@ class HistPlotter:
             self.bin_edges = hists[1]
 
         self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:])/2
+
+        self.adjusted_bin_centers = deepcopy(self.bin_centers)
         if self.bin_centers[-1] == np.inf:
-            self.adjusted_bin_centers = deepcopy(self.bin_centers)
+            # Only works when bins are equal length!
             self.adjusted_bin_centers[-1] = self.bin_centers[-2] + (self.bin_centers[-2] - self.bin_centers[-3])
 
     def adjustBinEdges(self, hist_list):
@@ -161,9 +166,21 @@ class HistPlotter:
         for proc in labels.keys():
             init_lab = labels[proc]
             count    = counts[proc]
+
             bin_errs = errors[proc]
             err      = np.sqrt(np.square(bin_errs).sum())
-            
+
+            if proc != "ZpX":
+                bin_errs = errors[proc]
+                err      = np.sqrt(np.square(bin_errs).sum())
+            else:
+                if self.fs == "fs_4l":
+                    err = 2.61 + 2.56
+                elif self.fs == "fs_2x2e":
+                    err = 2.52 + 2.30
+                elif self.fs == "fs_2x2mu":
+                    err = 1.15 + 1.43
+
             new_lab = init_lab + ": " + str(round(count,2)) + r" $\pm$ " + str(round(err, 2))
             new_labels.append(new_lab)
         return new_labels
@@ -171,15 +188,22 @@ class HistPlotter:
     def writeFigs(self):
         hep.style.use("CMS")
 
-        if not self.blind:
-            self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
-            self.fig.subplots_adjust(hspace=0.07)
-        else:
-            self.fig, self.ax = plt.subplots()
+        self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
+        self.fig.subplots_adjust(hspace=0.07)
+
+        # if not self.blind:
+        #     self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
+        #     self.fig.subplots_adjust(hspace=0.07)
+        # else:
+        #     self.fig, self.ax = plt.subplots()
 
     def cms_label(self):
-        hep.cms.label(label="Work in Progress", year=self.year, lumi = round(self.lumi*1e-3), com=13.6, data=True, ax=self.ax)
-
+        #hep.cms.label(label="Work in Progress", year=self.year, lumi = round(self.lumi*1e-3), com=13.6, data=True, ax=self.ax)
+        if self.year != "Full":
+            hep.cms.label(label="Private Work", year=self.year, lumi = round(self.lumi*1e-3), com=13.6, data= not self.blind, ax=self.ax)
+        else:
+            hep.cms.label(label="Private Work", lumi = round(self.lumi*1e-3), com=13.6, data= not self.blind, ax=self.ax)
+ 
     def draw_mc_hists(self, hists, labels):
 
         ordered_hists = [hists[proc] for proc in self.labels["MC"].keys()]
@@ -239,8 +263,10 @@ class HistPlotter:
             linestyle = "--"
         )
 
+        self.pol_sum_hist, self.pol_sum_err = hist_sum, err_sum
+
     def draw_data_hist(self, hist, label):
-        self.ax.errorbar(self.bin_centers,
+        self.ax.errorbar(self.adjusted_bin_centers,
                     hist[0],
                     yerr = np.sqrt(hist[0]),
                     color = "black",
@@ -249,8 +275,6 @@ class HistPlotter:
                     markersize = 3)
 
     def set_stackCountsErrs(self, mc_hists, mc_errors):
-        #mc_count_arr = np.array([mc_hists[key][0] for key in self.cfg["plot_styling"]["mc_colors"].keys()])
-        #mc_count_arr = np.array([mc_hists[key][0] for key in mc_hists.keys()])
         mc_count_arr = np.array([mc_hists[key][0] for key in self.labels["MC"].keys()])
         mc_errors = np.array([mc_errors[key] for key in self.labels["MC"].keys()])
 
@@ -259,17 +283,44 @@ class HistPlotter:
 
         self.total_mc_errors = np.sqrt(np.sum([err**2 for err in mc_errors], axis=0))
 
-    def draw_ratio(self, data_hist):
-        #self.rax.fill_between(x=self.bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='mid', **self.hatch_style)
-        # if np.inf in self.bin_centers:
-        #     self.rax.fill_between(x=self.adjusted_bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, **self.hatch_style)
-        # else:
-        #     self.rax.fill_between(x=self.bin_centers, y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, **self.hatch_style)
-        self.rax.fill_between(x=self.bin_edges[:-1], y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='post', **self.hatch_style)
-        self.rax.errorbar(x=self.bin_centers, y=data_hist[0]/self.total_mc_counts, yerr=np.sqrt(data_hist[0])/self.total_mc_counts, **self.errorbar_style)
+    def get_pol_ratios(self, hists, errors):
+        zz_lo, zz_nnlo         = hists["Pol"]["ZZ_LO"][0], hists["MC"]["ZZ_NLO"][0]
+        zz_lo_err, zz_nnlo_err = errors["Pol"]["ZZ_LO"], errors["MC"]["ZZ_NLO"]
+
+        ratio_lo_nnlo     = zz_lo/zz_nnlo
+        ratio_lo_nnlo_err = ratio_lo_nnlo*np.sqrt((zz_lo_err/zz_lo)**2 + (zz_nnlo_err/zz_nnlo)**2)
+
+        ratio_polsum     = self.pol_sum_hist[0]/zz_lo
+        ratio_polsum_err = ratio_polsum*np.sqrt((self.pol_sum_err/self.pol_sum_hist[0])**2 + (zz_lo_err/zz_lo)**2)
+
+        return ratio_lo_nnlo, ratio_lo_nnlo_err, ratio_polsum, ratio_polsum_err
+
+    #def draw_ratio(self, data_hist):
+    def draw_ratio(self, hists, errors):
+
+        if self.draw_data:
+            data_hist = hists["Data"]
+
+            self.rax.fill_between(x=self.bin_edges[:-1], y1= 1 - self.total_mc_errors/self.total_mc_counts, y2 = 1 + self.total_mc_errors/self.total_mc_counts, step='post', **self.hatch_style)
+            self.rax.errorbar(x=self.adjusted_bin_centers, y=data_hist[0]/self.total_mc_counts, yerr=np.sqrt(data_hist[0])/self.total_mc_counts, **self.errorbar_style)
+            self.rax.set_ylabel('Data / MC')
+        else:
+            ratio_lo_nnlo, ratio_lo_nnlo_err, ratio_polsum, ratio_polsum_err = self.get_pol_ratios(hists, errors)
+
+            self.rax.errorbar(x=self.adjusted_bin_centers, y = ratio_lo_nnlo, yerr = ratio_lo_nnlo_err, label = r"LO/NNLO", **self.pol_ratio_style)
+            self.rax.errorbar(x=self.adjusted_bin_centers, y = ratio_polsum, yerr = ratio_polsum_err, label = r"$\sum Z_{\lambda} Z_{\lambda '}/ZZ_{U}$", **self.pol_ratio_style)
+
+           # self.rax.legend(ncol=2, fontsize="x-small")
+            self.rax.legend(
+                bbox_to_anchor = (1.05, 1),
+                loc            = "upper left",
+                borderaxespad  = 0.,
+                fontsize       = "x-small"
+            )
+
+        self.rax.axhline(y=1, linestyle="--", color="black")
 
         self.rax.set_ylim(0, 2)
-        self.rax.set_ylabel('Data / MC')
         self.rax.set_xlabel(self.xlabel)
         self.rax.autoscale(axis='x', tight=True)
 
@@ -286,10 +337,8 @@ class HistPlotter:
         errors = self.all_errors[prop][reg][fs]
 
         self.draw_mc   = not self.is_empty(hists, "MC")
-        self.draw_pol  = not self.is_empty(hists, "Pol")
+        self.draw_pol  = not self.is_empty(hists, "Pol") and (prop in self.ang_vars)
         self.draw_data = not self.is_empty(hists, "Data") and not self.blind
-
-        self.draw_pol = False
 
         max_bin_counts = []
 
@@ -309,19 +358,7 @@ class HistPlotter:
             # Draw MC Err
             self.set_stackCountsErrs(mc_hists, mc_errors)
 
-            #self.ax.fill_between(x=self.bin_centers[1:-1], y1 = self.total_mc_counts[1:-1] - self.total_mc_errors[1:-1], y2 = self.total_mc_counts[1:-1] + self.total_mc_errors[1:-1], label = "Stat. Unc.", step='mid', **self.hatch_style)
-            #self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
-
             self.ax.fill_between(x=self.bin_edges[:-1], y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step="post", **self.hatch_style)
-
-            # if np.inf in self.bin_centers:
-            #     #self.ax.fill_between(x=self.adjusted_bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
-            #     self.ax.fill_between(x=self.adjusted_bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", **self.hatch_style)
-            # else:
-            #     #self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='mid', **self.hatch_style)
-            #     self.ax.fill_between(x=self.bin_centers, y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", **self.hatch_style)
-
-            #self.ax.fill_between(x=self.bin_edges[:-1], y1 = self.total_mc_counts - self.total_mc_errors, y2 = self.total_mc_counts + self.total_mc_errors, label = "Stat. Unc.", step='post', **self.hatch_style)
 
             max_bin_counts.append(max([max(hist[0]) for hist in mc_hists.values()]))
 
@@ -360,20 +397,33 @@ class HistPlotter:
 
             max_bin_counts.append(max(data_hist[0]))
 
-        # Adjust plot size to fit legend
-        max_bin_count = max(max_bin_counts)
-        self.ax.set_ylim(0, max_bin_count*2.5) 
 
-        self.ax.legend(ncol=2, fontsize="x-small")
+        if not self.draw_pol:
+            # Adjust plot size to fit legend
+            max_bin_count = max(max_bin_counts)
+            self.ax.set_ylim(0, max_bin_count*1.75) 
+            self.ax.legend(ncol=2, fontsize="x-small")
+        else:
+            # Place legend outside of main axis
+            self.ax.legend(
+                bbox_to_anchor = (1.05, 1),
+                loc            = "upper left",
+                borderaxespad  = 0.,
+                fontsize       = "x-small"
+            )
 
         # Labels and ratio (xlabel drawn on rax if unblinded)
         self.ax.set_ylabel(self.ylabel)
-        if self.draw_data:
-            self.draw_ratio(data_hist)
-        else:
-            self.ax.set_xlabel(self.xlabel)
 
-        # self.ax.set_xlabel(self.xlabel)
+        self.draw_ratio(hists, errors)
+
+        # if self.draw_data:
+        #     self.draw_ratio(data_hist)
+        # elif prop in self.ang_vars:
+        #     self.draw_ratio(hists)
+        # else:
+        #     # (xlabel drawn on rax if unblinded)
+        #     self.ax.set_xlabel(self.xlabel)
 
         hep.rescale_to_axessize(self.ax, 10, 10/1.62)
 
@@ -386,5 +436,6 @@ class HistPlotter:
             for reg in self.all_hists[prop].keys():
                 figs[prop][reg] = {}
                 for fs in self.all_hists[prop][reg].keys():
+                    self.fs = fs
                     figs[prop][reg][fs] = self.plotter(prop, reg, fs)
         return figs

@@ -25,7 +25,7 @@ class HistManager:
     def __init__(self, cfg, args):
         self.cfg          = cfg
 
-        self.year         = args["year"]
+        self.year         = args["year"] if args["year"] != -1 else "Full"
         self.era          = args["era"]
 
         self.tag          = args["tag"]
@@ -146,11 +146,11 @@ class HistManager:
         with up.open(path) as Hists:
             props, regions, fstates = self._get_hist_structure(Hists)
             for prop in props:
-                if prop not in ["mass", "Z1mass", "Z2mass", "Lepton_sip3d_Z2"]: continue
                 hists[prop] = {}
                 counts[prop] = {}
                 errors[prop] = {}
                 for reg in regions:
+                #for reg in self.cfg["writing"]["regions"]:
                     hists[prop][reg] = {}
                     counts[prop][reg] = {}
                     errors[prop][reg] = {}
@@ -173,22 +173,26 @@ class HistManager:
                         for proc, hist in Hists[prop][reg][fs].items():
                             proc = proc.replace(";1","")
 
-                            if "LowMass" not in reg and proc == "H": continue
-
                             # We want to keep overflow but not underflow bin
-                            if kwargs["rebin"] and prop in kwargs:
-                                if prop == "mass":
-                                    if reg == "SR" or "HighMass" in reg:
-                                        bin_info = kwargs[prop]["HighMass"]
-                                    elif "MidMass" in reg:
-                                        bin_info = kwargs[prop]["MidMass"]
-                                    elif "LowMass" in reg:
-                                        bin_info = kwargs[prop]["LowMass"]
+                            if len(kwargs) > 0:
+                                if kwargs["rebin"] and prop in kwargs:
+                                    if prop == "mass":
+                                        if reg == "SR" or "HighMass" in reg:
+                                            bin_info = kwargs[prop]["HighMass"]
+                                        elif "MidMass" in reg:
+                                            bin_info = kwargs[prop]["MidMass"]
+                                        elif "LowMass" in reg:
+                                            bin_info = kwargs[prop]["LowMass"]
+                                    else:
+                                        bin_info = kwargs[prop]
+
+                                    this_hist, count, err = self.rebin_hist(hist, bin_info["bins"], bin_info["overflow"])
+
                                 else:
-                                    bin_info = kwargs[prop]
-
-                                this_hist, count, err = self.rebin_hist(hist, bin_info["bins"], bin_info["overflow"])
-
+                                    this_hist = hist.to_numpy(flow=True)
+                                    this_hist = (this_hist[0][1:], this_hist[1][1:])
+                                    count     = this_hist[0].sum()
+                                    err       = hist.errors(flow=True)[1:]
                             else:
                                 this_hist = hist.to_numpy(flow=True)
                                 this_hist = (this_hist[0][1:], this_hist[1][1:])
@@ -203,7 +207,7 @@ class HistManager:
                             # count     = np.sum(hist.values(flow=False))
                             # err       = hist.errors(flow=False)
 
-                            if proc in self.file_handler.mc_samples.keys():
+                            if proc in list(self.file_handler.mc_procs.keys()) + ["ZpX"]:
 
                                 hists[prop][reg][fs]["MC"][proc]  = this_hist
                                 counts[prop][reg][fs]["MC"][proc] = count
@@ -214,12 +218,12 @@ class HistManager:
                                 counts[prop][reg][fs]["Data"] = count
                                 errors[prop][reg][fs]["Data"] = err
 
-                            elif proc in self.file_handler.pol_samples.keys():
+                            elif proc in self.file_handler.pol_procs:
                                 hists[prop][reg][fs]["Pol"][proc]  = this_hist
                                 counts[prop][reg][fs]["Pol"][proc] = count
                                 errors[prop][reg][fs]["Pol"][proc] = err
 
-        if kwargs["group"]:
+        if "group" in kwargs and kwargs["group"]:
             hists, counts, errors = self.combine_procs(hists, counts, errors, **kwargs["groups"])
             
         return hists, counts, errors
@@ -247,7 +251,7 @@ class HistManager:
             outfile = os.path.join(outdir, filename)
         else:
             # NEED TO CHANGE THIS
-            outfile = "/eos/user/i/iehle/Analysis/rootFiles/hists_full.root"
+            outfile = "/eos/user/i/iehle/Analysis/histograms/Full/hists_zpxForPlots_11_07_25.root"
 
         with up.open(infile_1) as Hists_1, up.open(infile_2) as Hists_2, up.recreate(outfile) as NewHists:
             for key in tqdm(Hists_1.keys()):
@@ -355,7 +359,7 @@ if __name__ == "__main__":
     import yaml
     from argparse import ArgumentParser
     parser = ArgumentParser(description="")
-    parser.add_argument("--year", choices=(2022, 2023), default=2022, type=int)
+    parser.add_argument("--year", choices=(2022, 2023, -1), default=2022, type=int)
     parser.add_argument("--era", choices=("C", "D", "CD", "EFG", "Full"), default="EFG")
     parser.add_argument("--tag", default="")
     args = vars(parser.parse_args())    
@@ -365,9 +369,96 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(config)
     
     hist_manager = HistManager(cfg, args)
+
+    # hist_manager.combine_eras(
+    #     #infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_allShapeVar_24_06_25.root",
+    #     #infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sigOnTop_allFStates.root",
+    #     #infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root",
+    #     # infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_dataInCRs.root",
+    #     # infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_dataInCRs.root",
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_delRapidityForPlots_03_07_25_v2.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_zpxForPlots_11_07_25.root",
+    #     years    = (2022, 2023),
+    #     eras     = ("Full", "Full")
+    # )
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2022/CD/hists_sigOnTop_allFStates.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_sigOnTop_allFStates.root",
+    #     years    = (2022, 2022),
+    #     eras     = ("CD", "EFG")
+    # )
+
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_allFstats_SROnly_massOnly.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_allFstats_SROnly_massOnly.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+
+    hist_manager.plot_hists(
+        "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_allFstats_SROnly_massOnly.root",
+        rebin=True,
+        mass = dict(
+            HighMass = dict(
+                bins     = [180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 420.],
+                overflow = True,          
+            )
+        ),
+        group = True,
+        groups = dict(
+            ZpX = ["DY", "TT", "WZ"]
+        )
+    )
+
     #hist_manager.write_hists()
-    #hist_manager.plot_hists()
-    #hist_manager.plot_hists("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists.root")
+    # #hist_manager.plot_hists()
+    # hist_manager.plot_hists(
+    #     # "/eos/user/i/iehle/Analysis/histograms/Full/hists_4l_02_07_25.root",
+    #     #"/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu_4l.root",
+    #     #"/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root",
+    #     #"/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_dataInCRs.root",
+    #     #"/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_SSTest_28_06_25.root",
+    #     #"/eos/user/i/iehle/Analysis/histograms/Full/hists_zpxForPlots_03_07_25_v2.root",
+    #     #"/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sigOnTop_allFStates.root",
+    #     "/eos/user/i/iehle/Analysis/histograms/Full/hists_zpxForPlots_11_07_25.root",
+    #     rebin=True,
+    #     mass = dict(
+    #         HighMass = dict(
+    #             bins     = [180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 420.],
+    #             overflow = True,          
+    #         ),
+    #         MidMass = dict(
+    #             bins     = [140., 150., 160., 170., 180.],
+    #             overflow = False,          
+    #         ), 
+    #         LowMass = dict(
+    #             bins     = [105., 115., 125., 135., 140.],
+    #             overflow = False,          
+    #         ), 
+    #     ),
+    #     Z1mass = dict(
+    #         bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
+    #         overflow = False
+    #     ),
+    #     Z2mass = dict(
+    #         bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
+    #         overflow = False
+    #     ),
+    #     Lepton_sip3d_Z2 = dict(
+    #         bins     = [0.0, 4.0, 20.0],
+    #         overflow = True,
+    #     ),
+    #     # delRapidity = dict(
+    #     #     bins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0],
+    #     #     overflow = True,
+    #     # ),
+    #     # group = True,
+    #     # groups = dict(
+    #     #     ZpX = ["DY", "TT", "WZ"]
+    #     # )
+    # )
+    # #hist_manager.plot_hists("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists.root")
     #hist_manager.write_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
     #hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_wLepCols.root")
 
@@ -489,6 +580,13 @@ if __name__ == "__main__":
     #     eras     = ("C", "D")
     # )
 
+    # hist_manager.combine_eras(
+    #     infile_1 = "/eos/user/i/iehle/Analysis/histograms/2023/C/hists_dataInCRs.root",
+    #     infile_2 = "/eos/user/i/iehle/Analysis/histograms/2023/D/hists_dataInCRs.root",
+    #     years    = (2023, 2023),
+    #     eras     = ("C", "D")
+    # )
+
     # hist_manager.plot_hists(
     #     path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_newAlg_dropDuplicates_v2.root"
     # )
@@ -518,39 +616,39 @@ if __name__ == "__main__":
     #     years    = (2023, 2023),
     #     eras     = ("C", "D")
     # )
-    hist_manager.plot_hists(
-        #path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root",
-        path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root",
-        rebin=True,
-        mass = dict(
-            HighMass = dict(
-                bins     = [180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 420.],
-                overflow = True,          
-            ),
-            MidMass = dict(
-                bins     = [140., 150., 160., 170., 180.],
-                overflow = False,          
-            ), 
-            LowMass = dict(
-                bins     = [105., 115., 125., 135., 140.],
-                overflow = False,          
-            ), 
-        ),
-        Lepton_sip3d_Z2 = dict(
-            bins = [0., 4., 20.],
-            overflow = True,
-        ),
-        # Z1mass = dict(
-        #     bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
-        #     overflow = False
-        # ),
-        # Z2mass = dict(
-        #     bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
-        #     overflow = False
-        # ),
-        group = True,
-        groups = dict(
-            ZpX = ["DY", "TT", "WZ"]
-        )
-    )
+    # hist_manager.plot_hists(
+    #     #path="/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root",
+    #     #path="/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_2x2e_2x2mu.root",
+    #     rebin=True,
+    #     mass = dict(
+    #         HighMass = dict(
+    #             bins     = [180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 420.],
+    #             overflow = True,          
+    #         ),
+    #         MidMass = dict(
+    #             bins     = [140., 150., 160., 170., 180.],
+    #             overflow = False,          
+    #         ), 
+    #         LowMass = dict(
+    #             bins     = [105., 115., 125., 135., 140.],
+    #             overflow = False,          
+    #         ), 
+    #     ),
+    #     Lepton_sip3d_Z2 = dict(
+    #         bins = [0., 4., 20.],
+    #         overflow = True,
+    #     ),
+    #     Z1mass = dict(
+    #         bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
+    #         overflow = False
+    #     ),
+    #     Z2mass = dict(
+    #         bins = [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.],
+    #         overflow = False
+    #     ),
+    #     group = True,
+    #     groups = dict(
+    #         ZpX = ["DY", "TT", "WZ"]
+    #     )
+    # )
     # hist_manager.plot_zpx("/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root")

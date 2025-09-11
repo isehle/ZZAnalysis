@@ -221,6 +221,9 @@ class HistWriter:
         df = df.Define(self.good_z1_flav, f"{z1_flav}[{self.good_reg_idx}]").Define(self.good_z2_flav, f"{z2_flav}[{self.good_reg_idx}]")
 
         df = self.def_lep_id_cols(df, reg)
+
+        if reg == "SS":
+            df = df.Define("z2_mass", "ZLLCand_Z2mass[ZLLbestSSIdx]").Define("mass", "ZLLCand_mass[ZLLbestSSIdx]").Filter("mass >= 180.").Filter("(z2_mass > 81.1876) & (z2_mass < 101.1876)")
         
         return df
 
@@ -259,10 +262,16 @@ class HistWriter:
         elif "2x2mu" in fs:
             pdg2 = -169
         
-        if ("SSSIP" in reg) or ("SSRelaxed" in reg):
+        else:
+            pdg1, pdg2 = self.pdgs[fs]
+        
+        if ("SSSIP" in reg) or ("SSRelaxed" in reg) or (reg=="SS"):
             pdg2 *= -1
         
-        return df.Filter(f"{self.good_z2_flav}=={pdg2}")
+        if "2x" in fs:
+            return df.Filter(f"{self.good_z2_flav}=={pdg2}")
+        else:
+            return df.Filter(f"{self.good_z1_flav}=={pdg1}").Filter(f"{self.good_z2_flav}=={pdg2}")
 
     def write_hists(self, df):
         hists = {}

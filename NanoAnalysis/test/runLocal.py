@@ -8,9 +8,9 @@ from __future__ import print_function
 from ZZAnalysis.NanoAnalysis.tools import setConf, getConf, insertAfter
 
 # Check that the checkout recipe has been properly updated 
-# from ZZAnalysis.AnalysisStep.validateCheckout import validateCheckout 
-# if not validateCheckout() :
-#     exit(1)
+from ZZAnalysis.AnalysisStep.validateCheckout import validateCheckout 
+if not validateCheckout() :
+    exit(1)
 
 #SampleToRun = "MCsync_2018Rereco" # for mini vs nano sync
 #SampleToRun = "MCsync_2017UL" # for mini vs nano sync
@@ -26,9 +26,9 @@ from ZZAnalysis.NanoAnalysis.tools import setConf, getConf, insertAfter
 #SampleToRun = "ZZTo4L_2022CD_LO"
 #SampleToRun  = "ZZTo4L_2022CD_NLO"
 
-#SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
+SampleToRun = "ZZTo4L_2022EE" # Centrally produced Powheg NLO
 #SampleToRun = "ZZTo4L_2022EE_MG" # Privately produced MadGraph LO
-SampleToRun = "ZLZLTo4L_2022EE"
+#SampleToRun = "ZLZLTo4L_2022EE"
 #SampleToRun = "ZLZTTo4L_2022EE"
 #SampleToRun = "ZTZTTo4L_2022EE"
 

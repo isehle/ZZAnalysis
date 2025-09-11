@@ -26,7 +26,8 @@ class FileHandler:
         self.store        = self.cfg["store"]
         self.mc_file_name = self.cfg["mc_file_name"]
         self.mc_procs     = self.cfg["MC_Procs"]
-        self.era_info     = self.cfg["year_"+str(year)][era]
+        self.pol_procs    = self.cfg["Pol_Procs"]
+        self.era_info     = self.cfg["year_"+str(year)][era] if year != "Full" else self.cfg[year]
 
         self.lumi = self.era_info["lumi"]
 
@@ -109,7 +110,7 @@ class FileHandler:
                     Path(outdir).mkdir(parents=True, exist_ok=True)
                     outfile = os.path.join(outdir, f"{prop}{self.tag}.png")
                     print("Writing: ", outfile)
-                    fig.savefig(outfile)
+                    fig.savefig(outfile, bbox_inches = "tight")
                     # try:
                     #     fig.savefig(outfile)
                     # except ValueError:
