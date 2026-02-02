@@ -43,3 +43,34 @@ proc_info:
     fill: "#ffd700"
 
 pol_colors: ["magenta", "lime", "red", "black"]
+
+extra:
+  path: /eos/user/i/iehle/Analysis/histograms/Full/hists_ZpXForPlots_reweightNonDegEvents22_24_09_25.root
+  #path: /eos/user/i/iehle/Analysis/histograms/2022/Full/hists_reweightNonDegEvents_22_09_25.root
+  rebin: !!bool True
+  mass:
+    HighMass:
+      bins: [180., 200., 220., 240., 260., 280., 300., 320., 340., 360., 380., 400., 420.]
+      overflow: True
+    MidMass:
+      bins: [140., 150., 160., 170., 180.]
+      overflow: False
+    LowMass:
+      bins: [105., 115., 125., 135., 140.]
+      overflow: False
+  Z1mass:
+    bins: [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.]
+    overflow: False
+  Z2mass:
+    bins: [81., 83., 85., 87., 89., 91., 93., 95., 97., 99., 101., 103.]
+    overflow: False
+  Lepton_sip3d_Z2:
+    bins: [0.0, 4.0, 20.0]
+    overflow: True
+  delRapidity:
+    bins: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]
+    overflow: True
+  group: !!bool False
+  groups:
+    ZpX: ["DY", "TT", "WZ"]
+

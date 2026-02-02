@@ -8,6 +8,7 @@ import datetime
 from pathlib import Path
 
 import yaml
+import json
 
 import ROOT
 import uproot as up
@@ -22,8 +23,13 @@ from copy import deepcopy
 
 plot_cfg_path = os.path.join(parent_dir, "NanoAnalysis/scripts/plot_cfg.yaml")
 
+zpx_paths = {
+    "2022": "ZpX_info_2022_Full_reweightNonDegEvents_22_09_25.json",
+    "2023": "ZpX_info_2023_Full_2x2e_2x2mu_4l.json"
+}
+
 class HistPlotter:
-    def __init__(self, year, era, tag, lumi, all_hists, all_counts, all_errors, cfg_path=plot_cfg_path):
+    def __init__(self, year, era, tag, lumi, all_hists, all_counts, all_errors, zpx_from_mc, cfg_path=plot_cfg_path):
         self.year = year
         self.era  = era
         self.tag  = tag
@@ -33,6 +39,9 @@ class HistPlotter:
         self.all_hists  = all_hists
         self.all_counts = all_counts
         self.all_errors = all_errors
+
+        self.zpx_from_mc = zpx_from_mc
+        self._read_zpx()
 
         self._set_cfg(cfg_path)
 
@@ -70,9 +79,7 @@ class HistPlotter:
 
         self.lm_labels = dict(
             MC = dict(
-                # DY     = r"$DY$",
-                # TT     = r"$t\bar{t}$",
-                # WZ     = r"$WZ$",
+                ZpX    = r"$Z+X$",
                 H      = r"$H$",
                 VVV    = r"$VVV$",
                 ggZZ   = r"$gg \rightarrow ZZ$",
@@ -89,9 +96,7 @@ class HistPlotter:
 
         self.cr_labels = dict(
             MC = dict(
-                # DY     = r"$DY$",
-                # TT     = r"$t\bar{t}$",
-                # WZ     = r"$WZ$",
+                ZpX    = r"$Z+X$",
                 VVV    = r"$VVV$",
                 ggZZ   = r"$gg \rightarrow ZZ$",
                 ZZ_NLO = r"$(q\bar{q} \rightarrow ZZ)_{NNLO}$",
@@ -136,7 +141,6 @@ class HistPlotter:
         self.xlabel = self._to_raw_string(self.prop_info["xlabel"])
         self.ylabel = self._to_raw_string(self.prop_info["ylabel"])
         
-        #self.blind  = self.prop_info["Blind"]
         self.blind  = self.prop_info["Blind"] and reg not in ["SS", "HighMassSSRelaxed"]
 
     def _setBins(self, hists):
@@ -153,6 +157,14 @@ class HistPlotter:
             # Only works when bins are equal length!
             self.adjusted_bin_centers[-1] = self.bin_centers[-2] + (self.bin_centers[-2] - self.bin_centers[-3])
 
+    def _read_zpx(self):
+        zpx_info = {}
+        for year, path in zpx_paths.items():
+            with open(zpx_paths[year]) as json_file:
+                zpx_info[year] = json.load(json_file)
+
+        self.zpx_info = zpx_info
+
     def adjustBinEdges(self, hist_list):
         new_list = []
         for hist, edges in hist_list:
@@ -167,19 +179,17 @@ class HistPlotter:
             init_lab = labels[proc]
             count    = counts[proc]
 
-            bin_errs = errors[proc]
-            err      = np.sqrt(np.square(bin_errs).sum())
-
-            if proc != "ZpX":
+            if proc == "ZpX" and not self.zpx_from_mc:
+                if self.year != "Full":
+                    count, err = self.zpx_info[self.year]["N_ZpX_MidMass"][self.fs]
+                else:
+                    count_22, err_22 = self.zpx_info["2022"]["N_ZpX_MidMass"][self.fs]
+                    count_23, err_23 = self.zpx_info["2023"]["N_ZpX_MidMass"][self.fs]
+                    
+                    count, err       = count_22+count_23, err_22+err_23
+            else:
                 bin_errs = errors[proc]
                 err      = np.sqrt(np.square(bin_errs).sum())
-            else:
-                if self.fs == "fs_4l":
-                    err = 2.61 + 2.56
-                elif self.fs == "fs_2x2e":
-                    err = 2.52 + 2.30
-                elif self.fs == "fs_2x2mu":
-                    err = 1.15 + 1.43
 
             new_lab = init_lab + ": " + str(round(count,2)) + r" $\pm$ " + str(round(err, 2))
             new_labels.append(new_lab)
@@ -191,14 +201,7 @@ class HistPlotter:
         self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
         self.fig.subplots_adjust(hspace=0.07)
 
-        # if not self.blind:
-        #     self.fig, (self.ax, self.rax) = plt.subplots(2, 1, sharex=True, **self.ratio_fig_style)
-        #     self.fig.subplots_adjust(hspace=0.07)
-        # else:
-        #     self.fig, self.ax = plt.subplots()
-
     def cms_label(self):
-        #hep.cms.label(label="Work in Progress", year=self.year, lumi = round(self.lumi*1e-3), com=13.6, data=True, ax=self.ax)
         if self.year != "Full":
             hep.cms.label(label="Private Work", year=self.year, lumi = round(self.lumi*1e-3), com=13.6, data= not self.blind, ax=self.ax)
         else:
@@ -207,8 +210,6 @@ class HistPlotter:
     def draw_mc_hists(self, hists, labels):
 
         ordered_hists = [hists[proc] for proc in self.labels["MC"].keys()]
-        # breakpoint()
-        # adjusted_hists = self.adjustBinEdges(ordered_hists)
 
         new_hists = []
         for hist in ordered_hists:
@@ -218,7 +219,6 @@ class HistPlotter:
 
         hep.histplot(
             new_hists,
-            #ordered_hists,
             stack=True,
             histtype='fill',
             label = labels,
@@ -295,7 +295,6 @@ class HistPlotter:
 
         return ratio_lo_nnlo, ratio_lo_nnlo_err, ratio_polsum, ratio_polsum_err
 
-    #def draw_ratio(self, data_hist):
     def draw_ratio(self, hists, errors):
 
         if self.draw_data:
@@ -310,7 +309,6 @@ class HistPlotter:
             self.rax.errorbar(x=self.adjusted_bin_centers, y = ratio_lo_nnlo, yerr = ratio_lo_nnlo_err, label = r"LO/NNLO", **self.pol_ratio_style)
             self.rax.errorbar(x=self.adjusted_bin_centers, y = ratio_polsum, yerr = ratio_polsum_err, label = r"$\sum Z_{\lambda} Z_{\lambda '}/ZZ_{U}$", **self.pol_ratio_style)
 
-           # self.rax.legend(ncol=2, fontsize="x-small")
             self.rax.legend(
                 bbox_to_anchor = (1.05, 1),
                 loc            = "upper left",
@@ -327,8 +325,7 @@ class HistPlotter:
     def plotter(self, prop, reg, fs, norm=False):
         # Set up figures, styling, names etc
         self._set_procs(reg)
-        self._set_prop_info(prop, reg)
-        #if not norm: self.set_lumi_tag()    
+        self._set_prop_info(prop, reg)   
         self.writeFigs()
         self.cms_label()
 
@@ -416,14 +413,6 @@ class HistPlotter:
         self.ax.set_ylabel(self.ylabel)
 
         self.draw_ratio(hists, errors)
-
-        # if self.draw_data:
-        #     self.draw_ratio(data_hist)
-        # elif prop in self.ang_vars:
-        #     self.draw_ratio(hists)
-        # else:
-        #     # (xlabel drawn on rax if unblinded)
-        #     self.ax.set_xlabel(self.xlabel)
 
         hep.rescale_to_axessize(self.ax, 10, 10/1.62)
 

@@ -4,6 +4,8 @@ import sys
 parent_dir = os.path.abspath(__file__ + 3 * "/..")
 sys.path.insert(0, parent_dir)
 
+import math
+
 from NanoAnalysis.scripts.fileHandler import FileHandler
 from NanoAnalysis.scripts.histSystematics import HistSystematics
 
@@ -12,6 +14,8 @@ import ROOT
 import uproot as up
 import numpy as np
 from tqdm import tqdm
+
+import json
 
 ROOT.gInterpreter.Declare("""
 
@@ -86,6 +90,10 @@ class HistWriter:
         self.data_hists = {}
     
     def get_hist_info(self, reg, prop):
+        """Get histogram name, binning, etc.
+        For m4l and z1/z2 masses, binning
+        depends on region."""
+
         hist_info = self.cfg[prop]
         if "mass" in prop:
             if reg == "SR" or "HighMass" in reg:
@@ -101,11 +109,14 @@ class HistWriter:
         return ("systematics" in hist_info) and (reg=="SR") and (self.category not in self.zpx) and (not self.data)
 
     def _get_df(self, process, filepath):
+        """Get RDataFrame and apply initial
+        filters."""
 
         df = ROOT.RDataFrame("Events", filepath)
 
         ROOT.RDF.Experimental.AddProgressBar(df)
 
+        # Passes trigger selection
         df = df.Filter("HLT_passZZ4l")
 
         # Only needed temporarily, filter events that belong to at least one reg
@@ -116,18 +127,20 @@ class HistWriter:
         if process == "Data":
             return df
 
+        # Used to define event weight later
         Runs = ROOT.RDataFrame("Runs", filepath)
-
         df = df.Define("genEventSumw",str(Runs.Sum("genEventSumw").GetValue()))
 
         # Temporarily needed to handle duplicate events!
         df = df.Define("event_idx", "get_event_idx(run, luminosityBlock, event)")
-        
         event_idx = ROOT.std.vector['string'](["event_idx"])
         
         return df.Filter(ROOT.FilterOnePerKind(), event_idx)
 
     def _combine_procs(self, category, sub_hists):
+        """Combine histograms of various processes.
+        For example, VVV=WWZ+WZZ+ZZZ."""
+
         processes = list(sub_hists.keys())
 
         combined_hists = {}
@@ -151,6 +164,10 @@ class HistWriter:
         return combined_hists
 
     def all_hists(self):
+        """Get histograms for all files,
+        combining groups and saving output into
+        dictionary."""
+
         self.hists = {}
 
         for key in self.file_paths: #MC, Pol, or Data
@@ -191,9 +208,12 @@ class HistWriter:
                             df = self._get_df(category, key_paths[category])
 
                             self.hists[category] = self.write_hists(df)
-                            print("Wow!")
 
     def def_lep_id_cols(self, df, reg):
+        """Extracts index corresponding to each
+        chosen lepton in event and saves them to
+        new columns in the RDataFrame."""
+        
         for Z in ["Z1", "Z2"]:
             for l in ["l1", "l2"]:
                 lep_idx          = self.reg_prop(f"{Z}{l}Idx", reg)
@@ -205,11 +225,12 @@ class HistWriter:
         return df
 
     def define_reg_cols(self, df, reg):
-        z1_flav = self.reg_prop("Z1flav", reg)
+        z1_flav = self.reg_prop("Z1flav", reg) # ZZCand_Z1flav for SR, ZLLCand_Z1flav otherwise
         z2_flav = self.reg_prop("Z2flav", reg)
 
-        self.good_reg_idx = self.reg_idx(reg)
+        self.good_reg_idx = self.reg_idx(reg) # SR: bestCandIdx, otherwise ZLLbest{reg}Idx
         
+        # Define dataMCWeight (lepton SFs) for specific region
         if not self.data:
             dMC_wgt           = self.reg_prop("dataMCWeight", reg)
             self.good_dMC_wgt = f"{dMC_wgt}_{reg}"
@@ -218,8 +239,10 @@ class HistWriter:
         self.good_z1_flav = f"{z1_flav}_{reg}"
         self.good_z2_flav = f"{z2_flav}_{reg}"
 
+        # Example for SR: ZZCand_Z1flav_SR := ZZCand_Z1flav[bestCandIdx]
         df = df.Define(self.good_z1_flav, f"{z1_flav}[{self.good_reg_idx}]").Define(self.good_z2_flav, f"{z2_flav}[{self.good_reg_idx}]")
 
+        # Defines columns for lepton indices
         df = self.def_lep_id_cols(df, reg)
 
         if reg == "SS":

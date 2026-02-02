@@ -1,0 +1,13 @@
+run_systs: !!bool True
+regions: [SR]
+final_states: [fs_2x2e, fs_2x2mu]
+variables: [cosTheta1, cosTheta3, cosThetaStar, delRapidity, delPhi, delPhiStar]
+variations:
+  LHEScaleWeight:
+    procs: ["ZLZL", "ZLZT", "ZTZT", "VVV"]
+  LHEPdfWeight:
+    procs: ["ZLZL", "ZLZT", "ZTZT", "VVV"]
+  puWeight:
+    procs: ["ZLZL", "ZLZT", "ZTZT", "VVV", "ggZZ"]
+  lepIDRec:
+    procs: ["ZLZL", "ZLZT", "ZTZT", "VVV", "ggZZ"]

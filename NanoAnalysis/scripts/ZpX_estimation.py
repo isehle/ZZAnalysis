@@ -1,10 +1,10 @@
 import numpy as np
+
 import matplotlib.pyplot as plt
+import mplhep as hep
 
 import ROOT
 
-# Note: originally done considering ZpX = DY+TT,
-# should really include also WZto3LNu
 class ZpX:
     def __init__(self, zpx_procs = ["DY","TT","WZ"], max_sip = 4):
         self.zpx_procs = zpx_procs
@@ -12,49 +12,52 @@ class ZpX:
         self.max_sip = max_sip
         self.max_idx = lambda edges: int(np.argwhere(edges==self.max_sip)) + 1
 
-        self.plot_info = dict(
-            N_ZPP_SS        = dict(
-                # y_label = r"$N_{ZPP_{SS}}/{fb^{-1}}$",
-                # title   = r"$N_{ZPP_{SS}}/{fb^{-1}}$"
-                y_label = r"$N_{ZPP_{SS}}$",
-                title   = r"$N_{ZPP_{SS}}$"
-            ),
-            r_OS_SS_MidMass = dict(
-                y_label = r"$r_{OS/SS}$",
-                title   = "Mid Mass Transfer Function"
-            ),
-            r_OS_SS_LowMass = dict(
-                y_label = r"$r_{OS/SS}$",
-                title   = "Low Mass Transfer Function"
-            ),
-            N_ZpX_MidMass   = dict(
-                y_label = r"$N_{ZpX}$",
-                title   = "ZpX Estimate (Mid Mass Transfer Function)"
-            ),
-            N_ZpX_LowMass   = dict(
-                y_label = r"$N_{ZpX}$",
-                title   = "ZpX Estimate (Low Mass Transfer Function)"
-            )
+        self.fstates = ["fs_4l", "fs_2x2e", "fs_2x2mu"]
+
+        self.fstate_map = dict(
+            fs_4l    = r"$4l$",
+            fs_2x2e  = r"$2X2e$",
+            fs_2x2mu = r"$2X2mu$"
         )
 
+        self.plot_info = dict(
+            N_ZpX_MidMass = dict(
+                ylabel = r"$N_{Z+X}^{SR}$",
+            ),
+            N_ZPP_SS = dict(
+                ylabel = r"$N_{Z+X}^{CR}$",
+            ),
+            r_OS_SS_MidMass = dict(
+                ylabel = r"$r_{OS/SS}$",
+            ),
+            r_OS_SS_LowMass = dict(
+                ylabel = r"$r_{OS/SS}$",
+            ),
+            N_ZpX_LowMass = dict(
+                ylabel = r"$N_{Z+X}^{SR}$",
+            ),
+        )
+
+        self.lumi_2022 = 34.6532e3
+        self.lumi_2023 = 27.245e3
+
     def get_count(self, hist, errs, var):
+        """Return histogram count and error for variable var.
+        If checking sip, count+err for sip<=4."""
         counts, edges = hist
 
+        # Array index corresponding to SIP=4
         max_idx = len(counts) if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
         count = counts[:max_idx].sum()
         err   = np.sqrt(np.square(errs[:max_idx]).sum())
 
-        #max_idx = len(counts) - 1 if var != "Lepton_sip3d_Z2" else self.max_idx(edges)
-        # count = counts[1:max_idx].sum()
-        # err   = np.sqrt(np.square(errs[1:max_idx]).sum())
-
         return count, err          
 
     def nZPP(self, reg, fs, all_hists, all_errors, var = "mass", max_edges = 4):
+        """Get count+err of Data - MC_{!ZpX}."""
         data_hist = all_hists[var][reg][fs]["Data"]
         data_err  = all_errors[var][reg][fs]["Data"]
         
-        #n, n_err = self.get_count(data_hist, data_err, var)
         count, n_err = self.get_count(data_hist, data_err, var)
         
         tot_errs = [n_err]
@@ -76,13 +79,13 @@ class ZpX:
         return count, tot_err
 
     def get_nZPPSS(self, fs, all_hists, all_errors):
-        #lep_count, lep_err = self.nZPP("SS_NoSIP_HighMass", fs, all_hists, all_errors, var = "Lepton_sip3d_Z2")
+        """Get _event_ count for N_{Z+X}^{CR}."""
         lep_count, lep_err = self.nZPP("HighMassSSSIP", fs, all_hists, all_errors, var = "Lepton_sip3d_Z2")
         return lep_count/2, lep_err/2
 
     def get_r(self, fs, mass_reg, all_hists, all_errors):
-        # os_reg = "OS_NoSIP_" + mass_reg
-        # ss_reg = "SS_NoSIP_" + mass_reg
+        """Calculate os_ss transfer function and associated error
+        in a given mass region."""
 
         os_reg = mass_reg + "OSSIP"
         ss_reg = mass_reg + "SSSIP"
@@ -90,19 +93,18 @@ class ZpX:
         os_count, os_err = self.nZPP(os_reg, fs, all_hists, all_errors)
         ss_count, ss_err = self.nZPP(ss_reg, fs, all_hists, all_errors)
 
-        # if os_count < 0: os_count = 1e-10
-        # if ss_count < 0: ss_count = 1e-10
-
         ratio = os_count/ss_count
         
         ratio_err = ratio*np.sqrt((os_err/os_count)**2 + (ss_err/ss_count)**2)
         if ratio < 0:
             ratio = 0
-            ratio_err *= -1
+            ratio_err *= -1 # If ratio < 0, ratio_err would be negative without this
 
         return ratio, ratio_err
 
-    def get_zpx(self, all_hists, all_errors, fstates):
+    def get_zpx(self, all_hists, all_errors):
+        """Calcualte and save ZpX^SR estimate using the
+        Mid and Low mass transfer functions."""
 
         zpx_info = dict(
             N_ZPP_SS        = {},
@@ -112,17 +114,20 @@ class ZpX:
             N_ZpX_LowMass   = {}
         )
 
-        for fs in fstates:
+        for fs in self.fstates:
+            # N_ZpX^CR
             n, n_err = self.get_nZPPSS(fs, all_hists, all_errors)
 
             zpx_info["N_ZPP_SS"][fs] = (n, n_err)
 
+            # Transfer function r_os_ss for Mid (Low) Mass
             r_mm, r_mm_err = self.get_r(fs, "MidMass", all_hists, all_errors)
             r_lm, r_lm_err = self.get_r(fs, "LowMass", all_hists, all_errors)
 
             zpx_info["r_OS_SS_MidMass"][fs] = (r_mm, r_mm_err)
             zpx_info["r_OS_SS_LowMass"][fs] = (r_lm, r_lm_err)
-            
+
+            # N_ZpX^SR = N_ZpX^CR x r_os_ss
             zpx_mm = n*r_mm
             zpx_mm_err = np.sqrt(n_err**2 + r_mm_err**2)
 
@@ -135,112 +140,108 @@ class ZpX:
         
         return zpx_info
 
-    def get_yields(self, all_hists, all_errors, fstates):
-        sip_less4_count = lambda sipHist: sipHist[0][1:5].sum() #1st bin is underflow
-        get_err = lambda errArr: np.sqrt(np.sum(np.square(errArr[1:5])))
-
-        # sip3d_z2_highMass_SS = all_hists["SS_NoSIP_HighMass"]["Lepton_sip3d_Z2"]
-        # err_arrs = all_errors["SS_NoSIP_HighMass"]["Lepton_sip3d_Z2"]
-
-        sip3d_z2_highMass_SS = all_hists["Lepton_sip3d_Z2"]["HighMassSSSIP"]
-        err_arrs = all_errors["Lepton_sip3d_Z2"]["HighMassSSSIP"]
-
-        counts = {}
-        for fs in ["fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]:
-            data_z2_leps = sip3d_z2_highMass_SS[fs]["Data"]["Data"]
-            data_err_arr = err_arrs[fs]["Data"]["Data"]
-
-            # Arbitrary normalization for Z+X which will be fit by combine
-            # Need to divide by 2 to get event counts since these leptons from Z2-->ll, and Data must be integer (CHECK THAT THIS IS OKAY)
-            counts[fs] = {"data_obs": (round(sip_less4_count(data_z2_leps)/2), get_err(data_err_arr)/2),
-                          "ZpX":  (1., 0.)}
-
-            mc_hists = sip3d_z2_highMass_SS[fs]["MC"]
-            mc_errs  = err_arrs[fs]["MC"]
-
-            for proc in ["ZZ_NLO", "ggZZ", "H", "VVV"]:
-                count, err = sip_less4_count(mc_hists[proc])/2, get_err(mc_errs[proc])
-
-                counts[fs][proc] = (count, err)
-
-        return counts
-
-    def plot_zpx(self, zpx_info, step, *args):
-        r_os_ss_y_lim  = (0, 7)
-        n_zpp_ss_y_lim = (-2, 4)
-        fstates = zpx_info[step].keys()
-
-        if "N_ZpX" in step:
-            categories = fstates
-            counts = dict(
-                MidMass = [zpx_info["N_ZpX_MidMass"][fs][0] for fs in fstates],
-                LowMass = [zpx_info["N_ZpX_LowMass"][fs][0] for fs in fstates]
-            )
-            errs = dict(
-                MidMass = [zpx_info["N_ZpX_MidMass"][fs][1] for fs in fstates],
-                LowMass = [zpx_info["N_ZpX_LowMass"][fs][1] for fs in fstates]
-            )
-
-            x = np.arange(len(fstates))
-            group_width = 0.5
-            offset_step = group_width/len(counts)
-
-            fig, ax = plt.subplots(layout='constrained')
-            for i, (key, val) in enumerate(counts.items()):
-                offset = x - (group_width - offset_step)/2 + i*offset_step
-                ax.errorbar(
-                    offset,
-                    counts[key],
-                    yerr=errs[key],
-                    fmt="o",
-                    label=key
-                )
-            
-            ax.legend()
-
-            ax.set_xticks(x)
-            ax.set_xticklabels(fstates)
-
-            # ax.set_ylim()
-
-            ax.set_ylabel(r"$N_{Z+X}$", rotation="horizontal")
-
-            #title = "N_ZpX", "N_ZpX"
-            title = "N_ZpX"
-            for arg in args:
-                title += " {}".format(arg)
-            
-            ax.set_title(title)
+    def plot_zpx(self, zpx_info, year, step="N_ZpX_MidMass", tag=""):
+        """Quick plotter for ZpX estimates for a given year. By default
+        plots 4l state on the left, and 2x2e and 2x2mu final states on the right,
+        seperated by a dotted black line. Steps correspond to self.plot_info.keys()."""
         
-        else:
-            counts = [zpx_info[step][fs][0] for fs in fstates]
-            errs   = [zpx_info[step][fs][1] for fs in fstates]
+        hep.style.use("CMS")
+        
+        zpx_dict = zpx_info[step]
+        
+        vals = dict(
+            Old = [zpx_dict[fs][0] for fs in zpx_dict.keys()]
+        )
+        errs = dict(
+            Old = [zpx_dict[fs][1] for fs in zpx_dict.keys()]
+        )
+        
+        final_states = [self.fstate_map[key] for key in zpx_dict.keys()]
 
-            # if step == "N_ZPP_SS":
-            #     lumi = 34.6521 if int(args[0]) == 2022 else 27.245
+        x = np.arange(len(final_states))
+        group_width = 0.5
+        offset_step = group_width/len(vals)
 
-            #     norm_counts = [cnt/lumi for cnt in counts]
-            #     norm_errs   = [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.015)**2) for nm_cnt, err, cnt in zip(norm_counts, errs, counts)]
+        fig, ax = plt.subplots(layout='constrained')
 
-            #     counts, errs = norm_counts, norm_errs
+        for i, (key, val) in enumerate(vals.items()):
+            offset = x - (group_width - offset_step)/2 + i*offset_step
+            ax.errorbar(
+                offset,
+                vals[key],
+                yerr=errs[key],
+                fmt="o",
+            )
 
-            y_label = self.plot_info[step]["y_label"]
-            title   = self.plot_info[step]["title"]
+        plt.axvline(x=0.5, linestyle="--", color="black")
 
-            fig, ax = plt.subplots()
-            try:
-                ax.errorbar(fstates, counts, yerr=errs, linestyle="None", marker = "o", color="black")
-            except ValueError:
-                breakpoint()
-            ax.set_ylabel(y_label)
+        ax.set_ylabel(self.plot_info[step]["ylabel"], fontsize=40)
 
-            # if "r_OS" in step:
-            #     ax.set_ylim(*r_os_ss_y_lim)
-            # else:
-            #     ax.set_ylim(*n_zpp_ss_y_lim)
-            #     #ax.set_ylim(-0.1, 0.1)
+        ax.set_xticks(x)
+        ax.set_xticklabels(final_states)
+        ax.tick_params(axis='both', labelsize=40)
 
-            ax.set_title(title)
+        filename = f"{step}_{year}{tag}.pdf"
+        fig.savefig(filename, dpi=600, format="pdf")
 
-        return fig
-            
+    def plot_zpx_years(self, zpx_22, zpx_23, step="N_ZpX_MidMass", tag=""):
+        """Quick plotter for ZpX estimates for 2022 and 2023, shown /fb^-1.
+        Otherwise identical to self.plot_zpx()."""
+
+        hep.style.use("CMS")
+        
+        dict_22 = zpx_22[step]
+        dict_23 = zpx_23[step]
+
+        vals = {
+            "2022": [dict_22[fs][0] for fs in dict_22.keys()],
+            "2023": [dict_23[fs][0] for fs in dict_22.keys()],
+        }
+
+        errs = {
+            "2022": [dict_22[fs][1] for fs in dict_22.keys()],
+            "2023": [dict_23[fs][1] for fs in dict_22.keys()],
+        }
+
+        norm_counts = {
+            "2022": [cnt/(self.lumi_2022*1e-3) for cnt in vals["2022"]],
+            "2023": [cnt/(self.lumi_2023*1e-3) for cnt in vals["2023"]]
+        }
+
+        # Err. in Lumi for 2022 (2023) is 1.4% (1.3%)
+        norm_errs = {
+            "2022": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.014)**2) for nm_cnt, err, cnt in zip(norm_counts["2022"], errs["2022"], vals["2022"])],
+            "2023": [abs(nm_cnt)*np.sqrt((err/cnt)**2 + (0.013)**2) for nm_cnt, err, cnt in zip(norm_counts["2023"], errs["2023"], vals["2023"])]
+        }
+        
+        final_states = [self.fstate_map[key] for key in dict_22.keys()]
+
+        x = np.arange(len(final_states))
+        group_width = 0.5
+        offset_step = group_width/len(vals)
+
+        fig, ax = plt.subplots(layout='constrained')
+        for i, (key, val) in enumerate(vals.items()):
+            offset = x - (group_width - offset_step)/2 + i*offset_step
+            ax.errorbar(
+                offset,
+                norm_counts[key],
+                yerr=norm_errs[key],
+                label=key,
+                fmt="o",
+            )
+
+        ax.legend()
+
+        plt.axvline(x=0.5, linestyle="--", color="black")
+
+        ylabel = r"$N_{Z+X}^{SR} / fb^{-1}$"
+
+        ax.set_ylabel(ylabel, fontsize=40)
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(final_states)
+        ax.tick_params(axis='both', labelsize=40)
+
+        filename = f"{step}_2022_2023{tag}.pdf"
+        fig.savefig(filename, dpi=600, format="pdf")      

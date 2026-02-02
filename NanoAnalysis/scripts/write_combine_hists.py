@@ -22,8 +22,8 @@ properties = [
     "cosTheta1",
     "cosTheta3",
     "cosThetaStar",
-    "delPhiStar",
-    "delPhi",
+    #"delPhiStar",
+    #"delPhi",
     "delRapidity"
 ]
 
@@ -171,18 +171,20 @@ if __name__ == "__main__":
     from tqdm import tqdm
 
     # For Polarization variation normalizations
-    zz_nlo_var_norms = "/eos/user/i/iehle/ZZ_NLO_normVars.json"
+    # zz_nlo_var_norms = "/eos/user/i/iehle/ZZ_NLO_normVars.json"
+    zz_nlo_var_norms = "/eos/user/i/iehle/ZZ_NLO_normVars_reweightNonDegEvents22_23_09_25.json"
 
-    # with open(zz_nlo_var_norms, "r") as zz_nlo_norms:
-    #     the_dict = json.load(zz_nlo_norms)
-    #     zz_2022, zz_2023 = the_dict["2022"], the_dict["2023"]
-
+    with open(zz_nlo_var_norms, "r") as zz_nlo_norms:
+        the_dict = json.load(zz_nlo_norms)
+        zz_2022, zz_2023 = the_dict["2022"], the_dict["2023"]
 
     # Used to get ZpX shape
-    full_hist = "/eos/user/i/iehle/Analysis/histograms/Full/hists_dataInCRs.root"
+    #full_hist = "/eos/user/i/iehle/Analysis/histograms/Full/hists_dataInCRs.root"
+    full_hist = "/eos/user/i/iehle/Analysis/histograms/Full/hists_delRapidity_HMSSRelaxed_reweightNonDegEvents22_23_09_25.root"
 
     # For ZpX normalization
-    zpx_2022  = "/afs/cern.ch/user/i/iehle/cmssw/CMSSW_14_1_6/src/ZZAnalysis/ZpX_info_2022_Full_2x2e_2x2mu_4l.json"
+    #zpx_2022  = "/afs/cern.ch/user/i/iehle/cmssw/CMSSW_14_1_6/src/ZZAnalysis/ZpX_info_2022_Full_2x2e_2x2mu_4l.json"
+    zpx_2022  = "/eos/user/i/iehle/ZpX_info_2022_Full_reweightNonDegEvents_22_09_25.json"
     zpx_2023  = "/afs/cern.ch/user/i/iehle/cmssw/CMSSW_14_1_6/src/ZZAnalysis/ZpX_info_2023_Full_2x2e_2x2mu_4l.json"
 
     with open(zpx_2022, "r") as ZpX22, open(zpx_2023, "r") as ZpX23:
@@ -190,18 +192,26 @@ if __name__ == "__main__":
         zpx_info_2022 = dict_2022["N_ZpX_MidMass"]
         zpx_info_2023 = dict_2023["N_ZpX_MidMass"]
 
-    hist_file = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root"
-    outfile   = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_zpxForPlots_11_07_25.root"
+    # hist_file = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_MuonSF_24_06_25.root"
+    # outfile   = "/eos/user/i/iehle/Analysis/histograms/2023/Full/hists_zpxForPlots_11_07_25.root"
 
-    # hist_file = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sigOnTop_allFStates.root"
-    # outfile   = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_delRapidity_GoodNorms_03_07_25.root"
+    #hist_file = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sigOnTop_allFStates.root"
+    #outfile   = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_delRapidity_GoodNorms_03_07_25.root"
+
+    #hist_file = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_sigOnTop_allFStates.root"
+
+    # hist_file = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_reweightNonDegEvents_22_09_25.root"
+    # outfile   = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_goodZpX_reweightNonDegEvents_22_09_25.root"
+
+    hist_file = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_reweightNonDegEvents_22_09_25.root"
+    outfile   = "/eos/user/i/iehle/Analysis/histograms/2022/Full/hists_ZpXForPlots_reweightNonDegEvents_22_09_25.root"
 
     with up.open(hist_file) as HistFile:
         with up.recreate(outfile) as OutFile:
             for prop in tqdm(properties, desc = "Properties", position = 0):
                 for fs in tqdm(fstates, desc = "Final States", position = 1, leave = False):
-                    zpx_norm = zpx_info_2023[fs][0]
-                    #zz_norms = zz_2023[fs]
+                    zpx_norm = zpx_info_2022[fs][0]
+                    #zz_norms = zz_2022[fs]
                     for proc in tqdm(procs, desc = "Processes", position = 2, leave = False):
 
                         if proc != "ZpX":
@@ -242,6 +252,11 @@ if __name__ == "__main__":
 
                             if prop == "delRapidity":
                                 zpx_hist, zpx_histUp, zpx_histDn = zpx_shape(full_hist, zpx_norm)
+
+                                # zpx_norm_up, zpx_norm_dn = zpx_histUp.Integral()/zpx_norm, zpx_histDn.Integral()/zpx_norm
+                                # zpx_hist.Scale(1./zpx_hist.Integral())
+                                # zpx_histUp.Scale(zpx_norm_up/zpx_histUp.Integral())
+                                # zpx_histDn.Scale(zpx_norm_dn/zpx_histDn.Integral())
 
                                 OutFile[f"{prop}/SR/{fs}/{proc}"]         = zpx_hist
                                 OutFile[f"{prop}/SR/{fs}/{proc}_zpxUp"]   = zpx_histUp

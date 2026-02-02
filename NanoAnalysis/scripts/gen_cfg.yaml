@@ -3,12 +3,30 @@ writing:
     col_tag: good
     #regions: ["SR", "OS_NoSIP_HighMass", "OS_NoSIP_MidMass", "OS_NoSIP_LowMass", "SS_NoSIP_HighMass", "SS_NoSIP_MidMass", "SS_NoSIP_LowMass"]
     #regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP"]
-    #regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP", "HighMassSSRelaxed"]
+    regions: ["SR", "HighMassOSSIP", "MidMassOSSIP", "LowMassOSSIP", "HighMassSSSIP", "MidMassSSSIP", "LowMassSSSIP", "HighMassSSRelaxed"]
     #regions: ["HighMassSSSIP", "MidMassSSSIP", "MidMassOSSIP", "LowMassSSSIP", "LowMassOSSIP"]
-    regions: ["SR"]
+    #regions: ["SR"]
     #regions: ["SR", "HighMassSSSIP", "MidMassSSSIP", "MidMassOSSIP", "LowMassSSSIP", "LowMassOSSIP"]
+    #regions: ["HighMassSSRelaxed"]
     #regions: ["SS"]
     #fstates: ["fs_4l", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
     fstates: ["fs_4l", "fs_2x2e", "fs_2x2mu", "fs_4e", "fs_4mu", "fs_2e2mu", "fs_2mu2e"]
     #fstates: ["fs_2x2e", "fs_2x2mu"]
     #fstates: ["fs"]
+
+zpx:
+    year_2022: ZpX_info_2022_Full_reweightNonDegEvents_22_09_25.json
+    year_2023: ZpX_info_2023_Full_MuonSF_4l.json
+
+combine_eras:
+    year_2022:
+        CD: /eos/user/i/iehle/Analysis/histograms/2022/CD/hists_reweightNonDegEvents_22_09_25.root
+        EFG: /eos/user/i/iehle/Analysis/histograms/2022/EFG/hists_reweightNonDegEvents_22_09_25_v2.root
+    year_2023:
+        C: /eos/user/i/iehle/Analysis/histograms/2023/C/hists_dataInCRs.root
+        D: /eos/user/i/iehle/Analysis/histograms/2023/D/hists_dataInCRs.root
+        #C: /eos/user/i/iehle/Analysis/histograms/2023/C/hists_MuonSF_24_06_25.root
+        #D: /eos/user/i/iehle/Analysis/histograms/2023/D/hists_MuonSF_24_06_25.root
+    year_22_23:
+        Full: /eos/user/i/iehle/Analysis/histograms/2022/Full/hists_ZpXForPlots_reweightNonDegEvents_22_09_25.root
+        Full: /eos/user/i/iehle/Analysis/histograms/2023/Full/hists_zpxForPlots_11_07_25.root
